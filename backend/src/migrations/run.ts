@@ -1,4 +1,4 @@
-import { pool } from '../db';
+import { legacyPool } from '../db';
 import fs from 'fs';
 import path from 'path';
 
@@ -8,7 +8,7 @@ async function run() {
   for (const file of files) {
     const sql = fs.readFileSync(path.join(migrationsDir, file), 'utf8');
     console.log('Running', file);
-    await pool.query(sql);
+    await legacyPool.query(sql);
   }
   console.log('Migrations complete');
   process.exit(0);

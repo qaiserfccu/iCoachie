@@ -1,0 +1,379 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  engineType = "library"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  CLUB_ADMIN
+  COACH
+  FREELANCER
+  PARENT
+  KID
+}
+
+enum UserStatus {
+  ACTIVE
+  PENDING
+  SUSPENDED
+}
+
+enum MembershipType {
+  STANDARD
+  PREMIUM
+}
+
+enum SessionStatus {
+  SCHEDULED
+  ONGOING
+  COMPLETED
+  CANCELLED
+}
+
+enum AttendanceStatus {
+  PRESENT
+  LATE
+  ABSENT
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+}
+
+model User {
+  id            Int      @id @default(autoincrement())
+  name          String
+  email         String   @unique
+  passwordHash  String
+  role          UserRole
+  status        UserStatus @default(ACTIVE)
+  avatarUrl     String?
+  clubId        Int?     // Tenant ID for row-level multi-tenancy
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  deletedAt     DateTime? // Soft delete
+
+  // Relations
+  club          Club?    @relation("ClubAdmin", fields: [clubId], references: [id])
+  managedClub   Club?    @relation("ClubManager")
+  students      Student[] @relation("StudentUser")
+  children      Student[] @relation("ParentUser")
+  coachedStudents Student[] @relation("CoachUser")
+  coachedSessions Session[] @relation("CoachSessions")
+  coachProfile  Coach?
+  sentMessages  Message[] @relation("MessageSender")
+  receivedMessages Message[] @relation("MessageReceiver")
+  payments      Payment[]
+  bookings      Booking[] @relation("BookingFreelancer")
+  clientBookings Booking[] @relation("BookingClient")
+  reviewsGiven  Review[] @relation("ReviewReviewer")
+  reviewsReceived Review[] @relation("ReviewReviewee")
+  evaluations   Evaluation[]
+  attendances   Attendance[]
+  profile       Profile?
+  userRoles     UserRoleAssignment[]
+  passwordResets PasswordReset[]
+
+  @@map("users")
+}
+
+model Club {
+  id          Int      @id @default(autoincrement())
+  name        String
+  adminId     Int      @unique
+  location    String?
+  description String?
+  logoUrl     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  deletedAt   DateTime? // Soft delete
+
+  // Relations
+  admin       User     @relation("ClubManager", fields: [adminId], references: [id])
+  users       User[]   @relation("ClubAdmin")
+  students    Student[]
+  coaches     Coach[]
+  sessions    Session[]
+
+  @@map("clubs")
+}
+
+model Student {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @unique
+  parentId  Int?
+  clubId    Int
+  coachId   Int?
+  name      String
+  age       Int?
+  level     String?
+  sport     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime? // Soft delete
+
+  // Relations
+  user      User     @relation("StudentUser", fields: [userId], references: [id])
+  parent    User?    @relation("ParentUser", fields: [parentId], references: [id])
+  club      Club     @relation(fields: [clubId], references: [id])
+  coach     User?    @relation("CoachUser", fields: [coachId], references: [id])
+  enrollments SessionEnrollment[]
+  attendances Attendance[]
+  evaluations Evaluation[]
+
+  @@map("students")
+}
+
+model Coach {
+  id                Int      @id @default(autoincrement())
+  userId            Int      @unique
+  clubId            Int?
+  specializations    String[]
+  experienceYears   Int?
+  certification     String?
+  hourlyRate        Decimal? @db.Decimal(10, 2)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  deletedAt         DateTime? // Soft delete
+
+  // Relations
+  user              User     @relation(fields: [userId], references: [id])
+  club              Club?    @relation(fields: [clubId], references: [id])
+
+  @@map("coaches")
+}
+
+model Session {
+  id              Int           @id @default(autoincrement())
+  coachId         Int
+  clubId          Int?
+  title           String
+  description     String?
+  sessionDate     DateTime
+  startTime       DateTime
+  endTime         DateTime
+  location        String?
+  maxCapacity     Int?
+  currentEnrolled Int           @default(0)
+  status          SessionStatus @default(SCHEDULED)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  deletedAt       DateTime?     // Soft delete
+
+  // Relations
+  coach           User          @relation("CoachSessions", fields: [coachId], references: [id])
+  club            Club?         @relation(fields: [clubId], references: [id])
+  enrollments     SessionEnrollment[]
+  attendances     Attendance[]
+  evaluations     Evaluation[]
+
+  @@map("sessions")
+}
+
+model SessionEnrollment {
+  id        Int      @id @default(autoincrement())
+  sessionId Int
+  studentId Int
+  enrolledAt DateTime @default(now())
+  status    String   @default("confirmed")
+  deletedAt DateTime? // Soft delete
+
+  // Relations
+  session   Session  @relation(fields: [sessionId], references: [id])
+  student   Student  @relation(fields: [studentId], references: [id])
+
+  @@unique([sessionId, studentId])
+  @@map("session_enrollments")
+}
+
+model Attendance {
+  id          Int              @id @default(autoincrement())
+  sessionId   Int
+  studentId   Int
+  status      AttendanceStatus
+  checkinTime DateTime?
+  notes       String?
+  recordedBy  Int
+  recordedAt  DateTime         @default(now())
+  deletedAt   DateTime?        // Soft delete
+
+  // Relations
+  session     Session          @relation(fields: [sessionId], references: [id])
+  student     Student          @relation(fields: [studentId], references: [id])
+  recorder    User             @relation(fields: [recordedBy], references: [id])
+
+  @@unique([sessionId, studentId])
+  @@map("attendance")
+}
+
+model Evaluation {
+  id              Int      @id @default(autoincrement())
+  studentId       Int
+  coachId         Int
+  sessionId       Int?
+  evaluationType  String
+  overallScore    Int?
+  skills          Json?    // JSONB for detailed skill breakdown
+  comments        String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  deletedAt       DateTime? // Soft delete
+
+  // Relations
+  student         Student  @relation(fields: [studentId], references: [id])
+  coach           User     @relation(fields: [coachId], references: [id])
+  session         Session? @relation(fields: [sessionId], references: [id])
+
+  @@map("evaluations")
+}
+
+model Payment {
+  id             Int           @id @default(autoincrement())
+  userId         Int
+  amount         Decimal       @db.Decimal(10, 2)
+  currency       String        @default("USD")
+  paymentType    String
+  status         PaymentStatus @default(PENDING)
+  stripePaymentId String?
+  description    String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  deletedAt      DateTime?     // Soft delete
+
+  // Relations
+  user           User          @relation(fields: [userId], references: [id])
+
+  @@map("payments")
+}
+
+model Message {
+  id        Int      @id @default(autoincrement())
+  fromUserId Int
+  toUserId  Int
+  subject   String?
+  content   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  deletedAt DateTime? // Soft delete
+
+  // Relations
+  fromUser  User     @relation("MessageSender", fields: [fromUserId], references: [id])
+  toUser    User     @relation("MessageReceiver", fields: [toUserId], references: [id])
+
+  @@map("messages")
+}
+
+model Booking {
+  id          Int           @id @default(autoincrement())
+  freelancerId Int
+  clientId    Int
+  sessionDate DateTime
+  startTime   DateTime
+  endTime     DateTime
+  serviceType String
+  amount      Decimal?      @db.Decimal(10, 2)
+  status      BookingStatus @default(PENDING)
+  notes       String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  deletedAt   DateTime?     // Soft delete
+
+  // Relations
+  freelancer  User          @relation("BookingFreelancer", fields: [freelancerId], references: [id])
+  client      User          @relation("BookingClient", fields: [clientId], references: [id])
+  reviews     Review[]
+
+  @@map("bookings")
+}
+
+model Review {
+  id        Int      @id @default(autoincrement())
+  reviewerId Int
+  revieweeId Int
+  bookingId Int?
+  sessionId Int?
+  rating    Int      @db.SmallInt
+  comment   String?
+  createdAt DateTime @default(now())
+  deletedAt DateTime? // Soft delete
+
+  // Relations
+  reviewer  User     @relation("ReviewReviewer", fields: [reviewerId], references: [id])
+  reviewee  User     @relation("ReviewReviewee", fields: [revieweeId], references: [id])
+  booking   Booking? @relation(fields: [bookingId], references: [id])
+
+  @@map("reviews")
+}
+
+model Profile {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @unique
+  displayName String?
+  bio       String?
+  phone     String?
+  avatarUrl String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@map("profiles")
+}
+
+model Role {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  description String?
+  createdAt   DateTime @default(now())
+
+  // Relations
+  userRoles   UserRoleAssignment[]
+
+  @@map("roles")
+}
+
+model UserRoleAssignment {
+  id     Int @id @default(autoincrement())
+  userId Int
+  roleId Int
+
+  // Relations
+  user   User @relation(fields: [userId], references: [id])
+  role   Role @relation(fields: [roleId], references: [id])
+
+  @@unique([userId, roleId])
+  @@map("user_roles")
+}
+
+model PasswordReset {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  // Relations
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@map("password_resets")
+}
