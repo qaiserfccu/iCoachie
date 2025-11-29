@@ -1,0 +1,130 @@
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { Calendar, Clock, Users, MapPin, ChevronLeft, ChevronRight } from "lucide-react"
+
+const weekSchedule = [
+  {
+    day: "Monday",
+    date: "Nov 25",
+    sessions: [
+      { time: "09:00 AM", name: "Junior Swimming", students: 15, location: "Pool A", duration: "1h" },
+      { time: "02:00 PM", name: "Advanced Techniques", students: 8, location: "Pool B", duration: "1.5h" },
+    ],
+  },
+  {
+    day: "Tuesday",
+    date: "Nov 26",
+    sessions: [
+      { time: "10:00 AM", name: "Intermediate Class", students: 12, location: "Pool A", duration: "1h" },
+      { time: "04:00 PM", name: "Private Lesson", students: 1, location: "Pool B", duration: "45m" },
+    ],
+  },
+  {
+    day: "Wednesday",
+    date: "Nov 27",
+    sessions: [
+      { time: "09:00 AM", name: "Junior Swimming", students: 15, location: "Pool A", duration: "1h" },
+      { time: "11:00 AM", name: "Adult Beginners", students: 10, location: "Pool B", duration: "1h" },
+    ],
+  },
+  {
+    day: "Thursday",
+    date: "Nov 28",
+    sessions: [{ time: "02:00 PM", name: "Competition Prep", students: 6, location: "Pool A", duration: "2h" }],
+  },
+  {
+    day: "Friday",
+    date: "Nov 29",
+    sessions: [
+      { time: "09:00 AM", name: "Junior Swimming", students: 15, location: "Pool A", duration: "1h" },
+      { time: "11:00 AM", name: "Intermediate Class", students: 12, location: "Pool A", duration: "1.5h" },
+      { time: "04:00 PM", name: "Private Lesson", students: 1, location: "Pool B", duration: "45m" },
+    ],
+  },
+]
+
+export default function SchedulePage() {
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">My Schedule</h1>
+          <p className="text-muted-foreground">View and manage your training sessions</p>
+        </div>
+        <div className="flex items-center gap-3">
+          <Button variant="outline" className="glass-subtle border-white/20 bg-transparent">
+            <Calendar className="w-4 h-4 mr-2" />
+            Calendar View
+          </Button>
+          <Button className="bg-gradient-to-r from-teal-500 to-green-500 text-white">Set Availability</Button>
+        </div>
+      </div>
+
+      {/* Week Navigation */}
+      <Card className="glass-card border-white/20">
+        <CardContent className="p-4">
+          <div className="flex items-center justify-between">
+            <Button variant="ghost" size="icon" className="glass-subtle">
+              <ChevronLeft className="w-5 h-5" />
+            </Button>
+            <h2 className="text-lg font-semibold">November 25 - 29, 2024</h2>
+            <Button variant="ghost" size="icon" className="glass-subtle">
+              <ChevronRight className="w-5 h-5" />
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Schedule List */}
+      <div className="space-y-4">
+        {weekSchedule.map((day) => (
+          <Card key={day.day} className="glass-card border-white/20">
+            <CardHeader className="pb-2">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg font-semibold">
+                  {day.day} <span className="text-muted-foreground font-normal">- {day.date}</span>
+                </CardTitle>
+                <Badge variant="outline" className="border-teal-500/50 text-teal-500">
+                  {day.sessions.length} sessions
+                </Badge>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {day.sessions.map((session, index) => (
+                <div
+                  key={index}
+                  className="flex items-center justify-between p-4 rounded-xl glass-subtle hover:bg-white/20 transition-colors"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="text-center min-w-[80px]">
+                      <Clock className="w-4 h-4 mx-auto text-muted-foreground mb-1" />
+                      <span className="text-sm font-medium">{session.time}</span>
+                      <span className="block text-xs text-muted-foreground">{session.duration}</span>
+                    </div>
+                    <div>
+                      <p className="font-medium">{session.name}</p>
+                      <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                        <span className="flex items-center gap-1">
+                          <Users className="w-3 h-3" />
+                          {session.students} students
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <MapPin className="w-3 h-3" />
+                          {session.location}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <Button size="sm" className="bg-gradient-to-r from-teal-500 to-green-500 text-white">
+                    View Details
+                  </Button>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </div>
+  )
+}
