@@ -9,7 +9,7 @@ dotenv.config();
 const app = express();
 const port = process.env.PORT || 4000;
 // Configure CORS for local dev / frontend apps
-const allowedOrigins = [
+const allowedOrigins = process.env.ALLOWEDORIGINS || [
   'http://localhost:3000',
   'http://localhost:3001',
   'http://localhost:3002',
