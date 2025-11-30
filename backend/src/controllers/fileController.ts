@@ -51,18 +51,29 @@ const upload = multer({
 
 export const uploadFile = [
   requireAuth,
-  upload.single('file'),
+  (req: Request, res: Response, next: any) => {
+    upload.single('file')(req, res, (err) => {
+      if (err instanceof multer.MulterError) {
+        if (err.code === 'LIMIT_FILE_SIZE') {
+          return res.status(400).json({ message: 'File size exceeds the 10MB limit' });
+        }
+      } else if (err) {
+        return res.status(400).json({ message: err.message });
+      }
+      next();
+    });
+  },
   async (req: Request, res: Response) => {
     try {
       if (!req.file) {
-        return res.status(400).json({ error: 'No file uploaded' });
+        return res.status(400).json({ message: 'No file uploaded' });
       }
 
       const user = (req as any).user;
       const { fileType, isPublic } = req.body;
 
       if (!fileType || !['AVATAR', 'DOCUMENT', 'CLUB_LOGO', 'CERTIFICATE', 'OTHER'].includes(fileType)) {
-        return res.status(400).json({ error: 'Invalid file type' });
+        return res.status(400).json({ message: 'Invalid file type' });
       }
 
       const options: FileUploadOptions = {
@@ -79,7 +90,7 @@ export const uploadFile = [
       });
     } catch (error) {
       console.error('File upload error:', error);
-      res.status(500).json({ error: 'Failed to upload file' });
+      res.status(500).json({ message: 'Failed to upload file' });
     }
   }
 ];

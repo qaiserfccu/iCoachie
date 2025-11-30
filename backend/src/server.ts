@@ -6,6 +6,7 @@ import { Server as SocketIOServer } from 'socket.io';
 import jwt from 'jsonwebtoken';
 import prisma from './db';
 import { SocketService } from './services/socketService';
+import { swaggerUi, specs } from './swagger';
 import authRoutes from './controllers/authController';
 import userRoutes from './controllers/userController';
 import clubRoutes from './controllers/clubController';
@@ -89,6 +90,10 @@ app.use('/api/files', fileRoutes);
 app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', message: 'iCoachie Backend (TypeScript) running' });
 });
+
+// Swagger documentation
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
+
 app.use('/api/legacy', legacyRoutes);
 
 // Socket.IO Authentication Middleware
