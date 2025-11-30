@@ -2,6 +2,7 @@ import express from 'express';
 import prisma from '../db';
 import { requireAuth, AuthRequest } from '../middleware/jwtAuth';
 import { requireRole } from '../middleware/requireRole';
+import { socketService } from '../server';
 
 const router = express.Router();
 
@@ -312,6 +313,7 @@ router.put('/:id', requireAuth, async (req: AuthRequest, res) => {
       },
       select: {
         id: true,
+        sessionId: true,
         status: true,
         checkinTime: true,
         notes: true,
@@ -328,6 +330,12 @@ router.put('/:id', requireAuth, async (req: AuthRequest, res) => {
           }
         }
       }
+    });
+
+    // Emit real-time attendance update to club
+    socketService.broadcastToClub(clubId!, 'attendance-updated', {
+      sessionId: updatedAttendance.sessionId,
+      attendance: updatedAttendance,
     });
 
     res.json(updatedAttendance);

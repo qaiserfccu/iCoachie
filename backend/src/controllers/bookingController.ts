@@ -2,6 +2,7 @@ import express from 'express';
 import { BookingStatus } from '@prisma/client';
 import prisma from '../db';
 import { requireAuth, AuthRequest } from '../middleware/jwtAuth';
+import { socketService } from '../server';
 const router = express.Router();
 
 // All booking routes require authentication
@@ -309,6 +310,10 @@ router.patch('/:id/status', async (req: AuthRequest, res) => {
       },
     });
 
+    // Emit real-time booking update to both parties
+    socketService.sendToUser(booking.freelancerId, 'booking-updated', updatedBooking);
+    socketService.sendToUser(booking.clientId, 'booking-updated', updatedBooking);
+
     res.json({
       success: true,
       data: updatedBooking,
@@ -379,6 +384,10 @@ router.patch('/:id/cancel', async (req: AuthRequest, res) => {
         },
       },
     });
+
+    // Emit real-time booking update to both parties
+    socketService.sendToUser(booking.freelancerId, 'booking-updated', updatedBooking);
+    socketService.sendToUser(booking.clientId, 'booking-updated', updatedBooking);
 
     res.json({
       success: true,

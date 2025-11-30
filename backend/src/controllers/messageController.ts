@@ -1,6 +1,7 @@
 import express from 'express';
 import prisma from '../db';
 import { requireAuth, AuthRequest } from '../middleware/jwtAuth';
+import { socketService } from '../server';
 const router = express.Router();
 
 // All message routes require authentication
@@ -52,6 +53,9 @@ router.post('/', async (req: AuthRequest, res) => {
         },
       },
     });
+
+    // Emit real-time message to recipient
+    socketService.sendToUser(toUserId, 'new-message', message);
 
     res.status(201).json({
       success: true,

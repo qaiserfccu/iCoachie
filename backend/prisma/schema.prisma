@@ -92,6 +92,7 @@ model User {
   profile       Profile?
   userRoles     UserRoleAssignment[]
   passwordResets PasswordReset[]
+  uploadedFiles  File[]
 
   @@map("users")
 }
@@ -376,4 +377,32 @@ model PasswordReset {
   user      User     @relation(fields: [userId], references: [id])
 
   @@map("password_resets")
+}
+
+enum FileType {
+  AVATAR
+  DOCUMENT
+  CLUB_LOGO
+  CERTIFICATE
+  OTHER
+}
+
+model File {
+  id          Int      @id @default(autoincrement())
+  filename    String
+  originalName String
+  mimeType    String
+  size        Int
+  fileType    FileType @default(OTHER)
+  filePath    String   // Relative path from uploads directory
+  uploadedBy  Int
+  clubId      Int?     // Tenant ID for row-level multi-tenancy
+  isPublic    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  deletedAt   DateTime? // Soft delete
+
+  // Relations
+  uploader    User     @relation(fields: [uploadedBy], references: [id])
+
+  @@map("files")
 }
