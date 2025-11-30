@@ -10,6 +10,46 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Eye, EyeOff, Mail, Lock, User, Building2, Users, Briefcase, Baby } from "lucide-react"
+import { authService } from "@/lib/auth"
+import { useError } from "@/lib/contexts/ErrorContext"
+import { useLoading } from "@/lib/contexts/LoadingContext"
+import { ErrorDisplay } from "@/lib/contexts/ErrorContext"
+import { LoadingSpinner } from "@/lib/contexts/LoadingContext"
+import { PublicRoute } from "@/lib/components/PublicRoute"
+
+// Inline error display component
+const InlineErrorDisplay: React.FC = () => {
+  const { error, clearError } = useError()
+
+  if (!error) return null
+
+  return (
+    <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
+      <div className="flex items-start">
+        <div className="flex-shrink-0">
+          <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+          </svg>
+        </div>
+        <div className="ml-3 flex-1">
+          <p className="text-sm text-red-700">{error.message}</p>
+        </div>
+        <div className="ml-auto pl-3">
+          <button
+            type="button"
+            className="inline-flex text-red-400 hover:text-red-600"
+            onClick={clearError}
+          >
+            <span className="sr-only">Dismiss</span>
+            <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
 
 const userTypes = [
   { id: "club", label: "Club", icon: Building2, description: "Sports club or organization" },
@@ -27,14 +67,63 @@ export default function RegisterPage() {
     password: "",
   })
   const router = useRouter()
+  const { showError } = useError()
+  const { startLoading, stopLoading, isLoading } = useLoading()
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    router.push("/dashboard")
+
+    if (!formData.fullName || !formData.email || !formData.password || !selectedType) {
+      showError("Please fill in all required fields and select a user type")
+      return
+    }
+
+    if (formData.password.length < 8) {
+      showError("Password must be at least 8 characters long")
+      return
+    }
+
+    // Map user type to role
+    const roleMapping = {
+      club: 'admin' as const,
+      coach: 'coach' as const,
+      freelancer: 'coach' as const,
+      parent: 'student' as const,
+    }
+
+    const role = roleMapping[selectedType as keyof typeof roleMapping]
+
+    // Split full name into first and last name
+    const nameParts = formData.fullName.trim().split(' ')
+    const firstName = nameParts[0] || ''
+    const lastName = nameParts.slice(1).join(' ') || ''
+
+    if (!firstName) {
+      showError("Please enter your full name")
+      return
+    }
+
+    startLoading('auth-register', 'Creating account...')
+    try {
+      await authService.register({
+        email: formData.email,
+        password: formData.password,
+        firstName,
+        lastName,
+        role,
+      })
+      router.push("/dashboard")
+    } catch (error) {
+      // Error is already handled by the auth service and API client
+      // The error context will display it
+    } finally {
+      stopLoading('auth-register')
+    }
   }
 
   return (
-    <div className="min-h-screen flex gradient-mesh relative overflow-hidden">
+    <PublicRoute>
+      <div className="min-h-screen flex gradient-mesh relative overflow-hidden">
       <div className="orb orb-teal w-80 h-80 top-20 left-20 absolute" />
       <div className="orb orb-green w-64 h-64 bottom-10 right-10 absolute" style={{ animationDelay: "2s" }} />
       <div className="orb orb-yellow w-48 h-48 top-1/3 right-1/4 absolute" style={{ animationDelay: "4s" }} />
@@ -89,6 +178,7 @@ export default function RegisterPage() {
             </Link>
             <h1 className="text-3xl font-bold text-foreground">Create your account</h1>
             <p className="text-muted-foreground mt-2">Start your free 14-day trial today</p>
+            <InlineErrorDisplay />
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
@@ -196,8 +286,16 @@ export default function RegisterPage() {
             <Button
               type="submit"
               className="w-full h-12 gradient-primary text-white hover:opacity-90 text-base font-semibold shadow-lg shadow-primary/25"
+              disabled={isLoading('auth-register')}
             >
-              Create Account
+              {isLoading('auth-register') ? (
+                <div className="flex items-center gap-2">
+                  <LoadingSpinner size="sm" className="text-white" />
+                  Creating Account...
+                </div>
+              ) : (
+                'Create Account'
+              )}
             </Button>
           </form>
 
@@ -249,5 +347,6 @@ export default function RegisterPage() {
         </div>
       </div>
     </div>
+    </PublicRoute>
   )
 }

@@ -1,0 +1,275 @@
+{
+  "boards": [
+    {
+      "name": "iCoachie Frontend-Backend Integration",
+      "columns": [
+        {
+          "name": "To Do",
+          "cards": [
+            {
+              "title": "Set up Axios/fetch API client",
+              "description": "Set up Axios/fetch API client with base URL configuration and interceptors",
+              "tags": ["api", "frontend", "setup"]
+            },
+            {
+              "title": "Implement authentication service",
+              "description": "Implement authentication service (login, register, logout, token management)",
+              "tags": ["auth", "frontend", "service"]
+            },
+            {
+              "title": "Create API service layer",
+              "description": "Create API service layer for all backend endpoints (clubs, students, sessions, etc.)",
+              "tags": ["api", "frontend", "service"]
+            },
+            {
+              "title": "Add global error handling",
+              "description": "Add global error handling and loading states management",
+              "tags": ["error-handling", "frontend", "ux"]
+            },
+            {
+              "title": "Implement React error boundaries",
+              "description": "Implement React error boundaries for API failures",
+              "tags": ["error-handling", "frontend", "react"]
+            },
+            {
+              "title": "Connect user authentication flow",
+              "description": "Connect user authentication flow (login/register forms to backend)",
+              "tags": ["auth", "frontend", "forms"]
+            },
+            {
+              "title": "Integrate clubs management",
+              "description": "Integrate clubs management (CRUD operations in admin/coach dashboards)",
+              "tags": ["clubs", "frontend", "crud"]
+            },
+            {
+              "title": "Connect students management",
+              "description": "Connect students management (add/edit/delete students, view student details)",
+              "tags": ["students", "frontend", "crud"]
+            },
+            {
+              "title": "Implement sessions management",
+              "description": "Implement sessions management (create sessions, manage enrollments)",
+              "tags": ["sessions", "frontend", "crud"]
+            },
+            {
+              "title": "Add attendance tracking integration",
+              "description": "Add attendance tracking integration (mark attendance, view reports)",
+              "tags": ["attendance", "frontend", "tracking"]
+            },
+            {
+              "title": "Connect evaluations system",
+              "description": "Connect evaluations system (create/update student evaluations)",
+              "tags": ["evaluations", "frontend", "crud"]
+            },
+            {
+              "title": "Integrate file upload functionality",
+              "description": "Integrate file upload functionality (avatars, documents, certificates)",
+              "tags": ["files", "frontend", "upload"]
+            },
+            {
+              "title": "Implement booking system",
+              "description": "Implement booking system for freelancers/coaches",
+              "tags": ["booking", "frontend", "crud"]
+            },
+            {
+              "title": "Add review and rating system",
+              "description": "Add review and rating system integration",
+              "tags": ["reviews", "frontend", "rating"]
+            },
+            {
+              "title": "Connect dashboard statistics",
+              "description": "Connect dashboard statistics and reporting",
+              "tags": ["dashboard", "frontend", "analytics"]
+            },
+            {
+              "title": "Implement loading states",
+              "description": "Implement proper loading states and skeleton screens",
+              "tags": ["ux", "frontend", "loading"]
+            },
+            {
+              "title": "Add offline/online status handling",
+              "description": "Add offline/online status handling and retry mechanisms",
+              "tags": ["offline", "frontend", "network"]
+            }
+          ]
+        },
+        {
+          "name": "In Progress",
+          "cards": []
+        },
+        {
+          "name": "Review",
+          "cards": []
+        },
+        {
+          "name": "Done",
+          "cards": []
+        }
+      ]
+    },
+    {
+      "name": "Payment Processing Implementation",
+      "columns": [
+        {
+          "name": "To Do",
+          "cards": [
+            {
+              "title": "Choose payment provider",
+              "description": "Choose and integrate payment provider (Stripe/PayPal/Paystack)",
+              "tags": ["payment", "provider", "integration"]
+            },
+            {
+              "title": "Set up payment service",
+              "description": "Set up payment service with secure API key management",
+              "tags": ["payment", "service", "security"]
+            },
+            {
+              "title": "Implement payment forms",
+              "description": "Implement payment forms with validation (credit card, bank transfer)",
+              "tags": ["payment", "forms", "validation"]
+            },
+            {
+              "title": "Add payment processing",
+              "description": "Add payment processing for session fees and subscriptions",
+              "tags": ["payment", "processing", "fees"]
+            },
+            {
+              "title": "Create payment history",
+              "description": "Create payment history and receipt generation",
+              "tags": ["payment", "history", "receipts"]
+            },
+            {
+              "title": "Implement webhook handlers",
+              "description": "Implement webhook handlers for payment confirmations",
+              "tags": ["payment", "webhooks", "backend"]
+            },
+            {
+              "title": "Add refund processing",
+              "description": "Add refund processing functionality",
+              "tags": ["payment", "refunds", "processing"]
+            },
+            {
+              "title": "Integrate payment status tracking",
+              "description": "Integrate payment status tracking and notifications",
+              "tags": ["payment", "status", "notifications"]
+            },
+            {
+              "title": "Implement payment security",
+              "description": "Implement payment security measures (PCI compliance, tokenization)",
+              "tags": ["payment", "security", "pci"]
+            },
+            {
+              "title": "Add payment analytics",
+              "description": "Add payment analytics and reporting dashboard",
+              "tags": ["payment", "analytics", "dashboard"]
+            },
+            {
+              "title": "Create payment dispute handling",
+              "description": "Create payment dispute and chargeback handling",
+              "tags": ["payment", "disputes", "chargeback"]
+            }
+          ]
+        },
+        {
+          "name": "In Progress",
+          "cards": []
+        },
+        {
+          "name": "Review",
+          "cards": []
+        },
+        {
+          "name": "Done",
+          "cards": []
+        }
+      ]
+    },
+    {
+      "name": "Real-Time Messaging Functionality",
+      "columns": [
+        {
+          "name": "To Do",
+          "cards": [
+            {
+              "title": "Set up Socket.IO client",
+              "description": "Set up Socket.IO client in React frontend",
+              "tags": ["socket", "frontend", "realtime"]
+            },
+            {
+              "title": "Implement JWT authentication for sockets",
+              "description": "Implement JWT authentication for socket connections",
+              "tags": ["socket", "auth", "jwt"]
+            },
+            {
+              "title": "Create messaging UI components",
+              "description": "Create messaging UI components (chat interface, message list)",
+              "tags": ["messaging", "ui", "components"]
+            },
+            {
+              "title": "Add real-time message sending",
+              "description": "Add real-time message sending and receiving",
+              "tags": ["messaging", "realtime", "send"]
+            },
+            {
+              "title": "Implement message status indicators",
+              "description": "Implement message status indicators (sent, delivered, read)",
+              "tags": ["messaging", "status", "indicators"]
+            },
+            {
+              "title": "Add message history loading",
+              "description": "Add message history loading with pagination",
+              "tags": ["messaging", "history", "pagination"]
+            },
+            {
+              "title": "Integrate typing indicators",
+              "description": "Integrate typing indicators for active conversations",
+              "tags": ["messaging", "typing", "indicators"]
+            },
+            {
+              "title": "Implement online/offline status",
+              "description": "Implement online/offline user status tracking",
+              "tags": ["messaging", "status", "online"]
+            },
+            {
+              "title": "Add real-time notifications",
+              "description": "Add real-time notifications for new messages",
+              "tags": ["messaging", "notifications", "realtime"]
+            },
+            {
+              "title": "Create message search",
+              "description": "Create message search and filtering functionality",
+              "tags": ["messaging", "search", "filter"]
+            },
+            {
+              "title": "Implement message encryption",
+              "description": "Implement message encryption for sensitive communications",
+              "tags": ["messaging", "encryption", "security"]
+            },
+            {
+              "title": "Add file sharing in messages",
+              "description": "Add file sharing in messages (images, documents)",
+              "tags": ["messaging", "files", "sharing"]
+            },
+            {
+              "title": "Integrate message threads",
+              "description": "Integrate message threads and conversation management",
+              "tags": ["messaging", "threads", "conversations"]
+            }
+          ]
+        },
+        {
+          "name": "In Progress",
+          "cards": []
+        },
+        {
+          "name": "Review",
+          "cards": []
+        },
+        {
+          "name": "Done",
+          "cards": []
+        }
+      ]
+    }
+  ]
+}

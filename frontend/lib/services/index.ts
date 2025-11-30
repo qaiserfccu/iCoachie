@@ -1,0 +1,23 @@
+// Export all service modules
+export { default as clubService } from './clubService'
+export { default as studentService } from './studentService'
+export { default as sessionService } from './sessionService'
+export { default as attendanceService } from './attendanceService'
+export { default as evaluationService } from './evaluationService'
+export { default as paymentService } from './paymentService'
+export { default as messagingService } from './messagingService'
+export { default as bookingService } from './bookingService'
+export { default as reviewService } from './reviewService'
+export { default as fileService } from './fileService'
+
+// Export individual services for direct import
+export { clubService } from './clubService'
+export { studentService } from './studentService'
+export { sessionService } from './sessionService'
+export { attendanceService } from './attendanceService'
+export { evaluationService } from './evaluationService'
+export { paymentService } from './paymentService'
+export { messagingService } from './messagingService'
+export { bookingService } from './bookingService'
+export { reviewService } from './reviewService'
+export { fileService } from './fileService'
