@@ -18,6 +18,7 @@ import paymentRoutes from './controllers/paymentController';
 import messageRoutes from './controllers/messageController';
 import bookingRoutes from './controllers/bookingController';
 import reviewRoutes from './controllers/reviewController';
+import coachRoutes from './controllers/coachController';
 import fileRoutes from './routes/fileRoutes';
 
 dotenv.config();
@@ -84,6 +85,7 @@ app.use('/api/payments', paymentRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/reviews', reviewRoutes);
+app.use('/api/coaches', coachRoutes);
 app.use('/api/files', fileRoutes);
 
 app.get('/api/health', (req, res) => {
