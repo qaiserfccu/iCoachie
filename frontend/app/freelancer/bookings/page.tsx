@@ -7,84 +7,123 @@ import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Search, Filter, Calendar, CheckCircle, XCircle, AlertCircle } from "lucide-react"
-
-const bookings = [
-  {
-    id: "BK001",
-    client: "Emma Davis",
-    avatar: "ED",
-    type: "Swimming Lesson",
-    date: "Nov 29, 2024",
-    time: "2:00 PM",
-    duration: "1h",
-    amount: "$75",
-    status: "confirmed",
-  },
-  {
-    id: "BK002",
-    client: "Jack Wilson",
-    avatar: "JW",
-    type: "Private Training",
-    date: "Nov 29, 2024",
-    time: "4:00 PM",
-    duration: "1.5h",
-    amount: "$100",
-    status: "confirmed",
-  },
-  {
-    id: "BK003",
-    client: "Sophie Miller",
-    avatar: "SM",
-    type: "Swimming Lesson",
-    date: "Nov 30, 2024",
-    time: "10:00 AM",
-    duration: "1h",
-    amount: "$75",
-    status: "pending",
-  },
-  {
-    id: "BK004",
-    client: "Lucas Brown",
-    avatar: "LB",
-    type: "Trial Session",
-    date: "Nov 30, 2024",
-    time: "3:00 PM",
-    duration: "45m",
-    amount: "$50",
-    status: "pending",
-  },
-  {
-    id: "BK005",
-    client: "Olivia Johnson",
-    avatar: "OJ",
-    type: "Swimming Lesson",
-    date: "Nov 28, 2024",
-    time: "11:00 AM",
-    duration: "1h",
-    amount: "$75",
-    status: "completed",
-  },
-  {
-    id: "BK006",
-    client: "Noah Williams",
-    avatar: "NW",
-    type: "Private Training",
-    date: "Nov 27, 2024",
-    time: "2:00 PM",
-    duration: "1.5h",
-    amount: "$100",
-    status: "cancelled",
-  },
-]
-
-const bookingStats = [
-  { label: "Confirmed", count: 8, icon: CheckCircle, color: "text-green-500 bg-green-500/20" },
-  { label: "Pending", count: 4, icon: AlertCircle, color: "text-yellow-500 bg-yellow-500/20" },
-  { label: "Completed", count: 24, icon: Calendar, color: "text-blue-500 bg-blue-500/20" },
-  { label: "Cancelled", count: 2, icon: XCircle, color: "text-red-500 bg-red-500/20" },
-]
+import { useState, useEffect } from "react"
+import { freelancerBookingsService, FreelancerBooking, BookingStats } from "@/lib/services/freelancerBookingsService"
+import { useLoading } from "@/lib/contexts/LoadingContext"
+import { useError } from "@/lib/contexts/ErrorContext"
 
 export default function BookingsPage() {
+  const [bookings, setBookings] = useState<FreelancerBooking[]>([])
+  const [stats, setStats] = useState<BookingStats | null>(null)
+  const [searchQuery, setSearchQuery] = useState("")
+  const [filteredBookings, setFilteredBookings] = useState<FreelancerBooking[]>([])
+  const { setLoading } = useLoading()
+  const { setError } = useError()
+
+  useEffect(() => {
+    const loadBookingsData = async () => {
+      try {
+        setLoading(true)
+        const [bookingsData, statsData] = await Promise.all([
+          freelancerBookingsService.getFreelancerBookings(),
+          freelancerBookingsService.getBookingStats()
+        ])
+        setBookings(bookingsData)
+        setFilteredBookings(bookingsData)
+        setStats(statsData)
+      } catch (error) {
+        console.error('Error loading bookings data:', error)
+        setError('Failed to load bookings data')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadBookingsData()
+  }, [setLoading, setError])
+
+  useEffect(() => {
+    const searchBookings = async () => {
+      try {
+        if (searchQuery.trim()) {
+          const filtered = await freelancerBookingsService.searchBookings(searchQuery)
+          setFilteredBookings(filtered)
+        } else {
+          setFilteredBookings(bookings)
+        }
+      } catch (error) {
+        console.error('Error searching bookings:', error)
+        setError('Failed to search bookings')
+      }
+    }
+
+    searchBookings()
+  }, [searchQuery, bookings, setError])
+
+  const handleAcceptBooking = async (bookingId: string) => {
+    try {
+      setLoading(true)
+      await freelancerBookingsService.acceptBooking(bookingId)
+
+      // Update local state
+      setBookings(prev => prev.map(booking =>
+        booking.id === bookingId ? { ...booking, status: 'confirmed' } : booking
+      ))
+      setFilteredBookings(prev => prev.map(booking =>
+        booking.id === bookingId ? { ...booking, status: 'confirmed' } : booking
+      ))
+
+      // Update stats
+      if (stats) {
+        setStats(prev => prev ? {
+          ...prev,
+          confirmed: prev.confirmed + 1,
+          pending: prev.pending - 1
+        } : null)
+      }
+    } catch (error) {
+      console.error('Error accepting booking:', error)
+      setError('Failed to accept booking')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleDeclineBooking = async (bookingId: string) => {
+    try {
+      setLoading(true)
+      await freelancerBookingsService.declineBooking(bookingId)
+
+      // Update local state
+      setBookings(prev => prev.map(booking =>
+        booking.id === bookingId ? { ...booking, status: 'cancelled' } : booking
+      ))
+      setFilteredBookings(prev => prev.map(booking =>
+        booking.id === bookingId ? { ...booking, status: 'cancelled' } : booking
+      ))
+
+      // Update stats
+      if (stats) {
+        setStats(prev => prev ? {
+          ...prev,
+          cancelled: prev.cancelled + 1,
+          pending: prev.pending - 1
+        } : null)
+      }
+    } catch (error) {
+      console.error('Error declining booking:', error)
+      setError('Failed to decline booking')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const statsCards = stats ? [
+    { label: "Confirmed", count: stats.confirmed, icon: CheckCircle, color: "text-green-500 bg-green-500/20" },
+    { label: "Pending", count: stats.pending, icon: AlertCircle, color: "text-yellow-500 bg-yellow-500/20" },
+    { label: "Completed", count: stats.completed, icon: Calendar, color: "text-blue-500 bg-blue-500/20" },
+    { label: "Cancelled", count: stats.cancelled, icon: XCircle, color: "text-red-500 bg-red-500/20" },
+  ] : []
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -100,7 +139,7 @@ export default function BookingsPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {bookingStats.map((stat) => (
+        {statsCards.map((stat) => (
           <Card key={stat.label} className="glass-card border-white/20">
             <CardContent className="p-4 flex items-center gap-4">
               <div className={`w-12 h-12 rounded-xl ${stat.color} flex items-center justify-center`}>
@@ -125,6 +164,8 @@ export default function BookingsPage() {
                 <Search className="w-4 h-4 text-muted-foreground" />
                 <Input
                   placeholder="Search bookings..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                   className="border-0 bg-transparent focus-visible:ring-0 p-0 h-auto w-48"
                 />
               </div>
@@ -149,7 +190,7 @@ export default function BookingsPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {bookings.map((booking) => (
+                {filteredBookings.map((booking) => (
                   <TableRow key={booking.id} className="hover:bg-white/10">
                     <TableCell>
                       <div className="flex items-center gap-3">
@@ -172,7 +213,7 @@ export default function BookingsPage() {
                       </div>
                     </TableCell>
                     <TableCell>{booking.duration}</TableCell>
-                    <TableCell className="font-medium text-green-500">{booking.amount}</TableCell>
+                    <TableCell className="font-medium text-green-500">${booking.amount}</TableCell>
                     <TableCell>
                       <Badge
                         className={
@@ -191,13 +232,18 @@ export default function BookingsPage() {
                     <TableCell className="text-right">
                       {booking.status === "pending" && (
                         <div className="flex items-center justify-end gap-2">
-                          <Button size="sm" className="bg-green-500 hover:bg-green-600 text-white">
+                          <Button
+                            size="sm"
+                            className="bg-green-500 hover:bg-green-600 text-white"
+                            onClick={() => handleAcceptBooking(booking.id)}
+                          >
                             Accept
                           </Button>
                           <Button
                             size="sm"
                             variant="outline"
                             className="border-red-500/50 text-red-500 hover:bg-red-500/10 bg-transparent"
+                            onClick={() => handleDeclineBooking(booking.id)}
                           >
                             Decline
                           </Button>

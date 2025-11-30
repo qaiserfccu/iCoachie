@@ -23,6 +23,7 @@ import {
   HelpCircle,
   Database,
   Globe,
+  MessageSquare,
 } from "lucide-react"
 
 const menuItems = [
@@ -99,6 +100,11 @@ const menuItems = [
     icon: Bell,
     label: "Notifications",
     href: "/admin/notifications",
+  },
+  {
+    icon: MessageSquare,
+    label: "Messages",
+    href: "/admin/messages",
   },
 ]
 

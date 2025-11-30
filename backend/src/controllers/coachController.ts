@@ -256,8 +256,8 @@ router.post('/', requireAuth, requireRole('SuperAdmin'), async (req: AuthRequest
       userId: user.id,
       name: user.name,
       email: user.email,
-      avatar: user.profile?.avatarUrl,
-      phone: user.profile?.phone,
+      avatar: coach.user.profile?.avatarUrl,
+      phone: coach.user.profile?.phone,
       specialty: coach.specializations,
       rating: 0,
       students: 0,
@@ -293,7 +293,11 @@ router.put('/:id', requireAuth, async (req: AuthRequest, res) => {
         deletedAt: null
       },
       include: {
-        user: true
+        user: {
+          include: {
+            profile: true
+          }
+        }
       }
     });
 

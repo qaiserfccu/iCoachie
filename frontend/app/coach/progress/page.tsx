@@ -1,77 +1,47 @@
+"use client"
+
+import { useState, useEffect } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Progress } from "@/components/ui/progress"
 import { TrendingUp, TrendingDown, Award, Target, ChevronRight } from "lucide-react"
-
-const studentProgress = [
-  {
-    name: "Emma Davis",
-    avatar: "ED",
-    overallProgress: 92,
-    trend: "up",
-    skills: [
-      { name: "Freestyle", level: 95 },
-      { name: "Backstroke", level: 88 },
-      { name: "Breaststroke", level: 90 },
-      { name: "Butterfly", level: 85 },
-    ],
-    recentAchievement: "Gold Badge - Freestyle",
-    lastEvaluation: "Nov 25, 2024",
-  },
-  {
-    name: "Jack Wilson",
-    avatar: "JW",
-    overallProgress: 85,
-    trend: "up",
-    skills: [
-      { name: "Freestyle", level: 88 },
-      { name: "Backstroke", level: 82 },
-      { name: "Breaststroke", level: 85 },
-      { name: "Butterfly", level: 78 },
-    ],
-    recentAchievement: "Silver Badge - Endurance",
-    lastEvaluation: "Nov 22, 2024",
-  },
-  {
-    name: "Sophie Miller",
-    avatar: "SM",
-    overallProgress: 78,
-    trend: "up",
-    skills: [
-      { name: "Freestyle", level: 80 },
-      { name: "Backstroke", level: 75 },
-      { name: "Breaststroke", level: 78 },
-      { name: "Butterfly", level: 72 },
-    ],
-    recentAchievement: "Bronze Badge - Technique",
-    lastEvaluation: "Nov 20, 2024",
-  },
-  {
-    name: "Lucas Brown",
-    avatar: "LB",
-    overallProgress: 65,
-    trend: "down",
-    skills: [
-      { name: "Freestyle", level: 70 },
-      { name: "Backstroke", level: 62 },
-      { name: "Breaststroke", level: 65 },
-      { name: "Butterfly", level: 58 },
-    ],
-    recentAchievement: "Participation Award",
-    lastEvaluation: "Nov 18, 2024",
-  },
-]
-
-const skillCategories = [
-  { name: "Technique", avgScore: 85, students: 45 },
-  { name: "Endurance", avgScore: 78, students: 45 },
-  { name: "Speed", avgScore: 82, students: 45 },
-  { name: "Form", avgScore: 80, students: 45 },
-]
+import { useLoading } from "@/lib/contexts/LoadingContext"
+import { useError } from "@/lib/contexts/ErrorContext"
+import { coachProgressService, StudentProgress, SkillOverview } from "@/lib/services"
 
 export default function ProgressPage() {
+  const { setLoading } = useLoading()
+  const { setError } = useError()
+
+  const [studentProgress, setStudentProgress] = useState<StudentProgress[]>([])
+  const [skillOverview, setSkillOverview] = useState<SkillOverview[]>([])
+
+  // Load data on component mount
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        setLoading(true)
+        setError(null)
+
+        const [progressData, skillData] = await Promise.all([
+          coachProgressService.getStudentProgress(),
+          coachProgressService.getSkillOverview()
+        ])
+
+        setStudentProgress(progressData)
+        setSkillOverview(skillData)
+      } catch (error) {
+        console.error('Error loading progress data:', error)
+        setError('Failed to load progress data')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadData()
+  }, [setLoading, setError])
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -87,7 +57,7 @@ export default function ProgressPage() {
 
       {/* Skill Overview */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {skillCategories.map((category) => (
+        {skillOverview.map((category) => (
           <Card key={category.name} className="glass-card border-white/20">
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">{category.name}</p>

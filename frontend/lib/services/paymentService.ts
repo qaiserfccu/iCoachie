@@ -100,9 +100,23 @@ class PaymentService {
     return apiClient.post(`${this.baseUrl}/${paymentId}/reminder`)
   }
 
-  // Get payment methods
-  async getPaymentMethods(): Promise<string[]> {
-    return apiClient.get<string[]>(`${this.baseUrl}/methods`)
+  // Create Stripe payment intent
+  async createPaymentIntent(data: {
+    amount: number
+    currency?: string
+    description?: string
+    metadata?: Record<string, any>
+  }): Promise<{
+    paymentIntent: {
+      id: string
+      client_secret: string
+      amount: number
+      currency: string
+      status: string
+    }
+    payment: Payment
+  }> {
+    return apiClient.post(`${this.baseUrl}/create-payment-intent`, data)
   }
 }
 

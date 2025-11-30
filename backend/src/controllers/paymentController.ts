@@ -2,8 +2,14 @@ import express from 'express';
 import prisma from '../db';
 import { requireAuth, AuthRequest } from '../middleware/jwtAuth';
 import { requireRole } from '../middleware/requireRole';
+import Stripe from 'stripe';
 
 const router = express.Router();
+
+// Initialize Stripe with secret key
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
+  apiVersion: '2025-11-17.clover',
+});
 
 // Get payments for user's club
 router.get('/', requireAuth, async (req: AuthRequest, res) => {
@@ -447,5 +453,159 @@ router.get('/stats/overview', requireAuth, async (req: AuthRequest, res) => {
     res.status(500).json({ message: 'Internal error' });
   }
 });
+
+// Create Stripe payment intent
+router.post('/create-payment-intent', requireAuth, async (req: AuthRequest, res) => {
+  try {
+    const clubId = req.user!.clubId;
+    const currentUserId = req.user!.id;
+    const {
+      amount,
+      currency = 'usd',
+      description,
+      metadata = {}
+    } = req.body;
+
+    if (!amount || amount <= 0) {
+      return res.status(400).json({ message: 'Valid amount is required' });
+    }
+
+    // Convert amount to cents for Stripe
+    const amountInCents = Math.round(parseFloat(amount) * 100);
+
+    // Create payment intent
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: amountInCents,
+      currency: currency.toLowerCase(),
+      description,
+      metadata: {
+        ...metadata,
+        userId: currentUserId.toString(),
+        clubId: clubId.toString(),
+      },
+      automatic_payment_methods: {
+        enabled: true,
+      },
+    });
+
+    // Create payment record in database
+    const payment = await prisma.payment.create({
+      data: {
+        userId: currentUserId,
+        amount: parseFloat(amount),
+        currency: currency.toUpperCase(),
+        paymentType: 'card',
+        description: description || 'Payment via Stripe',
+        stripePaymentId: paymentIntent.id,
+        status: 'PENDING'
+      },
+      select: {
+        id: true,
+        amount: true,
+        currency: true,
+        paymentType: true,
+        status: true,
+        description: true,
+        createdAt: true,
+        stripePaymentId: true
+      }
+    });
+
+    res.json({
+      paymentIntent: {
+        id: paymentIntent.id,
+        client_secret: paymentIntent.client_secret,
+        amount: paymentIntent.amount,
+        currency: paymentIntent.currency,
+        status: paymentIntent.status,
+      },
+      payment: payment
+    });
+  } catch (error) {
+    console.error('Error creating payment intent:', error);
+    res.status(500).json({ message: 'Failed to create payment intent' });
+  }
+});
+
+// Stripe webhook handler
+router.post('/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
+  const sig = req.headers['stripe-signature'] as string;
+  const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
+
+  let event: Stripe.Event;
+
+  try {
+    event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret!);
+  } catch (err: any) {
+    console.log(`Webhook signature verification failed.`, err.message);
+    return res.status(400).send(`Webhook Error: ${err.message}`);
+  }
+
+  try {
+    switch (event.type) {
+      case 'payment_intent.succeeded':
+        const paymentIntent = event.data.object as Stripe.PaymentIntent;
+        await handlePaymentIntentSucceeded(paymentIntent);
+        break;
+
+      case 'payment_intent.payment_failed':
+        const failedPaymentIntent = event.data.object as Stripe.PaymentIntent;
+        await handlePaymentIntentFailed(failedPaymentIntent);
+        break;
+
+      default:
+        console.log(`Unhandled event type ${event.type}`);
+    }
+
+    res.json({ received: true });
+  } catch (error) {
+    console.error('Error processing webhook:', error);
+    res.status(500).json({ message: 'Webhook processing failed' });
+  }
+});
+
+// Helper function to handle successful payments
+async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent) {
+  try {
+    const payment = await prisma.payment.findFirst({
+      where: { stripePaymentId: paymentIntent.id }
+    });
+
+    if (payment) {
+      await prisma.payment.update({
+        where: { id: payment.id },
+        data: {
+          status: 'COMPLETED',
+          updatedAt: new Date()
+        }
+      });
+      console.log(`Payment ${payment.id} marked as completed`);
+    }
+  } catch (error) {
+    console.error('Error updating payment status:', error);
+  }
+}
+
+// Helper function to handle failed payments
+async function handlePaymentIntentFailed(paymentIntent: Stripe.PaymentIntent) {
+  try {
+    const payment = await prisma.payment.findFirst({
+      where: { stripePaymentId: paymentIntent.id }
+    });
+
+    if (payment) {
+      await prisma.payment.update({
+        where: { id: payment.id },
+        data: {
+          status: 'FAILED',
+          updatedAt: new Date()
+        }
+      });
+      console.log(`Payment ${payment.id} marked as failed`);
+    }
+  } catch (error) {
+    console.error('Error updating payment status:', error);
+  }
+}
 
 export default router;

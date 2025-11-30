@@ -132,3 +132,8 @@ evaluation_mysql_dump.sql
 
 # Memory bank (optional - remove if you want to track changes)
 # memory-bank/
+
+#play right folders exclude
+/playwright-report
+/test-results
+

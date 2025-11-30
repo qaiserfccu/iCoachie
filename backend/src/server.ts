@@ -74,6 +74,9 @@ app.use(cors({
 }))
 app.use(express.json());
 
+// Stripe webhook needs raw body
+app.use('/api/payments/webhook', express.raw({ type: 'application/json' }));
+
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/clubs', clubRoutes);
