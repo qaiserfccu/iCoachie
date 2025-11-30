@@ -13,11 +13,13 @@ Comprehensive backend development using Prisma ORM with PostgreSQL, row-level mu
    - ✅ Attendance tracking API
    - ✅ Evaluations API for student performance
    - ✅ Payments API for processing and records
+4: Freelancer & Messaging APIs - Develop freelancer booking system, messaging endpoints, and review/rating functionality with tenant-aware queries.
+   - ✅ Message API (send/receive/mark-read/delete with tenant isolation)
+   - ✅ Booking API (create/cancel/status-update/freelancer-availability with conflict checking)
+   - ✅ Review API (create/update/delete/stats with validation and business rules)
 
 ## Doing
 
-4: Freelancer & Messaging APIs - Develop freelancer booking system, messaging endpoints, and review/rating functionality with tenant-aware queries.
-4: Freelancer & Messaging APIs - Develop freelancer booking system, messaging endpoints, and review/rating functionality with tenant-aware queries.
 5: Socket.IO Integration - Set up real-time messaging, notifications, attendance updates, and dashboard live stats with proper room management and tenant isolation.
 6: File Storage & Serving - Implement hosted server filesystem for avatars/documents with token-based upload/download endpoints, secure file serving, and tenant-specific storage paths.
 7: Testing & Documentation - Write comprehensive tests, generate API docs, and create Postman collection for frontend integration, including multi-tenancy scenarios.

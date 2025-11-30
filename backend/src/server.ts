@@ -9,6 +9,9 @@ import sessionRoutes from './controllers/sessionController';
 import attendanceRoutes from './controllers/attendanceController';
 import evaluationRoutes from './controllers/evaluationController';
 import paymentRoutes from './controllers/paymentController';
+import messageRoutes from './controllers/messageController';
+import bookingRoutes from './controllers/bookingController';
+import reviewRoutes from './controllers/reviewController';
 import legacyRoutes from './controllers/legacyController';
 
 dotenv.config();
@@ -45,6 +48,9 @@ app.use('/api/sessions', sessionRoutes);
 app.use('/api/attendance', attendanceRoutes);
 app.use('/api/evaluations', evaluationRoutes);
 app.use('/api/payments', paymentRoutes);
+app.use('/api/messages', messageRoutes);
+app.use('/api/bookings', bookingRoutes);
+app.use('/api/reviews', reviewRoutes);
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', message: 'iCoachie Backend (TypeScript) running' });

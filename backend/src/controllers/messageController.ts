@@ -1,30 +1,22 @@
-import { Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
-import { z } from 'zod';
+import express from 'express';
+import prisma from '../db';
+import { requireAuth, AuthRequest } from '../middleware/jwtAuth';
+const router = express.Router();
 
-const prisma = new PrismaClient();
+// All message routes require authentication
+router.use(requireAuth);
 
-// Validation schemas
-const sendMessageSchema = z.object({
-  toUserId: z.number().int().positive(),
-  subject: z.string().optional(),
-  content: z.string().min(1, 'Message content is required'),
-});
-
-const markAsReadSchema = z.object({
-  messageIds: z.array(z.number().int().positive()),
-});
-
-export const sendMessage = async (req: Request, res: Response) => {
+// Send a message
+router.post('/', async (req: AuthRequest, res) => {
   try {
-    const { toUserId, subject, content } = sendMessageSchema.parse(req.body);
-    const fromUserId = req.userId;
+    const { toUserId, subject, content } = req.body;
+    const fromUserId = req.user!.id;
 
     // Verify recipient exists and is in the same club (tenant isolation)
     const recipient = await prisma.user.findFirst({
       where: {
         id: toUserId,
-        clubId: req.clubId,
+        clubId: req.user!.clubId,
         deletedAt: null,
       },
     });
@@ -66,25 +58,18 @@ export const sendMessage = async (req: Request, res: Response) => {
       data: message,
     });
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return res.status(400).json({
-        success: false,
-        error: 'Validation failed',
-        details: error.errors,
-      });
-    }
-
     console.error('Error sending message:', error);
     res.status(500).json({
       success: false,
       error: 'Internal server error',
     });
   }
-};
+});
 
-export const getMessages = async (req: Request, res: Response) => {
+// Get messages (with pagination and filtering)
+router.get('/', async (req: AuthRequest, res) => {
   try {
-    const userId = req.userId;
+    const userId = req.user!.id;
     const { page = 1, limit = 20, type = 'all' } = req.query;
 
     const pageNum = parseInt(page as string, 10);
@@ -145,12 +130,13 @@ export const getMessages = async (req: Request, res: Response) => {
       error: 'Internal server error',
     });
   }
-};
+});
 
-export const getMessageById = async (req: Request, res: Response) => {
+// Get specific message
+router.get('/:id', async (req: AuthRequest, res) => {
   try {
     const { id } = req.params;
-    const userId = req.userId;
+    const userId = req.user!.id;
 
     const message = await prisma.message.findFirst({
       where: {
@@ -198,12 +184,13 @@ export const getMessageById = async (req: Request, res: Response) => {
       error: 'Internal server error',
     });
   }
-};
+});
 
-export const markMessagesAsRead = async (req: Request, res: Response) => {
+// Mark messages as read
+router.patch('/mark-read', async (req: AuthRequest, res) => {
   try {
-    const { messageIds } = markAsReadSchema.parse(req.body);
-    const userId = req.userId;
+    const { messageIds } = req.body;
+    const userId = req.user!.id;
 
     // Only mark messages where user is the recipient
     const result = await prisma.message.updateMany({
@@ -223,26 +210,19 @@ export const markMessagesAsRead = async (req: Request, res: Response) => {
       },
     });
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return res.status(400).json({
-        success: false,
-        error: 'Validation failed',
-        details: error.errors,
-      });
-    }
-
     console.error('Error marking messages as read:', error);
     res.status(500).json({
       success: false,
       error: 'Internal server error',
     });
   }
-};
+});
 
-export const deleteMessage = async (req: Request, res: Response) => {
+// Delete message
+router.delete('/:id', async (req: AuthRequest, res) => {
   try {
     const { id } = req.params;
-    const userId = req.userId;
+    const userId = req.user!.id;
 
     // Soft delete - only if user is sender or recipient
     const result = await prisma.message.updateMany({
@@ -275,11 +255,12 @@ export const deleteMessage = async (req: Request, res: Response) => {
       error: 'Internal server error',
     });
   }
-};
+});
 
-export const getUnreadCount = async (req: Request, res: Response) => {
+// Get unread message count
+router.get('/unread-count', async (req: AuthRequest, res) => {
   try {
-    const userId = req.userId;
+    const userId = req.user!.id;
 
     const count = await prisma.message.count({
       where: {
@@ -300,4 +281,6 @@ export const getUnreadCount = async (req: Request, res: Response) => {
       error: 'Internal server error',
     });
   }
-};
+});
+
+export default router;

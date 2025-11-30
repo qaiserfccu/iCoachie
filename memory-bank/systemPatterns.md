@@ -33,10 +33,12 @@
 - Centralized error handling and response formatting
 
 ### Controller Pattern
-- Standardized CRUD operations with tenant scoping
-- Consistent error responses and status codes
-- Input validation using Joi/Zod schemas
-- Automatic relationship loading and filtering
+- Controllers are Express routers that export default router instances
+- All routes require authentication via `requireAuth` middleware
+- Use `AuthRequest` interface for accessing `req.user.id` and `req.user.clubId`
+- Input validation using Zod schemas with detailed error responses
+- Consistent error handling and response formatting
+- Automatic tenant isolation via `req.user.clubId` filtering
 
 ## Common Idioms
 
