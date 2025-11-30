@@ -15,3 +15,13 @@ export { default as clubDashboardService } from './clubDashboardService'
 export { default as coachService } from './coachService'
 export { default as clubMembersService } from './clubMembersService'
 export { default as clubPaymentsService } from './clubPaymentsService'
+export { default as clubSessionsService } from './clubSessionsService'
+export { default as coachAttendanceService } from './coachAttendanceService'
+
+// Export types from services
+export type { Student } from './studentService'
+export type { SessionAttendance, AttendanceStudent, CoachAttendanceStats } from './coachAttendanceService'
+export type { User, Role } from './userService'
+export type { DashboardStats, DashboardSession, DashboardAttendance } from './dashboardService'
+export type { PaymentTransaction, PaymentStats } from './clubPaymentsService'
+export type { CalendarSession, UpcomingSession, SessionStats } from './clubSessionsService'
