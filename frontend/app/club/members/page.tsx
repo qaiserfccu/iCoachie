@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -9,67 +9,75 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Search, Filter, UserPlus, MoreVertical, Download, Users, UserCheck, Clock, AlertCircle } from "lucide-react"
-
-const members = [
-  {
-    id: 1,
-    name: "Emma Davis",
-    avatar: "ED",
-    age: 12,
-    sport: "Swimming",
-    coach: "John Smith",
-    membership: "Premium",
-    status: "Active",
-    joined: "Jan 15, 2024",
-    parent: "Robert Davis",
-  },
-  {
-    id: 2,
-    name: "Jack Wilson",
-    avatar: "JW",
-    age: 14,
-    sport: "Basketball",
-    coach: "Mike Johnson",
-    membership: "Standard",
-    status: "Active",
-    joined: "Dec 20, 2023",
-    parent: "Sarah Wilson",
-  },
-  {
-    id: 3,
-    name: "Sophie Miller",
-    avatar: "SM",
-    age: 10,
-    sport: "Soccer",
-    coach: "Sarah Wilson",
-    membership: "Premium",
-    status: "Active",
-    joined: "Feb 1, 2024",
-    parent: "Tom Miller",
-  },
-  {
-    id: 4,
-    name: "Lucas Brown",
-    avatar: "LB",
-    age: 13,
-    sport: "Tennis",
-    coach: "David Lee",
-    membership: "Standard",
-    status: "Inactive",
-    joined: "Nov 5, 2023",
-    parent: "Mike Brown",
-  },
-]
+import { useLoading } from "@/lib/contexts/LoadingContext"
+import { useError } from "@/lib/contexts/ErrorContext"
+import clubMembersService, { Member, MemberStats } from "@/lib/services/clubMembersService"
 
 const memberStats = [
-  { label: "Total Members", value: "450", icon: Users, color: "from-blue-500 to-blue-600" },
-  { label: "Active", value: "420", icon: UserCheck, color: "from-green-500 to-green-600" },
-  { label: "New This Month", value: "28", icon: Clock, color: "from-teal-500 to-teal-600" },
-  { label: "Expiring Soon", value: "15", icon: AlertCircle, color: "from-yellow-500 to-orange-500" },
+  { label: "Total Members", value: "0", icon: Users, color: "from-blue-500 to-blue-600" },
+  { label: "Active", value: "0", icon: UserCheck, color: "from-green-500 to-green-600" },
+  { label: "New This Month", value: "0", icon: Clock, color: "from-teal-500 to-teal-600" },
+  { label: "Expiring Soon", value: "0", icon: AlertCircle, color: "from-yellow-500 to-orange-500" },
 ]
 
 export default function MembersPage() {
+  const [members, setMembers] = useState<Member[]>([])
+  const [filteredMembers, setFilteredMembers] = useState<Member[]>([])
+  const [stats, setStats] = useState<MemberStats | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
+  const { showLoading, hideLoading } = useLoading()
+  const { showError } = useError()
+
+  useEffect(() => {
+    fetchMembers()
+    fetchMemberStats()
+  }, [])
+
+  useEffect(() => {
+    const filtered = members.filter(member =>
+      member.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      member.sport.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      member.coach.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      member.email.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+    setFilteredMembers(filtered)
+  }, [members, searchQuery])
+
+  const fetchMembers = async () => {
+    try {
+      showLoading("Loading members...")
+      const data = await clubMembersService.getMembers()
+      setMembers(data)
+    } catch (error) {
+      showError("Failed to load members")
+      console.error("Error fetching members:", error)
+    } finally {
+      hideLoading()
+    }
+  }
+
+  const fetchMemberStats = async () => {
+    try {
+      const data = await clubMembersService.getMemberStats()
+      setStats(data)
+    } catch (error) {
+      console.error("Error fetching member stats:", error)
+    }
+  }
+
+  const getInitials = (name: string) => {
+    return name.split(' ').map(n => n[0]).join('').toUpperCase()
+  }
+
+  const getDisplayStats = () => {
+    if (!stats) return memberStats
+    return [
+      { label: "Total Members", value: stats.totalMembers.toString(), icon: Users, color: "from-blue-500 to-blue-600" },
+      { label: "Active", value: stats.activeMembers.toString(), icon: UserCheck, color: "from-green-500 to-green-600" },
+      { label: "New This Month", value: stats.newThisMonth.toString(), icon: Clock, color: "from-teal-500 to-teal-600" },
+      { label: "Expiring Soon", value: stats.expiringSoon.toString(), icon: AlertCircle, color: "from-yellow-500 to-orange-500" },
+    ]
+  }
 
   return (
     <div className="space-y-6">
@@ -92,7 +100,7 @@ export default function MembersPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {memberStats.map((stat) => (
+        {getDisplayStats().map((stat) => (
           <Card key={stat.label} className="glass-card border-white/20">
             <CardContent className="p-4 flex items-center gap-4">
               <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${stat.color} flex items-center justify-center`}>
@@ -143,21 +151,21 @@ export default function MembersPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {members.map((member) => (
+                {filteredMembers.map((member) => (
                   <TableRow key={member.id} className="hover:bg-white/10">
                     <TableCell>
                       <div className="flex items-center gap-3">
                         <Avatar className="h-10 w-10">
-                          <AvatarImage
-                            src={`/.jpg?height=40&width=40&query=${member.name} child`}
-                          />
+                          <AvatarImage src={member.avatar} />
                           <AvatarFallback className="bg-gradient-to-br from-blue-500 to-teal-500 text-white text-sm">
-                            {member.avatar}
+                            {getInitials(member.name)}
                           </AvatarFallback>
                         </Avatar>
                         <div>
                           <p className="font-medium">{member.name}</p>
-                          <p className="text-sm text-muted-foreground">Age: {member.age}</p>
+                          <p className="text-sm text-muted-foreground">
+                            Age: {member.age || 'N/A'}
+                          </p>
                         </div>
                       </div>
                     </TableCell>
@@ -184,7 +192,7 @@ export default function MembersPage() {
                         {member.status}
                       </Badge>
                     </TableCell>
-                    <TableCell>{member.parent}</TableCell>
+                    <TableCell>{member.parent || 'Not specified'}</TableCell>
                     <TableCell className="text-right">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -208,6 +216,26 @@ export default function MembersPage() {
           </div>
         </CardContent>
       </Card>
+
+      {filteredMembers.length === 0 && members.length === 0 && (
+        <div className="text-center py-12">
+          <Users className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+          <h3 className="text-lg font-semibold mb-2">No members found</h3>
+          <p className="text-muted-foreground mb-4">Get started by adding your first member to the club.</p>
+          <Button className="bg-gradient-to-r from-blue-500 to-teal-500 text-white">
+            <UserPlus className="w-4 h-4 mr-2" />
+            Add Member
+          </Button>
+        </div>
+      )}
+
+      {filteredMembers.length === 0 && members.length > 0 && searchQuery && (
+        <div className="text-center py-12">
+          <Search className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+          <h3 className="text-lg font-semibold mb-2">No members match your search</h3>
+          <p className="text-muted-foreground">Try adjusting your search terms or filters.</p>
+        </div>
+      )}
     </div>
   )
 }
