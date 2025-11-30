@@ -1,6 +1,5 @@
 import request from 'supertest';
 import express from 'express';
-import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
 import { prisma, createTestUser, createTestClub } from './setup';
@@ -10,8 +9,6 @@ import jwt from 'jsonwebtoken';
 const app = express();
 app.use(express.json());
 
-// Setup multer for testing
-const upload = multer({ dest: 'uploads/test/' });
 app.use('/api/files', fileRoutes);
 
 // Helper function to generate JWT token
@@ -49,7 +46,7 @@ describe('File Upload API', () => {
     token = generateToken(testUser.id, testClub.id);
 
     // Ensure upload directory exists
-    const uploadDir = path.join(__dirname, '../../uploads/test');
+    const uploadDir = path.join(__dirname, '../../temp');
     if (!fs.existsSync(uploadDir)) {
       fs.mkdirSync(uploadDir, { recursive: true });
     }
@@ -57,7 +54,7 @@ describe('File Upload API', () => {
 
   afterEach(async () => {
     // Clean up uploaded files
-    const uploadDir = path.join(__dirname, '../../uploads/test');
+    const uploadDir = path.join(__dirname, '../../temp');
     if (fs.existsSync(uploadDir)) {
       const files = fs.readdirSync(uploadDir);
       files.forEach(file => {

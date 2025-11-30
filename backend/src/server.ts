@@ -19,7 +19,6 @@ import messageRoutes from './controllers/messageController';
 import bookingRoutes from './controllers/bookingController';
 import reviewRoutes from './controllers/reviewController';
 import fileRoutes from './routes/fileRoutes';
-import legacyRoutes from './controllers/legacyController';
 
 dotenv.config();
 const app = express();
@@ -93,8 +92,6 @@ app.get('/api/health', (req, res) => {
 
 // Swagger documentation
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
-
-app.use('/api/legacy', legacyRoutes);
 
 // Socket.IO Authentication Middleware
 io.use(async (socket, next) => {
