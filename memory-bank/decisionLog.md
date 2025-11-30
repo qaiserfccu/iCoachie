@@ -7,3 +7,8 @@
 | 2025-11-29 | Frontend: Next.js (TypeScript) | Good UX for React and simple server-side capabilities; integrate fast with backend API. |
 | 2025-11-29 | Adopted Next.js 14+ with App Router for modern React development and improved performance | App Router provides better SEO, loading states, and nested routing compared to modern React best practices |
 | 2025-01-12 | Implement tenant isolation in authentication and user management APIs | Include clubId in JWT payload and enforce club-scoped operations for multi-tenancy security |
+| 2025-01-12 | Use Prisma ORM with row-level multi-tenancy | Type-safe database operations, automatic migrations, and built-in tenant isolation via clubId fields |
+| 2025-01-12 | Implement soft deletes across all business models | Preserve data integrity and audit trails while allowing logical deletion |
+| 2025-01-12 | Standardize controller patterns with tenant-aware CRUD operations | Consistent API structure, automatic club scoping, and proper error handling |
+| 2025-01-12 | Use enums for status fields (attendance, payment, evaluation types) | Type safety, database constraints, and consistent data validation |
+| 2025-01-12 | Handle Decimal types properly in payment calculations | Prevent floating-point precision issues in financial operations |

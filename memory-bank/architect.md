@@ -11,15 +11,39 @@ This file contains the architectural decisions and design patterns for the iCoac
 - Structure API-first architecture for scalability
 - Use TypeScript for type safety across frontend and backend
 
-
+## Backend Architecture (Completed Agents 1-3)
 
 1. **Backend written in TypeScript**: Use modern Node.js LTS and TypeScript for type safety, easier refactor, and improved DX.
 2. **Layered Architecture**: Separate concerns into `controllers`, `services`, `models`, and `db` with `middleware` for auth and validation to make the system extensible and testable.
-3. **Postgres as primary DB**: Maintain the `iCoachie` Postgres database and run migrations via SQL files placed under `src/migrations`.
+3. **Postgres as primary DB**: Maintain the `iCoachie` Postgres database and run migrations via Prisma ORM.
 4. **Auth with JWT**: Stateless JWT tokens for API calls; password hashing with bcrypt and reset via expiring tokens stored in `password_resets`.
 5. **Role based access control**: Introduce `roles` table (Student, Parent, Coach, Academy Admin, Club Admin) and a `user_roles` mapping table; middleware will inspect roles from DB for endpoints.
-6. **Frontend with Next.js (TypeScript)**: React-based frontend for registration, login, logout, and forgot/reset flows. Use `fetch` for data fetching and store JWT in `localStorage` (consider httpOnly cookies for production).
-7. **Email service**: Use `nodemailer` (configurable via `SMTP_` env vars) to send reset links and notifications.
+6. **Row-level Multi-tenancy**: All business tables include `clubId` for tenant isolation; middleware enforces club scoping.
+7. **Soft Deletes**: All models support soft deletes with `deletedAt` field for data integrity.
+8. **Prisma ORM**: Type-safe database operations with automatic migrations and schema validation.
+
+## API Structure (Agent 3 Complete)
+
+### Authentication & User Management
+- POST /api/auth/register - User registration with role assignment
+- POST /api/auth/login - JWT token generation
+- POST /api/auth/forgot-password - Password reset initiation
+- POST /api/auth/reset-password - Password reset completion
+- GET/POST/PUT/DELETE /api/users - User CRUD with tenant isolation
+
+### Core Business APIs
+- GET/POST/PUT/DELETE /api/clubs - Club management
+- GET/POST/PUT/DELETE /api/students - Student management with club scoping
+- GET/POST/PUT/DELETE /api/sessions - Training session management with enrollment
+- GET/POST/PUT/DELETE /api/attendance - Attendance tracking
+- GET/POST/PUT/DELETE /api/evaluations - Student performance evaluations
+- GET/POST/PUT/DELETE /api/payments - Payment processing and records
+
+### Middleware
+- JWT authentication with clubId extraction
+- Role-based access control
+- Request validation with Joi/Zod
+- Error handling and logging
 
 ## Additional Considerations
 * Add role-based middleware (e.g., `requireRole('Coach')`) for protected endpoints.
@@ -31,8 +55,6 @@ This file contains the architectural decisions and design patterns for the iCoac
 * A global theme using a sky-blue gradient hero with card-based UI is the default appearance of the app.
 * Consistent UI tokens and CSS variables are centralized in `frontend/app/globals.css` to make color, spacing, and typography decisions easy to use across components.
 * Landing page outlines key features with a hero CTA to register or sign in; this page should be kept small & focused to maximize conversions.
-
-
 
 ## Components
 
@@ -67,6 +89,4 @@ PostgreSQL database storing users, clubs, coaches, students, bookings, attendanc
 - Data persistence
 - Relationships management
 - Query optimization
-
-
 

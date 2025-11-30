@@ -6,10 +6,17 @@ Comprehensive backend development using Prisma ORM with PostgreSQL, row-level mu
 
 1: Prisma Setup & Database Schema - Initialize Prisma with PostgreSQL, design complete schema with row-level multi-tenancy (tenant_id on all tables), models (User, Club, Student, Session, etc.), relationships, and enums; generate initial migration.
 2: Authentication & User Management APIs - Implement auth routes (login/register), user CRUD operations with tenant isolation, role-based middleware, and JWT handling.
+3: Core Business Logic APIs - Build APIs for clubs, students, sessions, attendance, evaluations, and payments with proper validation, error handling, and tenant scoping.
+   - ✅ Clubs CRUD API with tenant isolation
+   - ✅ Students CRUD API with relationships and club scoping  
+   - ✅ Sessions CRUD API with enrollment management
+   - ✅ Attendance tracking API
+   - ✅ Evaluations API for student performance
+   - ✅ Payments API for processing and records
 
 ## Doing
 
-3: Core Business Logic APIs - Build APIs for clubs, students, sessions, attendance, evaluations, and payments with proper validation, error handling, and tenant scoping.
+4: Freelancer & Messaging APIs - Develop freelancer booking system, messaging endpoints, and review/rating functionality with tenant-aware queries.
 4: Freelancer & Messaging APIs - Develop freelancer booking system, messaging endpoints, and review/rating functionality with tenant-aware queries.
 5: Socket.IO Integration - Set up real-time messaging, notifications, attendance updates, and dashboard live stats with proper room management and tenant isolation.
 6: File Storage & Serving - Implement hosted server filesystem for avatars/documents with token-based upload/download endpoints, secure file serving, and tenant-specific storage paths.

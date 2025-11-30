@@ -3,6 +3,12 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import authRoutes from './controllers/authController';
 import userRoutes from './controllers/userController';
+import clubRoutes from './controllers/clubController';
+import studentRoutes from './controllers/studentController';
+import sessionRoutes from './controllers/sessionController';
+import attendanceRoutes from './controllers/attendanceController';
+import evaluationRoutes from './controllers/evaluationController';
+import paymentRoutes from './controllers/paymentController';
 import legacyRoutes from './controllers/legacyController';
 
 dotenv.config();
@@ -33,6 +39,12 @@ app.use(express.json());
 
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/clubs', clubRoutes);
+app.use('/api/students', studentRoutes);
+app.use('/api/sessions', sessionRoutes);
+app.use('/api/attendance', attendanceRoutes);
+app.use('/api/evaluations', evaluationRoutes);
+app.use('/api/payments', paymentRoutes);
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', message: 'iCoachie Backend (TypeScript) running' });
