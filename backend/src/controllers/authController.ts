@@ -9,8 +9,8 @@ const router = express.Router();
 // Register route
 router.post('/register', async (req, res) => {
   try {
-    const { email, password, name, role, display_name } = req.body;
-    if (!email || !password || !name || !role) return res.status(400).json({ message: 'Email, password, name, and role are required' });
+    const { email, password, name, role, display_name, clubId } = req.body;
+    if (!email || !password || !name || !role || !clubId) return res.status(400).json({ message: 'Email, password, name, role, and clubId are required' });
 
     const hashed = await bcrypt.hash(password, 10);
 
@@ -19,7 +19,8 @@ router.post('/register', async (req, res) => {
         email,
         passwordHash: hashed,
         name,
-        role,
+        role: 'CLUB_ADMIN', // Default user type
+        clubId: parseInt(clubId),
         profile: {
           create: {
             displayName: display_name || name,
@@ -64,7 +65,8 @@ router.post('/login', async (req, res) => {
       where: { email },
       select: {
         id: true,
-        passwordHash: true
+        passwordHash: true,
+        clubId: true
       }
     });
 
@@ -73,7 +75,7 @@ router.post('/login', async (req, res) => {
     const ok = await bcrypt.compare(password, user.passwordHash);
     if (!ok) return res.status(401).json({ message: 'Invalid credentials' });
 
-    const token = jwt.sign({ sub: user.id }, process.env.JWT_SECRET || 'secret', { expiresIn: '7d' });
+    const token = jwt.sign({ sub: user.id, clubId: user.clubId }, process.env.JWT_SECRET || 'secret', { expiresIn: '7d' });
     res.json({ token });
   } catch (err) {
     console.error(err);
