@@ -3,6 +3,7 @@ import prisma from '../db';
 import { requireAuth, AuthRequest } from '../middleware/jwtAuth';
 import { requireRole } from '../middleware/requireRole';
 import Stripe from 'stripe';
+import { getPaymentStatusIdByCode } from '../utils/lookups';
 
 const router = express.Router();
 
@@ -34,7 +35,12 @@ router.get('/', requireAuth, async (req: AuthRequest, res) => {
         amount: true,
         currency: true,
         paymentType: true,
-        status: true,
+        status: {
+          select: {
+            code: true,
+            name: true
+          }
+        },
         description: true,
         createdAt: true,
         user: {
@@ -197,8 +203,14 @@ router.put('/:id/status', requireAuth, async (req: AuthRequest, res) => {
     const clubId = req.user!.clubId;
     const currentUserId = req.user!.id;
 
-    if (!status || !['PENDING', 'COMPLETED', 'FAILED', 'REFUNDED'].includes(status)) {
-      return res.status(400).json({ message: 'Valid status (PENDING, COMPLETED, FAILED, REFUNDED) is required' });
+    if (!status) {
+      return res.status(400).json({ message: 'Status is required' });
+    }
+
+    // Validate status with database lookup
+    const statusId = await getPaymentStatusIdByCode(status);
+    if (!statusId) {
+      return res.status(400).json({ message: `Invalid status: ${status}` });
     }
 
     // Verify payment exists in club
@@ -235,7 +247,7 @@ router.put('/:id/status', requireAuth, async (req: AuthRequest, res) => {
     const updatedPayment = await prisma.payment.update({
       where: { id: paymentId },
       data: {
-        status,
+        statusId,
         stripePaymentId,
         updatedAt: new Date()
       },
@@ -244,7 +256,12 @@ router.put('/:id/status', requireAuth, async (req: AuthRequest, res) => {
         amount: true,
         currency: true,
         paymentType: true,
-        status: true,
+        status: {
+          select: {
+            code: true,
+            name: true
+          }
+        },
         description: true,
         createdAt: true,
         updatedAt: true,
@@ -289,7 +306,12 @@ router.put('/:id', requireAuth, async (req: AuthRequest, res) => {
       },
       select: {
         userId: true,
-        status: true
+        status: {
+          select: {
+            code: true,
+            name: true
+          }
+        }
       }
     });
 
@@ -307,7 +329,7 @@ router.put('/:id', requireAuth, async (req: AuthRequest, res) => {
       return res.status(403).json({ message: 'Access denied' });
     }
 
-    if (payment.status === 'COMPLETED') {
+    if (payment.status.code === 'COMPLETED') {
       return res.status(400).json({ message: 'Cannot modify completed payments' });
     }
 
@@ -326,7 +348,12 @@ router.put('/:id', requireAuth, async (req: AuthRequest, res) => {
         amount: true,
         currency: true,
         paymentType: true,
-        status: true,
+        status: {
+          select: {
+            code: true,
+            name: true
+          }
+        },
         description: true,
         createdAt: true,
         updatedAt: true,
@@ -358,14 +385,21 @@ router.delete('/:id', requireAuth, requireRole('SuperAdmin'), async (req: AuthRe
         id: paymentId,
         user: {
           clubId
-        },
+        }
+      },
+      select: {
+        id: true,
         status: {
-          not: 'COMPLETED'
+          select: {
+            code: true
+          }
         }
       }
     });
 
-    if (!payment) return res.status(404).json({ message: 'Payment not found or already completed' });
+    if (!payment || payment.status.code === 'COMPLETED') {
+      return res.status(404).json({ message: 'Payment not found or already completed' });
+    }
 
     await prisma.payment.delete({
       where: { id: paymentId }
@@ -416,16 +450,21 @@ router.get('/stats/overview', requireAuth, async (req: AuthRequest, res) => {
       },
       select: {
         amount: true,
-        status: true,
+        status: {
+          select: {
+            code: true,
+            name: true
+          }
+        },
         paymentType: true,
         createdAt: true
       }
     });
 
     const totalAmount = payments.reduce((sum, p) => sum + parseFloat(p.amount.toString()), 0);
-    const completedPayments = payments.filter(p => p.status === 'COMPLETED');
+    const completedPayments = payments.filter(p => p.status.code === 'COMPLETED');
     const completedAmount = completedPayments.reduce((sum, p) => sum + parseFloat(p.amount.toString()), 0);
-    const pendingAmount = payments.filter(p => p.status === 'PENDING').reduce((sum, p) => sum + parseFloat(p.amount.toString()), 0);
+    const pendingAmount = payments.filter(p => p.status.code === 'PENDING').reduce((sum, p) => sum + parseFloat(p.amount.toString()), 0);
 
     const typeBreakdown = payments.reduce((breakdown, p) => {
       const type = p.paymentType;
@@ -434,7 +473,7 @@ router.get('/stats/overview', requireAuth, async (req: AuthRequest, res) => {
     }, {} as Record<string, number>);
 
     const statusBreakdown = payments.reduce((breakdown, p) => {
-      breakdown[p.status] = (breakdown[p.status] || 0) + 1;
+      breakdown[p.status.code] = (breakdown[p.status.code] || 0) + 1;
       return breakdown;
     }, {} as Record<string, number>);
 

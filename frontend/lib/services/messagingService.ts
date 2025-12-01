@@ -64,7 +64,7 @@ class MessagingService {
   }
 
   private initializeSocket() {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
+    const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null
     if (!token) return
 
     const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'

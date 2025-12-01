@@ -1,8 +1,8 @@
 import express from 'express';
-import { BookingStatus } from '@prisma/client';
 import prisma from '../db';
 import { requireAuth, AuthRequest } from '../middleware/jwtAuth';
 import { socketService } from '../server';
+import { getBookingStatusIdByCode } from '../utils/lookups';
 const router = express.Router();
 
 // All booking routes require authentication
@@ -18,13 +18,20 @@ router.post('/', async (req: AuthRequest, res) => {
     const freelancer = await prisma.user.findFirst({
       where: {
         id: freelancerId,
-        role: 'FREELANCER',
         clubId: req.user!.clubId,
         deletedAt: null,
       },
+      select: {
+        id: true,
+        primaryRole: {
+          select: {
+            code: true
+          }
+        }
+      }
     });
 
-    if (!freelancer) {
+    if (!freelancer || !freelancer.primaryRole || freelancer.primaryRole.code !== 'FREELANCER') {
       return res.status(404).json({
         success: false,
         error: 'Freelancer not found or not in your club',
@@ -39,7 +46,11 @@ router.post('/', async (req: AuthRequest, res) => {
       });
     }
 
-    // Check for scheduling conflicts
+    // Check for scheduling conflicts - get PENDING and CONFIRMED status IDs
+    const pendingStatusId = await getBookingStatusIdByCode('PENDING');
+    const confirmedStatusId = await getBookingStatusIdByCode('CONFIRMED');
+    const statusIds = [pendingStatusId, confirmedStatusId].filter(id => id !== null) as number[];
+
     const conflict = await prisma.booking.findFirst({
       where: {
         freelancerId,
@@ -72,7 +83,7 @@ router.post('/', async (req: AuthRequest, res) => {
             ],
           },
         ],
-        status: { in: ['PENDING', 'CONFIRMED'] },
+        statusId: { in: statusIds },
         deletedAt: null,
       },
     });
@@ -84,6 +95,7 @@ router.post('/', async (req: AuthRequest, res) => {
       });
     }
 
+    // Get default PENDING status (reuse from conflict check)
     const booking = await prisma.booking.create({
       data: {
         freelancerId,
@@ -94,6 +106,7 @@ router.post('/', async (req: AuthRequest, res) => {
         serviceType,
         amount: amount ? amount : null,
         notes,
+        statusId: pendingStatusId
       },
       include: {
         freelancer: {
@@ -102,6 +115,12 @@ router.post('/', async (req: AuthRequest, res) => {
         client: {
           select: { id: true, name: true, email: true },
         },
+        status: {
+          select: {
+            code: true,
+            name: true
+          }
+        }
       },
     });
 
@@ -157,6 +176,12 @@ router.get('/', async (req: AuthRequest, res) => {
           },
           client: {
             select: { id: true, name: true, email: true },
+          },
+          status: {
+            select: {
+              code: true,
+              name: true
+            }
           },
           reviews: {
             include: {
@@ -263,6 +288,14 @@ router.patch('/:id/status', async (req: AuthRequest, res) => {
         ],
         deletedAt: null,
       },
+      include: {
+        status: {
+          select: {
+            code: true,
+            name: true
+          }
+        }
+      }
     });
 
     if (!booking) {
@@ -273,10 +306,19 @@ router.patch('/:id/status', async (req: AuthRequest, res) => {
     }
 
     // Business rules for status updates
-    if (booking.status === 'COMPLETED' || booking.status === 'CANCELLED') {
+    if (!booking.status || booking.status.code === 'COMPLETED' || booking.status.code === 'CANCELLED') {
       return res.status(400).json({
         success: false,
         error: 'Cannot update status of completed or cancelled booking',
+      });
+    }
+
+    // Validate and get new status ID
+    const newStatusId = await getBookingStatusIdByCode(status);
+    if (!newStatusId) {
+      return res.status(400).json({
+        success: false,
+        error: `Invalid status: ${status}`,
       });
     }
 
@@ -289,7 +331,7 @@ router.patch('/:id/status', async (req: AuthRequest, res) => {
     }
 
     // Only client or freelancer can complete bookings
-    if (status === 'COMPLETED' && booking.status === 'CONFIRMED' &&
+    if (status === 'COMPLETED' && booking.status && booking.status.code === 'CONFIRMED' &&
         booking.clientId !== userId && booking.freelancerId !== userId) {
       return res.status(403).json({
         success: false,
@@ -299,7 +341,7 @@ router.patch('/:id/status', async (req: AuthRequest, res) => {
 
     const updatedBooking = await prisma.booking.update({
       where: { id: booking.id },
-      data: { status: status as BookingStatus },
+      data: { statusId: newStatusId },
       include: {
         freelancer: {
           select: { id: true, name: true, email: true },
@@ -307,6 +349,12 @@ router.patch('/:id/status', async (req: AuthRequest, res) => {
         client: {
           select: { id: true, name: true, email: true },
         },
+        status: {
+          select: {
+            code: true,
+            name: true
+          }
+        }
       },
     });
 
@@ -343,6 +391,13 @@ router.patch('/:id/cancel', async (req: AuthRequest, res) => {
         ],
         deletedAt: null,
       },
+      include: {
+        status: {
+          select: {
+            code: true
+          }
+        }
+      }
     });
 
     if (!booking) {
@@ -353,7 +408,7 @@ router.patch('/:id/cancel', async (req: AuthRequest, res) => {
     }
 
     // Cannot cancel completed bookings
-    if (booking.status === 'COMPLETED') {
+    if (!booking.status || booking.status.code === 'COMPLETED') {
       return res.status(400).json({
         success: false,
         error: 'Cannot cancel a completed booking',
@@ -372,9 +427,12 @@ router.patch('/:id/cancel', async (req: AuthRequest, res) => {
       });
     }
 
+    // Get CANCELLED status ID
+    const cancelledStatusId = await getBookingStatusIdByCode('CANCELLED');
+
     const updatedBooking = await prisma.booking.update({
       where: { id: booking.id },
-      data: { status: 'CANCELLED' },
+      data: { statusId: cancelledStatusId },
       include: {
         freelancer: {
           select: { id: true, name: true, email: true },
@@ -382,6 +440,12 @@ router.patch('/:id/cancel', async (req: AuthRequest, res) => {
         client: {
           select: { id: true, name: true, email: true },
         },
+        status: {
+          select: {
+            code: true,
+            name: true
+          }
+        }
       },
     });
 
@@ -414,10 +478,17 @@ router.get('/freelancers/available', async (req: AuthRequest, res) => {
       });
     }
 
+    // Get status IDs for active bookings
+    const activePendingStatusId = await getBookingStatusIdByCode('PENDING');
+    const activeConfirmedStatusId = await getBookingStatusIdByCode('CONFIRMED');
+    const activeStatusIds = [activePendingStatusId, activeConfirmedStatusId].filter(id => id !== null) as number[];
+
     // Find freelancers who are not booked during the requested time
     const availableFreelancers = await prisma.user.findMany({
       where: {
-        role: 'FREELANCER',
+        primaryRole: {
+          code: 'FREELANCER'
+        },
         clubId: req.user!.clubId,
         deletedAt: null,
         AND: [
@@ -446,7 +517,7 @@ router.get('/freelancers/available', async (req: AuthRequest, res) => {
                       ],
                     },
                   ],
-                  status: { in: ['PENDING', 'CONFIRMED'] },
+                  statusId: { in: activeStatusIds },
                   deletedAt: null,
                 },
               },
@@ -458,23 +529,11 @@ router.get('/freelancers/available', async (req: AuthRequest, res) => {
         id: true,
         name: true,
         email: true,
-        coachProfile: {
-          select: {
-            specializations: true,
-            experienceYears: true,
-            hourlyRate: true,
-          },
-        },
       },
     });
 
-    // Filter by service type if provided
+    // Filter by service type if provided (TODO: implement service type filtering with profile data)
     let filteredFreelancers = availableFreelancers;
-    if (serviceType) {
-      filteredFreelancers = availableFreelancers.filter(freelancer =>
-        freelancer.coachProfile?.specializations?.includes(serviceType as string)
-      );
-    }
 
     res.json({
       success: true,

@@ -3,6 +3,7 @@ import prisma from '../db';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { v4 as uuidv4 } from 'uuid';
+import { getRoleIdByCode, getUserStatusIdByCode } from '../utils/lookups';
 
 const router = express.Router();
 
@@ -116,11 +117,21 @@ router.post('/register', async (req, res) => {
 
     const hashed = await bcrypt.hash(password, 10);
 
+    // Get role ID from database
+    const roleId = await getRoleIdByCode(role);
+    if (!roleId) {
+      return res.status(400).json({ message: `Invalid role: ${role}` });
+    }
+
+    // Get active status ID
+    const activeStatusId = await getUserStatusIdByCode('ACTIVE');
+
     const userData: any = {
       email,
       passwordHash: hashed,
       name,
-      role: role as any,
+      primaryRoleId: roleId,
+      statusId: activeStatusId,
       profile: {
         create: {
           displayName: display_name || name,
@@ -137,7 +148,12 @@ router.post('/register', async (req, res) => {
           id: true,
           email: true,
           name: true,
-          role: true,
+          primaryRole: {
+            select: {
+              code: true,
+              name: true
+            }
+          },
           clubId: true,
           profile: {
             select: {
@@ -163,20 +179,6 @@ router.post('/register', async (req, res) => {
       await prisma.user.update({
         where: { id: user.id },
         data: { clubId: club.id }
-      });
-
-      // Create user role mapping
-      const roleRecord = await prisma.role.upsert({
-        where: { name: role },
-        update: {},
-        create: { name: role }
-      });
-
-      await prisma.userRoleAssignment.create({
-        data: {
-          userId: user.id,
-          roleId: roleRecord.id
-        }
       });
 
       // Generate JWT token
@@ -213,7 +215,12 @@ router.post('/register', async (req, res) => {
         id: true,
         email: true,
         name: true,
-        role: true,
+        primaryRole: {
+          select: {
+            code: true,
+            name: true
+          }
+        },
         clubId: true,
         profile: {
           select: {
@@ -222,20 +229,6 @@ router.post('/register', async (req, res) => {
         },
         createdAt: true,
         updatedAt: true
-      }
-    });
-
-    // create user role mapping
-    const roleRecord = await prisma.role.upsert({
-      where: { name: role },
-      update: {},
-      create: { name: role }
-    });
-
-    await prisma.userRoleAssignment.create({
-      data: {
-        userId: user.id,
-        roleId: roleRecord.id
       }
     });
 

@@ -3,6 +3,7 @@ import prisma from '../db';
 import bcrypt from 'bcrypt';
 import { requireAuth, AuthRequest } from '../middleware/jwtAuth';
 import { requireRole } from '../middleware/requireRole';
+import { getRoleIdByCode, getUserStatusIdByCode, getAllActiveRoles } from '../utils/lookups';
 
 const router = express.Router();
 
@@ -88,15 +89,7 @@ router.put('/me/profile', requireAuth, async (req: AuthRequest, res) => {
 // Get roles list
 router.get('/roles', async (_, res) => {
   try {
-    const roles = await prisma.role.findMany({
-      select: {
-        id: true,
-        name: true
-      },
-      orderBy: {
-        name: 'asc'
-      }
-    });
+    const roles = await getAllActiveRoles();
     res.json(roles);
   } catch (err) {
     console.error(err);
@@ -166,12 +159,22 @@ router.post('/users', requireAuth, requireRole('SuperAdmin'), async (req: AuthRe
     const clubId = req.user!.clubId;
     const hashed = await bcrypt.hash(password, 10);
 
+    // Get role ID from database
+    const roleId = await getRoleIdByCode(role);
+    if (!roleId) {
+      return res.status(400).json({ message: `Invalid role: ${role}` });
+    }
+
+    // Get active status ID
+    const activeStatusId = await getUserStatusIdByCode('ACTIVE');
+
     const user = await prisma.user.create({
       data: {
         email,
         passwordHash: hashed,
         name,
-        role: 'CLUB_ADMIN', // Default user type
+        primaryRoleId: roleId,
+        statusId: activeStatusId,
         clubId,
         profile: {
           create: {
@@ -183,21 +186,13 @@ router.post('/users', requireAuth, requireRole('SuperAdmin'), async (req: AuthRe
         id: true,
         email: true,
         name: true,
-        createdAt: true
-      }
-    });
-
-    // create user role mapping
-    const roleRecord = await prisma.role.upsert({
-      where: { name: role },
-      update: {},
-      create: { name: role }
-    });
-
-    await prisma.userRoleAssignment.create({
-      data: {
-        userId: user.id,
-        roleId: roleRecord.id
+        createdAt: true,
+        primaryRole: {
+          select: {
+            code: true,
+            name: true
+          }
+        }
       }
     });
 

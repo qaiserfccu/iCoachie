@@ -2,6 +2,7 @@ import express from 'express';
 import prisma from '../db';
 import { requireAuth, AuthRequest } from '../middleware/jwtAuth';
 import { requireRole } from '../middleware/requireRole';
+import { getSessionStatusIdByCode } from '../utils/lookups';
 
 const router = express.Router();
 
@@ -25,7 +26,12 @@ router.get('/', requireAuth, async (req: AuthRequest, res) => {
         location: true,
         maxCapacity: true,
         currentEnrolled: true,
-        status: true,
+        status: {
+          select: {
+            code: true,
+            name: true
+          }
+        },
         createdAt: true,
         coach: {
           select: {
@@ -85,7 +91,12 @@ router.get('/:id', requireAuth, async (req: AuthRequest, res) => {
         location: true,
         maxCapacity: true,
         currentEnrolled: true,
-        status: true,
+        status: {
+          select: {
+            code: true,
+            name: true
+          }
+        },
         createdAt: true,
         coach: {
           select: {
@@ -135,7 +146,12 @@ router.get('/:id', requireAuth, async (req: AuthRequest, res) => {
                 name: true
               }
             },
-            status: true,
+            status: {
+              select: {
+                code: true,
+                name: true
+              }
+            },
             checkinTime: true,
             notes: true,
             recordedAt: true,
@@ -200,6 +216,9 @@ router.post('/', requireAuth, async (req: AuthRequest, res) => {
       return res.status(400).json({ message: 'Coach not found in this club' });
     }
 
+    // Get default SCHEDULED status
+    const scheduledStatusId = await getSessionStatusIdByCode('SCHEDULED');
+
     const session = await prisma.session.create({
       data: {
         coachId: parseInt(coachId),
@@ -211,7 +230,8 @@ router.post('/', requireAuth, async (req: AuthRequest, res) => {
         endTime: new Date(endTime),
         location,
         maxCapacity: maxCapacity ? parseInt(maxCapacity) : null,
-        currentEnrolled: 0
+        currentEnrolled: 0,
+        statusId: scheduledStatusId
       },
       select: {
         id: true,
@@ -222,7 +242,12 @@ router.post('/', requireAuth, async (req: AuthRequest, res) => {
         endTime: true,
         location: true,
         maxCapacity: true,
-        status: true,
+        status: {
+          select: {
+            code: true,
+            name: true
+          }
+        },
         createdAt: true
       }
     });
@@ -270,6 +295,15 @@ router.put('/:id', requireAuth, async (req: AuthRequest, res) => {
 
     const { title, description, sessionDate, startTime, endTime, location, maxCapacity, status } = req.body;
 
+    // Get status ID if status is provided
+    let statusId = undefined;
+    if (status) {
+      statusId = await getSessionStatusIdByCode(status);
+      if (!statusId) {
+        return res.status(400).json({ message: `Invalid status: ${status}` });
+      }
+    }
+
     const updatedSession = await prisma.session.update({
       where: { id: sessionId },
       data: {
@@ -280,7 +314,7 @@ router.put('/:id', requireAuth, async (req: AuthRequest, res) => {
         endTime: endTime ? new Date(endTime) : undefined,
         location,
         maxCapacity: maxCapacity ? parseInt(maxCapacity) : undefined,
-        status,
+        statusId,
         updatedAt: new Date()
       },
       select: {
@@ -292,7 +326,12 @@ router.put('/:id', requireAuth, async (req: AuthRequest, res) => {
         endTime: true,
         location: true,
         maxCapacity: true,
-        status: true,
+        status: {
+          select: {
+            code: true,
+            name: true
+          }
+        },
         updatedAt: true
       }
     });

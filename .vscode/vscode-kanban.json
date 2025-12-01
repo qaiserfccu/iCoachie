@@ -1,27 +1,129 @@
 {
-  "todo": [],
-  "in-progress": [
+  "todo": [
     {
       "assignedTo": {
-        "name": "Qaiser Nadeem"
+        "name": "Copilot Agent"
       },
-      "category": "test",
-      "creation_time": "2025-11-30T16:57:00.113Z",
+      "category": "frontend",
+      "creation_time": "2025-01-30T00:00:00.000Z",
       "description": {
-        "content": "tes",
+        "content": "Update frontend to handle all 22 roles and fetch roles/statuses from API instead of hardcoded enums",
         "mime": "text/markdown"
       },
       "details": {
-        "content": "test",
+        "content": "# Frontend Code Updates\n\n## Files to Update\n- frontend/lib/auth.ts: Remove role enum mapping, use role.code from API\n- frontend/types/user.ts: Update User type to include role object with code and name\n- Frontend components displaying roles: Fetch from API /api/roles\n- Frontend components displaying statuses: Fetch from respective status endpoints\n\n## New API Endpoints Needed\n- GET /api/roles - List all active roles\n- GET /api/statuses/user - User statuses\n- GET /api/statuses/session - Session statuses\n- GET /api/statuses/attendance - Attendance statuses\n- GET /api/statuses/payment - Payment statuses\n- GET /api/statuses/booking - Booking statuses\n\n## UI Updates\n- Role selection dropdowns to use API data\n- Status filters to use API data\n- User profile to display role name and description",
         "mime": "text/markdown"
       },
-      "id": "1",
-      "prio": 1,
+      "id": "5",
+      "prio": 4,
       "references": [],
-      "title": "test",
-      "type": "emergency"
+      "title": "Update frontend role and status handling",
+      "type": "note"
+    },
+    {
+      "assignedTo": {
+        "name": "Copilot Agent"
+      },
+      "category": "backend",
+      "creation_time": "2025-01-30T00:00:00.000Z",
+      "description": {
+        "content": "Create API endpoints for facility management (Facility, Venue, Ground) with proper role-based access control",
+        "mime": "text/markdown"
+      },
+      "details": {
+        "content": "# Facility Management API\n\n## Endpoints to Create\n\n### Facilities\n- POST /api/facilities - Create facility (SUPER_ADMIN, SYSTEM_SUPPORT)\n- GET /api/facilities - List all facilities\n- GET /api/facilities/:id - Get facility details\n- PUT /api/facilities/:id - Update facility (FACILITY_MANAGER, SUPER_ADMIN)\n- DELETE /api/facilities/:id - Delete facility (SUPER_ADMIN)\n\n### Venues\n- POST /api/facilities/:facilityId/venues - Create venue\n- GET /api/facilities/:facilityId/venues - List venues\n- GET /api/venues/:id - Get venue details\n- PUT /api/venues/:id - Update venue (VENUE_MANAGER, FACILITY_MANAGER)\n- DELETE /api/venues/:id - Delete venue\n\n### Grounds\n- POST /api/facilities/:facilityId/grounds - Create ground\n- GET /api/facilities/:facilityId/grounds - List grounds\n- GET /api/grounds/:id - Get ground details\n- PUT /api/grounds/:id - Update ground (GROUND_MANAGER, FACILITY_MANAGER)\n- DELETE /api/grounds/:id - Delete ground\n\n## Access Control\n- Implement role-based middleware checking user.primaryRole.code\n- Verify facility/venue/ground manager assignments\n- Implement scope-based authorization (FACILITY, VENUE, GROUND scopes)",
+        "mime": "text/markdown"
+      },
+      "id": "6",
+      "prio": 5,
+      "references": [],
+      "title": "Create facility management API endpoints",
+      "type": "note"
+    },
+    {
+      "assignedTo": {
+        "name": "Copilot Agent"
+      },
+      "category": "middleware",
+      "creation_time": "2025-01-30T00:00:00.000Z",
+      "description": {
+        "content": "Implement comprehensive role-based access control middleware supporting all 22 roles and permission checks",
+        "mime": "text/markdown"
+      },
+      "details": {
+        "content": "# RBAC Middleware Implementation\n\n## Middleware Functions to Create\n\n### requireRole(roleCodes: string[])\n- Check if user.primaryRole.code is in allowed roles\n- Support multiple role codes\n- Return 403 if unauthorized\n\n### requirePermission(permission: string)\n- Check if user.primaryRole.permissions contains permission\n- Parse JSON permissions object\n- Return 403 if permission not granted\n\n### requireScope(scope: string)\n- Check if user.primaryRole.scope matches required scope\n- Support GLOBAL, CLUB, FACILITY, VENUE, GROUND, INDEPENDENT, USER scopes\n- Return 403 if scope doesn't match\n\n### requireAnyRole(roleCodes: string[])\n- Check if user has any role from the list (via UserRoleAssignment)\n- Support multi-role users\n- Return 403 if no matching role found\n\n## Usage Examples\n```typescript\nrouter.post('/facilities', requireAuth, requireRole(['SUPER_ADMIN', 'SYSTEM_SUPPORT']), createFacility);\nrouter.put('/venues/:id', requireAuth, requirePermission('canManageVenue'), updateVenue);\nrouter.get('/club/data', requireAuth, requireScope('CLUB'), getClubData);\n```",
+        "mime": "text/markdown"
+      },
+      "id": "7",
+      "prio": 6,
+      "references": [],
+      "title": "Implement role-based access control middleware",
+      "type": "note"
     }
   ],
-  "testing": [],
+  "in-progress": [
+    {
+      "assignedTo": {
+        "name": "Copilot Agent"
+      },
+      "category": "backend",
+      "creation_time": "2025-01-30T00:00:00.000Z",
+      "description": {
+        "content": "Update all backend controllers to fetch roles and statuses from database instead of using hardcoded enum values",
+        "mime": "text/markdown"
+      },
+      "details": {
+        "content": "# Backend Code Updates\n\n## Controllers to Update\n- authController.ts: Replace enum checks with role lookup by code\n- userController.ts: Return role codes and names from database\n- sessionController.ts: Use statusId instead of enum status\n- attendanceController.ts: Use statusId for attendance status\n- paymentController.ts: Use statusId for payment status\n- bookingController.ts: Use statusId for booking status\n\n## Changes Required\n- Replace `user.role === UserRole.CLUB_ADMIN` with `user.primaryRole?.code === 'CLUB_ADMIN'`\n- Replace enum assignments with statusId lookups\n- Add Prisma includes for role and status relations\n- Update validation to check against database role codes\n- Add role/status lookup utility functions",
+        "mime": "text/markdown"
+      },
+      "id": "4",
+      "prio": 3,
+      "references": [],
+      "title": "Update backend controllers to use database lookups",
+      "type": "note"
+    }
+  ],
+  "testing": [
+    {
+      "assignedTo": {
+        "name": "Copilot Agent"
+      },
+      "category": "database",
+      "creation_time": "2025-01-30T00:00:00.000Z",
+      "description": {
+        "content": "Replace backend/prisma/schema.prisma with the updated schema that includes lookup tables for all enums and facility management models",
+        "mime": "text/markdown"
+      },
+      "details": {
+        "content": "# Schema Migration Tasks - COMPLETED ✅\n\n- ✅ Replace hardcoded enums with lookup tables (UserStatus, SessionStatus, AttendanceStatus, PaymentStatus, BookingStatus, MembershipType)\n- ✅ Convert User.role to User.primaryRoleId with foreign key\n- ✅ Add User.facilityId for facility staff\n- ✅ Enhance Role model with code, scope, permissions, isActive, sortOrder\n- ✅ Add Facility, Venue, Ground models\n- ✅ Convert all status fields to foreign keys (statusId)\n- ✅ Run `npx prisma migrate dev --name add-rbac-and-facilities`\n- ✅ Migration applied successfully to database\n\n## Testing Status\nReady for integration testing with updated controllers",
+        "mime": "text/markdown"
+      },
+      "id": "2",
+      "prio": 1,
+      "references": [],
+      "title": "Migrate Prisma schema to database-driven roles and statuses",
+      "type": "bug"
+    },
+    {
+      "assignedTo": {
+        "name": "Copilot Agent"
+      },
+      "category": "database",
+      "creation_time": "2025-01-30T00:00:00.000Z",
+      "description": {
+        "content": "Run the Prisma seed file to populate all 22 roles and status enums in the database",
+        "mime": "text/markdown"
+      },
+      "details": {
+        "content": "# Seed Tasks - COMPLETED ✅\n\n- ✅ Ensure seed.ts is configured in package.json prisma.seed\n- ✅ Run `npx prisma db seed` to populate:\n  - ✅ 22 roles (SUPER_ADMIN, SYSTEM_SUPPORT, CLUB_ADMIN, CLUB_MANAGER, HEAD_COACH, COACH, FREELANCER, PARENT, FACILITY_MANAGER, BOOKINGS_COORDINATOR, VENUE_MANAGER, GROUND_MANAGER, GROUNDSKEEPER, MAINTENANCE_TECH, EQUIPMENT_MANAGER, SECURITY_STAFF, CLEANING_STAFF, ACCOUNTANT, FRONT_DESK, CONTENT_MANAGER, MEDICAL_STAFF, STUDENT)\n  - ✅ 4 user statuses (ACTIVE, PENDING, SUSPENDED, INACTIVE)\n  - ✅ 4 session statuses (SCHEDULED, ONGOING, COMPLETED, CANCELLED)\n  - ✅ 3 attendance statuses (PRESENT, LATE, ABSENT)\n  - ✅ 4 payment statuses (PENDING, COMPLETED, FAILED, REFUNDED)\n  - ✅ 4 booking statuses (PENDING, CONFIRMED, COMPLETED, CANCELLED)\n  - ✅ 2 membership types (STANDARD, PREMIUM)\n- ✅ Verify all records are created successfully\n\n## Verification Results\nAll 22 roles and status lookups seeded successfully. Database ready for use.",
+        "mime": "text/markdown"
+      },
+      "id": "3",
+      "prio": 2,
+      "references": [],
+      "title": "Execute Prisma seed for 22 roles and status enums",
+      "type": "note"
+    }
+  ],
   "done": []
 }

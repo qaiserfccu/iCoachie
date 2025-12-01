@@ -108,8 +108,12 @@ io.use(async (socket, next) => {
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key') as any;
+    const userId = typeof decoded.sub !== 'undefined' ? Number(decoded.sub) : undefined;
+    if (!userId || Number.isNaN(userId)) {
+      return next(new Error('Authentication failed'))
+    }
     const user = await prisma.user.findUnique({
-      where: { id: decoded.id },
+      where: { id: userId },
       include: { club: true }
     });
 

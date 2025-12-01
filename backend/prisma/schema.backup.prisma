@@ -1,6 +1,9 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
 generator client {
   provider = "prisma-client-js"
   engineType = "library"
@@ -11,14 +14,50 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// All enums now managed via database tables for flexibility
+enum UserRole {
+  CLUB_ADMIN
+  COACH
+  FREELANCER
+  PARENT
+  KID
+}
 
-enum FileType {
-  AVATAR
-  DOCUMENT
-  CLUB_LOGO
-  CERTIFICATE
-  OTHER
+enum UserStatus {
+  ACTIVE
+  PENDING
+  SUSPENDED
+}
+
+enum MembershipType {
+  STANDARD
+  PREMIUM
+}
+
+enum SessionStatus {
+  SCHEDULED
+  ONGOING
+  COMPLETED
+  CANCELLED
+}
+
+enum AttendanceStatus {
+  PRESENT
+  LATE
+  ABSENT
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  COMPLETED
+  CANCELLED
 }
 
 model User {
@@ -26,22 +65,17 @@ model User {
   name          String
   email         String   @unique
   passwordHash  String
-  primaryRoleId Int?     // Main role for the user
-  statusId      Int?     // Reference to UserStatus lookup
+  role          UserRole
+  status        UserStatus @default(ACTIVE)
   avatarUrl     String?
   clubId        Int?     // Tenant ID for row-level multi-tenancy
-  facilityId    Int?     // For facility staff
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   deletedAt     DateTime? // Soft delete
 
   // Relations
-  primaryRole   Role?    @relation("UserPrimaryRole", fields: [primaryRoleId], references: [id])
-  status        UserStatus? @relation(fields: [statusId], references: [id])
   club          Club?    @relation("ClubAdmin", fields: [clubId], references: [id])
-  facility      Facility? @relation("FacilityStaff", fields: [facilityId], references: [id])
   managedClub   Club?    @relation("ClubManager")
-  managedFacility Facility? @relation("FacilityManager")
   students      Student[] @relation("StudentUser")
   children      Student[] @relation("ParentUser")
   coachedStudents Student[] @relation("CoachUser")
@@ -60,8 +94,6 @@ model User {
   userRoles     UserRoleAssignment[]
   passwordResets PasswordReset[]
   uploadedFiles  File[]
-  managedVenues Venue[] @relation("VenueManager")
-  managedGrounds Ground[] @relation("GroundManager")
 
   @@map("users")
 }
@@ -144,7 +176,7 @@ model Session {
   location        String?
   maxCapacity     Int?
   currentEnrolled Int           @default(0)
-  statusId        Int?          // Reference to SessionStatus lookup
+  status          SessionStatus @default(SCHEDULED)
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
   deletedAt       DateTime?     // Soft delete
@@ -152,7 +184,6 @@ model Session {
   // Relations
   coach           User          @relation("CoachSessions", fields: [coachId], references: [id])
   club            Club?         @relation(fields: [clubId], references: [id])
-  status          SessionStatus? @relation(fields: [statusId], references: [id])
   enrollments     SessionEnrollment[]
   attendances     Attendance[]
   evaluations     Evaluation[]
@@ -180,7 +211,7 @@ model Attendance {
   id          Int              @id @default(autoincrement())
   sessionId   Int
   studentId   Int
-  statusId    Int?             // Reference to AttendanceStatus lookup
+  status      AttendanceStatus
   checkinTime DateTime?
   notes       String?
   recordedBy  Int
@@ -190,7 +221,6 @@ model Attendance {
   // Relations
   session     Session          @relation(fields: [sessionId], references: [id])
   student     Student          @relation(fields: [studentId], references: [id])
-  status      AttendanceStatus? @relation(fields: [statusId], references: [id])
   recorder    User             @relation(fields: [recordedBy], references: [id])
 
   @@unique([sessionId, studentId])
@@ -224,7 +254,7 @@ model Payment {
   amount         Decimal       @db.Decimal(10, 2)
   currency       String        @default("USD")
   paymentType    String
-  statusId       Int?          // Reference to PaymentStatus lookup
+  status         PaymentStatus @default(PENDING)
   stripePaymentId String?
   description    String?
   createdAt      DateTime      @default(now())
@@ -233,7 +263,6 @@ model Payment {
 
   // Relations
   user           User          @relation(fields: [userId], references: [id])
-  status         PaymentStatus? @relation(fields: [statusId], references: [id])
 
   @@map("payments")
 }
@@ -259,13 +288,12 @@ model Booking {
   id          Int           @id @default(autoincrement())
   freelancerId Int
   clientId    Int
-  venueId     Int?          // Optional venue booking
   sessionDate DateTime
   startTime   DateTime
   endTime     DateTime
   serviceType String
   amount      Decimal?      @db.Decimal(10, 2)
-  statusId    Int?          // Reference to BookingStatus lookup
+  status      BookingStatus @default(PENDING)
   notes       String?
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
@@ -274,8 +302,6 @@ model Booking {
   // Relations
   freelancer  User          @relation("BookingFreelancer", fields: [freelancerId], references: [id])
   client      User          @relation("BookingClient", fields: [clientId], references: [id])
-  venue       Venue?        @relation(fields: [venueId], references: [id])
-  status      BookingStatus? @relation(fields: [statusId], references: [id])
   reviews     Review[]
 
   @@map("bookings")
@@ -318,19 +344,12 @@ model Profile {
 
 model Role {
   id          Int      @id @default(autoincrement())
-  code        String   @unique  // e.g., SUPER_ADMIN, CLUB_ADMIN
-  name        String              // Display name
+  name        String   @unique
   description String?
-  scope       String?             // GLOBAL, CLUB, FACILITY, VENUE
-  permissions Json?               // JSONB for flexible permission structure
-  isActive    Boolean  @default(true)
-  sortOrder   Int      @default(0)
   createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
 
   // Relations
   userRoles   UserRoleAssignment[]
-  primaryUsers User[]  @relation("UserPrimaryRole")
 
   @@map("roles")
 }
@@ -361,143 +380,12 @@ model PasswordReset {
   @@map("password_resets")
 }
 
-// Lookup tables for dynamic enum values
-model UserStatus {
-  id        Int      @id @default(autoincrement())
-  code      String   @unique  // ACTIVE, PENDING, SUSPENDED
-  name      String
-  isActive  Boolean  @default(true)
-  sortOrder Int      @default(0)
-  createdAt DateTime @default(now())
-  
-  users     User[]
-  
-  @@map("user_statuses")
-}
-
-model SessionStatus {
-  id        Int      @id @default(autoincrement())
-  code      String   @unique  // SCHEDULED, ONGOING, COMPLETED, CANCELLED
-  name      String
-  isActive  Boolean  @default(true)
-  sortOrder Int      @default(0)
-  createdAt DateTime @default(now())
-  
-  sessions  Session[]
-  
-  @@map("session_statuses")
-}
-
-model AttendanceStatus {
-  id         Int      @id @default(autoincrement())
-  code       String   @unique  // PRESENT, LATE, ABSENT
-  name       String
-  isActive   Boolean  @default(true)
-  sortOrder  Int      @default(0)
-  createdAt  DateTime @default(now())
-  
-  attendances Attendance[]
-  
-  @@map("attendance_statuses")
-}
-
-model PaymentStatus {
-  id        Int      @id @default(autoincrement())
-  code      String   @unique  // PENDING, COMPLETED, FAILED, REFUNDED
-  name      String
-  isActive  Boolean  @default(true)
-  sortOrder Int      @default(0)
-  createdAt DateTime @default(now())
-  
-  payments  Payment[]
-  
-  @@map("payment_statuses")
-}
-
-model BookingStatus {
-  id        Int      @id @default(autoincrement())
-  code      String   @unique  // PENDING, CONFIRMED, COMPLETED, CANCELLED
-  name      String
-  isActive  Boolean  @default(true)
-  sortOrder Int      @default(0)
-  createdAt DateTime @default(now())
-  
-  bookings  Booking[]
-  
-  @@map("booking_statuses")
-}
-
-model MembershipType {
-  id        Int      @id @default(autoincrement())
-  code      String   @unique  // STANDARD, PREMIUM
-  name      String
-  isActive  Boolean  @default(true)
-  sortOrder Int      @default(0)
-  createdAt DateTime @default(now())
-  
-  @@map("membership_types")
-}
-
-// Facility management models
-model Facility {
-  id          Int      @id @default(autoincrement())
-  name        String
-  managerId   Int?     @unique
-  location    String?
-  address     String?
-  description String?
-  amenities   String[] // Array of amenity strings
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  deletedAt   DateTime?
-  
-  manager     User?    @relation("FacilityManager", fields: [managerId], references: [id])
-  staff       User[]   @relation("FacilityStaff")
-  venues      Venue[]
-  grounds     Ground[]
-  
-  @@map("facilities")
-}
-
-model Venue {
-  id          Int      @id @default(autoincrement())
-  facilityId  Int
-  managerId   Int?     @unique
-  name        String
-  venueType   String   // Hall, Court, Studio, etc.
-  capacity    Int?
-  hourlyRate  Decimal? @db.Decimal(10, 2)
-  isAvailable Boolean  @default(true)
-  amenities   String[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  deletedAt   DateTime?
-  
-  facility    Facility @relation(fields: [facilityId], references: [id])
-  manager     User?    @relation("VenueManager", fields: [managerId], references: [id])
-  bookings    Booking[]
-  
-  @@map("venues")
-}
-
-model Ground {
-  id          Int      @id @default(autoincrement())
-  facilityId  Int
-  managerId   Int?     @unique
-  name        String
-  groundType  String   // Football, Cricket, Rugby, etc.
-  surfaceType String?  // Grass, Artificial, etc.
-  dimensions  String?  // Field dimensions
-  capacity    Int?
-  isAvailable Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  deletedAt   DateTime?
-  
-  facility    Facility @relation(fields: [facilityId], references: [id])
-  manager     User?    @relation("GroundManager", fields: [managerId], references: [id])
-  
-  @@map("grounds")
+enum FileType {
+  AVATAR
+  DOCUMENT
+  CLUB_LOGO
+  CERTIFICATE
+  OTHER
 }
 
 model File {

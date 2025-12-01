@@ -38,13 +38,48 @@ class AuthService {
   // Login user
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
     try {
-      const response = await apiClient.post<AuthResponse>('/auth/login', credentials)
+      // Backend /auth/login returns only { token }
+      const loginResp = await apiClient.post<{ token: string }>('/auth/login', credentials)
 
-      // Store token and user data
-      this.setToken(response.token)
-      this.setUser(response.user)
+      // Store token first so subsequent request is authorized
+      this.setToken(loginResp.token)
 
-      return response
+      // Fetch current user profile and map to frontend shape
+      const me = await apiClient.get<{
+        user: { id: number; email: string; createdAt: string }
+        profile?: { displayName?: string; avatarUrl?: string }
+        roles: string[]
+      }>('/users/me')
+
+      const displayName = me.profile?.displayName || ''
+      const [firstName, ...rest] = displayName.trim().split(' ')
+      const lastName = rest.join(' ')
+      const roleBackend = (me.roles?.[0] || '').toLowerCase()
+      const roleMap: Record<string, 'admin' | 'coach' | 'student'> = {
+        superadmin: 'admin',
+        admin: 'admin',
+        coach: 'coach',
+        student: 'student',
+        parent: 'student',
+        freelancer: 'coach'
+      }
+      const mappedRole = roleMap[roleBackend] || 'coach'
+
+      const user: User = {
+        id: String(me.user.id),
+        email: me.user.email,
+        firstName: firstName || '',
+        lastName: lastName || '',
+        role: mappedRole,
+        clubId: undefined,
+        avatar: me.profile?.avatarUrl,
+        createdAt: new Date(me.user.createdAt).toISOString(),
+        updatedAt: new Date().toISOString(),
+      }
+
+      this.setUser(user)
+
+      return { user, token: loginResp.token }
     } catch (error) {
       throw new Error('Login failed. Please check your credentials.')
     }
@@ -92,7 +127,8 @@ class AuthService {
   getCurrentUser(): User | null {
     try {
       const userData = localStorage.getItem(this.USER_KEY)
-      return userData ? JSON.parse(userData) : null
+      if (!userData || userData === 'undefined' || userData === 'null') return null
+      return JSON.parse(userData)
     } catch (error) {
       console.error('Error parsing user data:', error)
       return null
@@ -151,6 +187,10 @@ class AuthService {
   }
 
   private setUser(user: User): void {
+    if (!user) {
+      localStorage.removeItem(this.USER_KEY)
+      return
+    }
     localStorage.setItem(this.USER_KEY, JSON.stringify(user))
   }
 

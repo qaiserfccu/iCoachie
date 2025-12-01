@@ -3,6 +3,7 @@ import prisma from '../db';
 import { requireAuth, AuthRequest } from '../middleware/jwtAuth';
 import { requireRole } from '../middleware/requireRole';
 import { socketService } from '../server';
+import { getAttendanceStatusIdByCode } from '../utils/lookups';
 
 const router = express.Router();
 
@@ -32,7 +33,12 @@ router.get('/session/:sessionId', requireAuth, async (req: AuthRequest, res) => 
       },
       select: {
         id: true,
-        status: true,
+        status: {
+          select: {
+            code: true,
+            name: true
+          }
+        },
         checkinTime: true,
         notes: true,
         recordedAt: true,
@@ -167,8 +173,14 @@ router.post('/session/:sessionId/student/:studentId', requireAuth, async (req: A
     const clubId = req.user!.clubId;
     const currentUserId = req.user!.id;
 
-    if (!status || !['PRESENT', 'ABSENT', 'LATE'].includes(status)) {
-      return res.status(400).json({ message: 'Valid status (PRESENT, ABSENT, LATE) is required' });
+    if (!status) {
+      return res.status(400).json({ message: 'Status is required' });
+    }
+
+    // Validate status with database lookup
+    const statusId = await getAttendanceStatusIdByCode(status);
+    if (!statusId) {
+      return res.status(400).json({ message: `Invalid status: ${status}` });
     }
 
     // Verify session exists in club and is not in the future
@@ -233,14 +245,19 @@ router.post('/session/:sessionId/student/:studentId', requireAuth, async (req: A
       data: {
         sessionId,
         studentId,
-        status,
+        statusId,
         checkinTime: checkinTime ? new Date(checkinTime) : null,
         notes,
         recordedBy: currentUserId
       },
       select: {
         id: true,
-        status: true,
+        status: {
+          select: {
+            code: true,
+            name: true
+          }
+        },
         checkinTime: true,
         notes: true,
         recordedAt: true,
@@ -273,8 +290,13 @@ router.put('/:id', requireAuth, async (req: AuthRequest, res) => {
     const clubId = req.user!.clubId;
     const currentUserId = req.user!.id;
 
-    if (status && !['PRESENT', 'ABSENT', 'LATE'].includes(status)) {
-      return res.status(400).json({ message: 'Valid status (PRESENT, ABSENT, LATE) is required' });
+    // Validate status with database lookup if provided
+    let statusId = undefined;
+    if (status) {
+      statusId = await getAttendanceStatusIdByCode(status);
+      if (!statusId) {
+        return res.status(400).json({ message: `Invalid status: ${status}` });
+      }
     }
 
     // Verify attendance exists and belongs to user's club
@@ -307,14 +329,19 @@ router.put('/:id', requireAuth, async (req: AuthRequest, res) => {
     const updatedAttendance = await prisma.attendance.update({
       where: { id: attendanceId },
       data: {
-        status,
+        statusId,
         checkinTime: checkinTime ? new Date(checkinTime) : undefined,
         notes
       },
       select: {
         id: true,
         sessionId: true,
-        status: true,
+        status: {
+          select: {
+            code: true,
+            name: true
+          }
+        },
         checkinTime: true,
         notes: true,
         recordedAt: true,

@@ -69,7 +69,7 @@ export default function LoginPage() {
 
     startLoading('auth-login', 'Signing in...')
     try {
-      await authService.login(email, password)
+      await authService.login({ email, password })
       router.push("/dashboard")
     } catch (error) {
       // Error is already handled by the auth service and API client
