@@ -340,7 +340,7 @@ router.put('/:id', requireAuth, async (req: AuthRequest, res) => {
 });
 
 // Delete evaluation (admin only)
-router.delete('/:id', requireAuth, requireRole('SuperAdmin'), async (req: AuthRequest, res) => {
+router.delete('/:id', requireAuth, requireRole(['SUPER_ADMIN']), async (req: AuthRequest, res) => {
   try {
     const evaluationId = parseInt(req.params.id);
     const clubId = req.user!.clubId;

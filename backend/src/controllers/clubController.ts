@@ -40,7 +40,7 @@ const router = express.Router();
  */
 
 // Get all clubs (SuperAdmin only)
-router.get('/', requireAuth, requireRole('SuperAdmin'), async (req: AuthRequest, res) => {
+router.get('/', requireAuth, requireRole(['SUPER_ADMIN']), async (req: AuthRequest, res) => {
   try {
     const clubs = await prisma.club.findMany({
       where: {
@@ -291,7 +291,7 @@ router.get('/my', requireAuth, async (req: AuthRequest, res) => {
  */
 
 // Create club (SuperAdmin only)
-router.post('/', requireAuth, requireRole('SuperAdmin'), async (req: AuthRequest, res) => {
+router.post('/', requireAuth, requireRole(['SUPER_ADMIN']), async (req: AuthRequest, res) => {
   try {
     const { name, location, description, logoUrl, adminId } = req.body;
     if (!name || !adminId) return res.status(400).json({ message: 'Name and adminId are required' });
@@ -476,7 +476,7 @@ router.put('/:id', requireAuth, async (req: AuthRequest, res) => {
  */
 
 // Soft delete club (SuperAdmin only)
-router.delete('/:id', requireAuth, requireRole('SuperAdmin'), async (req: AuthRequest, res) => {
+router.delete('/:id', requireAuth, requireRole(['SUPER_ADMIN']), async (req: AuthRequest, res) => {
   try {
     const clubId = parseInt(req.params.id);
 

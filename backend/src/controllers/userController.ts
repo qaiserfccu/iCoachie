@@ -2,7 +2,7 @@ import express from 'express';
 import prisma from '../db';
 import bcrypt from 'bcrypt';
 import { requireAuth, AuthRequest } from '../middleware/jwtAuth';
-import { requireRole } from '../middleware/requireRole';
+import { requireRole } from '../middleware';
 import { getRoleIdByCode, getUserStatusIdByCode, getAllActiveRoles } from '../utils/lookups';
 
 const router = express.Router();
@@ -25,21 +25,18 @@ router.get('/me', requireAuth, async (req: AuthRequest, res) => {
             phone: true
           }
         },
-        userRoles: {
+        primaryRole: {
           select: {
-            role: {
-              select: {
-                name: true
-              }
-            }
+            code: true,
+            name: true,
+            description: true,
+            scope: true
           }
         }
       }
     });
 
     if (!user) return res.status(404).json({ message: 'Not found' });
-
-    const roles = user.userRoles.map((ur: any) => ur.role.name);
 
     res.json({
       user: {
@@ -48,7 +45,7 @@ router.get('/me', requireAuth, async (req: AuthRequest, res) => {
         createdAt: user.createdAt
       },
       profile: user.profile,
-      roles
+      role: user.primaryRole
     });
   } catch (err) {
     console.error(err);
@@ -98,7 +95,7 @@ router.get('/roles', async (_, res) => {
 });
 
 // List users in the club (admin only)
-router.get('/users', requireAuth, requireRole('SuperAdmin'), async (req: AuthRequest, res) => {
+router.get('/users', requireAuth, requireRole(['SUPER_ADMIN']), async (req: AuthRequest, res) => {
   try {
     const clubId = req.user!.clubId;
     const users = await prisma.user.findMany({
@@ -151,7 +148,7 @@ router.get('/users', requireAuth, requireRole('SuperAdmin'), async (req: AuthReq
 });
 
 // Create user in the club (admin only)
-router.post('/users', requireAuth, requireRole('SuperAdmin'), async (req: AuthRequest, res) => {
+router.post('/users', requireAuth, requireRole(['SUPER_ADMIN']), async (req: AuthRequest, res) => {
   try {
     const { email, password, name, role, display_name } = req.body;
     if (!email || !password || !name || !role) return res.status(400).json({ message: 'Email, password, name, and role are required' });
@@ -260,7 +257,7 @@ router.put('/users/:id', requireAuth, async (req: AuthRequest, res) => {
 });
 
 // Soft delete user (admin only)
-router.delete('/users/:id', requireAuth, requireRole('SuperAdmin'), async (req: AuthRequest, res) => {
+router.delete('/users/:id', requireAuth, requireRole(['SUPER_ADMIN']), async (req: AuthRequest, res) => {
   try {
     const userId = parseInt(req.params.id);
     const clubId = req.user!.clubId;
@@ -290,7 +287,7 @@ router.delete('/users/:id', requireAuth, requireRole('SuperAdmin'), async (req: 
 });
 
 // Assign role to a user (admin only)
-router.post('/assign-role', requireAuth, requireRole('SuperAdmin'), async (req: AuthRequest, res) => {
+router.post('/assign-role', requireAuth, requireRole(['SUPER_ADMIN']), async (req: AuthRequest, res) => {
   try {
     const { userId, roleName } = req.body;
     if (!userId || !roleName) return res.status(400).json({ message: 'userId and roleName required' });

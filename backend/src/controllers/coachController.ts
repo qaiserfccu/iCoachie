@@ -183,7 +183,7 @@ router.get('/:id', requireAuth, async (req: AuthRequest, res) => {
 });
 
 // Create coach
-router.post('/', requireAuth, requireRole('SuperAdmin'), async (req: AuthRequest, res) => {
+router.post('/', requireAuth, requireRole(['SUPER_ADMIN']), async (req: AuthRequest, res) => {
   try {
     const {
       email,
@@ -412,7 +412,7 @@ router.put('/:id', requireAuth, async (req: AuthRequest, res) => {
 });
 
 // Soft delete coach
-router.delete('/:id', requireAuth, requireRole('SuperAdmin'), async (req: AuthRequest, res) => {
+router.delete('/:id', requireAuth, requireRole(['SUPER_ADMIN']), async (req: AuthRequest, res) => {
   try {
     const coachId = parseInt(req.params.id);
     const clubId = req.user!.clubId;

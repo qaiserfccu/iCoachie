@@ -10,7 +10,7 @@ export interface RegisterData {
   password: string
   firstName: string
   lastName: string
-  role: 'CLUB_ADMIN' | 'COACH' | 'FREELANCER' | 'PARENT'
+  role: string // Role code from database (e.g., 'CLUB_ADMIN', 'COACH', 'FREELANCER', etc.)
   clubId?: string
 }
 
@@ -19,7 +19,12 @@ export interface User {
   email: string
   firstName: string
   lastName: string
-  role: 'admin' | 'coach' | 'student'
+  role: {
+    code: string
+    name: string
+    description?: string
+    scope?: string
+  }
   clubId?: string
   avatar?: string
   createdAt: string
@@ -44,33 +49,23 @@ class AuthService {
       // Store token first so subsequent request is authorized
       this.setToken(loginResp.token)
 
-      // Fetch current user profile and map to frontend shape
+      // Fetch current user profile with role object
       const me = await apiClient.get<{
         user: { id: number; email: string; createdAt: string }
         profile?: { displayName?: string; avatarUrl?: string }
-        roles: string[]
+        role?: { code: string; name: string; description?: string; scope?: string }
       }>('/users/me')
 
       const displayName = me.profile?.displayName || ''
       const [firstName, ...rest] = displayName.trim().split(' ')
       const lastName = rest.join(' ')
-      const roleBackend = (me.roles?.[0] || '').toLowerCase()
-      const roleMap: Record<string, 'admin' | 'coach' | 'student'> = {
-        superadmin: 'admin',
-        admin: 'admin',
-        coach: 'coach',
-        student: 'student',
-        parent: 'student',
-        freelancer: 'coach'
-      }
-      const mappedRole = roleMap[roleBackend] || 'coach'
 
       const user: User = {
         id: String(me.user.id),
         email: me.user.email,
         firstName: firstName || '',
         lastName: lastName || '',
-        role: mappedRole,
+        role: me.role || { code: 'STUDENT', name: 'Student' },
         clubId: undefined,
         avatar: me.profile?.avatarUrl,
         createdAt: new Date(me.user.createdAt).toISOString(),
@@ -148,24 +143,24 @@ class AuthService {
   }
 
   // Check if user has specific role
-  hasRole(role: string): boolean {
+  hasRole(roleCode: string): boolean {
     const user = this.getCurrentUser()
-    return user?.role === role
+    return user?.role?.code === roleCode
   }
 
   // Check if user is admin
   isAdmin(): boolean {
-    return this.hasRole('admin')
+    return this.hasRole('SUPER_ADMIN') || this.hasRole('CLUB_ADMIN')
   }
 
   // Check if user is coach
   isCoach(): boolean {
-    return this.hasRole('coach')
+    return this.hasRole('COACH') || this.hasRole('HEAD_COACH')
   }
 
   // Check if user is student
   isStudent(): boolean {
-    return this.hasRole('student')
+    return this.hasRole('STUDENT')
   }
 
   // Refresh token (if implemented on backend)

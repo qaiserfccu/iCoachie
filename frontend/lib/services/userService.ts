@@ -11,7 +11,13 @@ export interface User {
     avatarUrl?: string
     phone?: string
   }
-  roles: string[]
+  role?: {
+    code: string
+    name: string
+    description?: string
+    scope?: string
+  }
+  roles?: string[] // Legacy support for existing components
 }
 
 export interface CreateUserData {
@@ -29,7 +35,12 @@ export interface UpdateUserData {
 
 export interface Role {
   id: number
+  code: string
   name: string
+  description?: string
+  scope: string
+  isActive: boolean
+  sortOrder: number
 }
 
 class UserService {
@@ -78,7 +89,7 @@ class UserService {
   // Get available roles
   async getRoles(): Promise<Role[]> {
     try {
-      const response = await apiClient.get<Role[]>('/roles')
+      const response = await apiClient.get<Role[]>('/users/roles')
       return response
     } catch (error) {
       throw new Error('Failed to fetch roles')

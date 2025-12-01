@@ -82,11 +82,7 @@ export function DashboardHeader() {
                 <div className="hidden md:block text-left">
                   <p className="text-sm font-medium text-foreground">{user?.firstName} {user?.lastName}</p>
                   <p className="text-xs text-muted-foreground" data-testid="user-role">
-                    {user?.role === 'admin' ? 'Club Admin' : 
-                     user?.role === 'coach' ? 'Coach' : 
-                     user?.role === 'student' ? 'Student' : 
-                     user?.role === 'freelancer' ? 'Freelancer' :
-                     user?.role === 'parent' ? 'Parent' : 'User'}
+                    {user?.role?.name || 'User'}
                   </p>
                 </div>
               </button>

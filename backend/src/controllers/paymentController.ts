@@ -374,7 +374,7 @@ router.put('/:id', requireAuth, async (req: AuthRequest, res) => {
 });
 
 // Delete payment (admin only, only if not completed)
-router.delete('/:id', requireAuth, requireRole('SuperAdmin'), async (req: AuthRequest, res) => {
+router.delete('/:id', requireAuth, requireRole(['SUPER_ADMIN']), async (req: AuthRequest, res) => {
   try {
     const paymentId = parseInt(req.params.id);
     const clubId = req.user!.clubId;

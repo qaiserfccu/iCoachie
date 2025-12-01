@@ -1,7 +1,7 @@
 import express from 'express';
 import prisma from '../db';
 import { requireAuth, AuthRequest } from '../middleware/jwtAuth';
-import { requireRole } from '../middleware/requireRole';
+import { requireRole } from '../middleware';
 import { socketService } from '../server';
 import { getAttendanceStatusIdByCode } from '../utils/lookups';
 
@@ -373,7 +373,7 @@ router.put('/:id', requireAuth, async (req: AuthRequest, res) => {
 });
 
 // Delete attendance record (admin only)
-router.delete('/:id', requireAuth, requireRole('SuperAdmin'), async (req: AuthRequest, res) => {
+router.delete('/:id', requireAuth, requireRole(['SUPER_ADMIN']), async (req: AuthRequest, res) => {
   try {
     const attendanceId = parseInt(req.params.id);
     const clubId = req.user!.clubId;
