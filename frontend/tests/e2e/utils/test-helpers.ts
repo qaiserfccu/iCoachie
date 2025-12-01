@@ -27,8 +27,91 @@ export class TestHelpers {
   }) {
     await this.page.goto('/register');
     
+    // Listen for console messages and network requests
+    const errors: string[] = [];
+    const warnings: string[] = [];
+    const networkErrors: string[] = [];
+    
+    this.page.on('console', msg => {
+      const text = msg.text();
+      if (msg.type() === 'error') {
+        errors.push(text);
+      } else if (msg.type() === 'warning') {
+        warnings.push(text);
+      }
+      console.log(`Console ${msg.type()}: ${text}`);
+    });
+    
+    this.page.on('response', response => {
+      if (response.status() === 404) {
+        networkErrors.push(`404: ${response.url()}`);
+      } else if (!response.ok()) {
+        networkErrors.push(`${response.status()}: ${response.url()}`);
+      }
+    });
+    
+    this.page.on('requestfailed', request => {
+      networkErrors.push(`FAILED: ${request.url()}`);
+    });
+    
     // Wait for the page to load and auth check to complete
-    await this.page.waitForSelector('input[id="fullName"]', { timeout: 10000 });
+    console.log('Waiting for fullName input...');
+    await this.page.waitForSelector('input[id="fullName"]', { timeout: 15000 });
+    console.log('fullName input found');
+    
+    // Wait for all form elements to be visible
+    console.log('Waiting for email input...');
+    await this.page.waitForSelector('input[id="email"]', { timeout: 5000 });
+    console.log('Email input found');
+    
+    console.log('Waiting for password input...');
+    await this.page.waitForSelector('input[id="password"]', { timeout: 5000 });
+    console.log('Password input found');
+    
+    console.log('Waiting for terms checkbox...');
+    // Try different selectors for the terms checkbox
+    let termsFound = false;
+    try {
+      await this.page.waitForSelector('input[id="terms"]', { timeout: 2000 });
+      console.log('Terms checkbox found with input[id="terms"]');
+      termsFound = true;
+    } catch (e) {
+      console.log('input[id="terms"] not found, trying other selectors...');
+      try {
+        await this.page.waitForSelector('input[type="checkbox"]', { timeout: 2000 });
+        console.log('Terms checkbox found with input[type="checkbox"]');
+        termsFound = true;
+      } catch (e2) {
+        console.log('input[type="checkbox"] not found either');
+        // Check what elements are actually in the form
+        const formHtml = await this.page.locator('form').innerHTML();
+        console.log('Form HTML:', formHtml.substring(0, 1000));
+        
+        // Look for checkbox-related elements
+        const checkboxElements = await this.page.locator('input[type="checkbox"], [role="checkbox"], .checkbox').all();
+        console.log(`Found ${checkboxElements.length} checkbox-related elements:`);
+        for (let i = 0; i < checkboxElements.length; i++) {
+          const outerHTML = await checkboxElements[i].evaluate(el => el.outerHTML);
+          console.log(`  Checkbox ${i}: ${outerHTML}`);
+        }
+        throw e2;
+      }
+    }
+    
+    if (!termsFound) {
+      throw new Error('Terms checkbox not found');
+    }
+    
+    // Check for console errors
+    if (errors.length > 0) {
+      console.log('Console errors:', errors);
+    }
+    if (warnings.length > 0) {
+      console.log('Console warnings:', warnings);
+    }
+    if (networkErrors.length > 0) {
+      console.log('Network errors:', networkErrors);
+    }
     
     // Fill full name
     await this.page.fill('input[id="fullName"]', userData.name);
@@ -50,13 +133,142 @@ export class TestHelpers {
     const buttonId = roleButtonMap[userData.role as keyof typeof roleButtonMap] || 'parent';
     await this.page.click(`button:has-text("${buttonId === 'club' ? 'Club' : buttonId === 'coach' ? 'Coach' : buttonId === 'freelancer' ? 'Freelancer' : 'Parent'}")`);
     
-    // Accept terms
-    await this.page.check('input[id="terms"]');
+    // Accept terms - click the Shadcn Checkbox root element
+    console.log('Looking for terms checkbox...');
+    try {
+      // Try to find the Checkbox root element by id
+      await this.page.waitForSelector('[data-slot="checkbox"][id="terms"]', { state: 'visible', timeout: 5000 });
+      console.log('Found Checkbox root element with id="terms"');
+      await this.page.click('[data-slot="checkbox"][id="terms"]');
+      console.log('Clicked Checkbox root element');
+      
+      // Verify it's checked
+      const isChecked = await this.page.isChecked('[data-slot="checkbox"][id="terms"]');
+      console.log('Checkbox is checked after click:', isChecked);
+    } catch (e) {
+      console.log('Failed to find Checkbox root element, trying input[type="checkbox"]');
+      try {
+        // Get all checkboxes and inspect them
+        const checkboxes = await this.page.$$('input[type="checkbox"]');
+        console.log('Found', checkboxes.length, 'input checkboxes on page');
+        if (checkboxes.length > 0) {
+          console.log('Inspecting first input checkbox...');
+          const boundingBox = await checkboxes[0].boundingBox();
+          console.log('Input checkbox bounding box:', boundingBox);
+          const isVisible = await checkboxes[0].isVisible();
+          console.log('Input checkbox visible:', isVisible);
+          const isEnabled = await checkboxes[0].isEnabled();
+          console.log('Input checkbox enabled:', isEnabled);
+          
+          if (isVisible && isEnabled && boundingBox) {
+            await checkboxes[0].click({ force: true });
+            console.log('Clicked input checkbox with force');
+            
+            // Verify the checkbox is now checked
+            const isChecked = await checkboxes[0].isChecked();
+            console.log('Input checkbox is checked after click:', isChecked);
+          } else {
+            console.log('Input checkbox not clickable due to visibility/enabled state');
+          }
+        } else {
+          console.log('No input checkboxes found');
+        }
+      } catch (e2) {
+        console.log('Failed to click checkbox, error:', e2.message);
+      }
+    }
     
     // Submit form
+    console.log('Submitting registration form...');
+    
+    // Check for JavaScript errors before submission
+    const jsErrors = [];
+    this.page.on('pageerror', error => {
+      jsErrors.push(error.message);
+    });
+    
+    // Check if submit button is visible and enabled
+    const submitButton = this.page.locator('button[type="submit"]');
+    const isSubmitVisible = await submitButton.isVisible();
+    const isSubmitEnabled = await submitButton.isEnabled();
+    console.log('Submit button visible:', isSubmitVisible, 'enabled:', isSubmitEnabled);
+    
+    // Check form validity
+    const form = this.page.locator('form');
+    const isFormValid = await form.evaluate(formEl => (formEl as HTMLFormElement).checkValidity());
+    console.log('Form is valid:', isFormValid);
+    
+    if (!isFormValid) {
+      const validationMessage = await form.evaluate(formEl => (formEl as HTMLFormElement).validationMessage);
+      console.log('Form validation message:', validationMessage);
+    }
+    
+    if (!isSubmitVisible || !isSubmitEnabled) {
+      throw new Error('Submit button is not visible or enabled');
+    }
+    
+    // Capture network requests
+    const requests = [];
+    const responses = [];
+    this.page.on('request', request => {
+      if (request.url().includes('/api/') || request.url().includes('/auth/')) {
+        requests.push({
+          url: request.url(),
+          method: request.method(),
+          postData: request.postData()
+        });
+      }
+    });
+    this.page.on('response', response => {
+      if (response.url().includes('/api/') || response.url().includes('/auth/')) {
+        responses.push({
+          url: response.url(),
+          status: response.status(),
+          ok: response.ok()
+        });
+      }
+    });
+    
     await this.page.click('button[type="submit"]');
+    console.log('Form submitted, waiting for response...');
+    
+    // Wait a bit for any potential errors or navigation
+    await this.page.waitForTimeout(3000);
+    
+    console.log('JavaScript errors:', jsErrors);
+    console.log('API requests:', requests);
+    console.log('API responses:', responses);
+    
+    // Check if we're still on the register page (indicates failure)
+    const currentUrl = this.page.url();
+    console.log('Current URL after submit:', currentUrl);
+    
+    if (currentUrl.includes('/register')) {
+      console.log('Still on register page, checking for errors...');
+      // Look for error messages
+      const errorMessages = await this.page.locator('[data-testid="error"], .error, .text-red-700').allTextContents();
+      console.log('Error messages found:', errorMessages);
+      
+      // Check network requests for API failures
+      const responses = [];
+      this.page.on('response', response => {
+        if (response.url().includes('/api/') || response.url().includes('/auth/')) {
+          responses.push({
+            url: response.url(),
+            status: response.status(),
+            ok: response.ok()
+          });
+        }
+      });
+      
+      await this.page.waitForTimeout(1000); // Wait for any pending requests
+      console.log('API responses:', responses);
+      
+      throw new Error(`Registration failed. Still on register page. Errors: ${errorMessages.join(', ')}`);
+    }
     
     // Wait for redirect to dashboard
+    console.log('Waiting for dashboard redirect...');
     await this.page.waitForURL('**/dashboard', { timeout: 15000 });
   }
 

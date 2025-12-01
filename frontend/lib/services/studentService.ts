@@ -2,72 +2,54 @@ import { apiClient } from '../api'
 
 // Types
 export interface Student {
-  id: string
-  firstName: string
-  lastName: string
-  email: string
-  phone?: string
-  dateOfBirth?: string
-  gender?: 'male' | 'female' | 'other'
-  address?: string
-  emergencyContact?: {
-    name: string
-    phone: string
-    relationship: string
-  }
-  medicalInfo?: {
-    allergies?: string[]
-    medications?: string[]
-    conditions?: string[]
-    notes?: string
-  }
-  clubId: string
-  tenantId: string
+  id: number
+  name: string
+  age?: number
+  level?: string
+  sport?: string
   createdAt: string
-  updatedAt: string
+  user: {
+    id: number
+    email: string
+    profile: {
+      displayName: string
+      phone?: string
+    }
+  }
+  parent?: {
+    id: number
+    name: string
+    profile: {
+      displayName: string
+      phone?: string
+    }
+  }
+  coach?: {
+    id: number
+    name: string
+    profile: {
+      displayName: string
+    }
+  }
 }
 
 export interface CreateStudentData {
-  firstName: string
-  lastName: string
-  email: string
-  phone?: string
-  dateOfBirth?: string
-  gender?: 'male' | 'female' | 'other'
-  address?: string
-  emergencyContact?: {
-    name: string
-    phone: string
-    relationship: string
-  }
-  medicalInfo?: {
-    allergies?: string[]
-    medications?: string[]
-    conditions?: string[]
-    notes?: string
-  }
-  clubId: string
+  userId: number
+  parentId?: number
+  coachId?: number
+  name: string
+  age?: number
+  level?: string
+  sport?: string
 }
 
 export interface UpdateStudentData {
-  firstName?: string
-  lastName?: string
-  email?: string
-  phone?: string
-  dateOfBirth?: string
-  gender?: 'male' | 'female' | 'other'
-  address?: string
-  emergencyContact?: {
-    name: string
-    phone: string
-    relationship: string
-  }
-  medicalInfo?: {
-    allergies?: string[]
-    medications?: string[]
-    conditions?: string[]
-    notes?: string
-  }
+  parentId?: number
+  coachId?: number
+  name?: string
+  age?: number
+  level?: string
+  sport?: string
 }
 
 class StudentService {

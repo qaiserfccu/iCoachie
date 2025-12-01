@@ -134,3 +134,9 @@ export { socketService };
 server.listen(port, () => {
   console.log(`iCoachie Backend (TypeScript) listening on port ${port}`);
 });
+server.on('error', (err) => {
+  if (err.message === 'EADDRINUSE') {
+    console.log(`iCoachie Backend (TypeScript) already listening on port ${port}`);
+    process.exit(1);
+  }
+});

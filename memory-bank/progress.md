@@ -25,6 +25,8 @@
 - Add "use client" directives to messaging components for proper Next.js SSR handling
 - Correct AuthContext import paths across messaging components
 - Verify successful build compilation for both frontend and backend
+- Add testing buttons to login page for quick form prefilling with different user types (admin, coach, freelancer, parent)
+- Add testing buttons to register page for quick form prefilling with different user types including admin (club admin)
 
 ## Doing
 

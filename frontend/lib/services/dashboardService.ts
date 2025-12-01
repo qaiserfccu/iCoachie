@@ -27,7 +27,7 @@ export interface DashboardSession {
 
 export interface DashboardAttendance {
   studentName: string
-  status: 'present' | 'absent' | 'late'
+  status: 'PRESENT' | 'ABSENT' | 'LATE'
   checkInTime?: string
   avatar: string
 }
@@ -92,14 +92,14 @@ class DashboardService {
       // In a real app, you'd compare with previous periods
       const memberChange = 12 // +12%
       const sessionChange = 8 // +8%
-      const revenueChange = paymentStats.totalRevenue > lastMonthPaymentStats.totalRevenue ?
-        ((paymentStats.totalRevenue - lastMonthPaymentStats.totalRevenue) / lastMonthPaymentStats.totalRevenue) * 100 : 23
+      const revenueChange = paymentStats.totalAmount > lastMonthPaymentStats.totalAmount ?
+        ((paymentStats.totalAmount - lastMonthPaymentStats.totalAmount) / lastMonthPaymentStats.totalAmount) * 100 : 23
       const attendanceChange = -2 // -2%
 
       return {
         totalMembers: students.length,
         sessionsThisWeek: sessionsThisWeekCount,
-        revenueMTD: paymentStats.totalRevenue,
+        revenueMTD: paymentStats.totalAmount,
         attendanceRate: Math.round(attendanceRate),
         memberChange,
         sessionChange,
@@ -150,7 +150,7 @@ class DashboardService {
             hour12: true
           })}`,
           location: session.location,
-          attendees: session.currentCapacity,
+          attendees: session.currentEnrolled,
           maxCapacity: session.maxCapacity,
           status: session.status
         }))
@@ -180,21 +180,21 @@ class DashboardService {
           try {
             const student = await studentService.getStudent(record.studentId)
             return {
-              studentName: `${student.firstName} ${student.lastName}`,
+              studentName: record.student.user.profile.displayName || record.student.name,
               status: record.status,
-              checkInTime: record.checkInTime ? new Date(record.checkInTime).toLocaleTimeString('en-US', {
+              checkInTime: record.checkinTime ? new Date(record.checkinTime).toLocaleTimeString('en-US', {
                 hour: 'numeric',
                 minute: '2-digit',
                 hour12: true
               }) : '-',
-              avatar: `${student.firstName[0]}${student.lastName[0]}`
+              avatar: (record.student.user.profile.displayName || record.student.name).split(' ').map(n => n[0]).join('').toUpperCase()
             }
           } catch (error) {
             // If student not found, return with placeholder
             return {
               studentName: 'Unknown Student',
               status: record.status,
-              checkInTime: record.checkInTime ? new Date(record.checkInTime).toLocaleTimeString('en-US', {
+              checkInTime: record.checkinTime ? new Date(record.checkinTime).toLocaleTimeString('en-US', {
                 hour: 'numeric',
                 minute: '2-digit',
                 hour12: true
@@ -217,9 +217,9 @@ class DashboardService {
     try {
       const attendance = await this.getRecentAttendance(100) // Get more records for summary
 
-      const present = attendance.filter(a => a.status === 'present').length
-      const late = attendance.filter(a => a.status === 'late').length
-      const absent = attendance.filter(a => a.status === 'absent').length
+      const present = attendance.filter(a => a.status === 'PRESENT').length
+      const late = attendance.filter(a => a.status === 'LATE').length
+      const absent = attendance.filter(a => a.status === 'ABSENT').length
 
       return { present, late, absent }
     } catch (error) {

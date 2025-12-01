@@ -26,12 +26,14 @@ export interface CreatePaymentData {
 }
 
 export interface PaymentStats {
-  totalRevenue: number
+  period: string
   totalPayments: number
-  pendingPayments: number
-  completedPayments: number
-  failedPayments: number
-  refundedPayments: number
+  totalAmount: number
+  completedAmount: number
+  pendingAmount: number
+  completionRate: number
+  typeBreakdown: Record<string, number>
+  statusBreakdown: Record<string, number>
 }
 
 class PaymentService {
@@ -77,7 +79,7 @@ class PaymentService {
       params.startDate = period.startDate
       params.endDate = period.endDate
     }
-    return apiClient.get<PaymentStats>(`${this.baseUrl}/stats`, { params })
+    return apiClient.get<PaymentStats>(`${this.baseUrl}/stats/overview`, { params })
   }
 
   // Get revenue by club

@@ -76,12 +76,18 @@ export function DashboardHeader() {
               <button className="flex items-center gap-3 p-1.5 rounded-lg hover:bg-muted">
                 <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
                   <span className="text-primary-foreground font-semibold text-sm">
-                    {user?.fullName?.charAt(0) || 'U'}
+                    {user?.firstName?.charAt(0) || 'U'}
                   </span>
                 </div>
                 <div className="hidden md:block text-left">
-                  <p className="text-sm font-medium text-foreground">{user?.fullName || 'User'}</p>
-                  <p className="text-xs text-muted-foreground">{user?.userType || 'Coach'}</p>
+                  <p className="text-sm font-medium text-foreground">{user?.firstName} {user?.lastName}</p>
+                  <p className="text-xs text-muted-foreground" data-testid="user-role">
+                    {user?.role === 'admin' ? 'Club Admin' : 
+                     user?.role === 'coach' ? 'Coach' : 
+                     user?.role === 'student' ? 'Student' : 
+                     user?.role === 'freelancer' ? 'Freelancer' :
+                     user?.role === 'parent' ? 'Parent' : 'User'}
+                  </p>
                 </div>
               </button>
             </DropdownMenuTrigger>

@@ -13,6 +13,7 @@ import { Eye, EyeOff, Mail, Lock, User, Building2, Users, Briefcase, Baby } from
 import { authService } from "@/lib/auth"
 import { useError } from "@/lib/contexts/ErrorContext"
 import { useLoading } from "@/lib/contexts/LoadingContext"
+import { useAuth } from "@/lib/contexts/AuthContext"
 import { ErrorDisplay } from "@/lib/contexts/ErrorContext"
 import { LoadingSpinner } from "@/lib/contexts/LoadingContext"
 import { PublicRoute } from "@/lib/components/PublicRoute"
@@ -69,6 +70,7 @@ export default function RegisterPage() {
   const router = useRouter()
   const { showError } = useError()
   const { startLoading, stopLoading, isLoading } = useLoading()
+  const { register: authRegister } = useAuth()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -78,17 +80,17 @@ export default function RegisterPage() {
       return
     }
 
-    if (formData.password.length < 8) {
+    if (formData.password.length < 4) {
       showError("Password must be at least 8 characters long")
       return
     }
 
     // Map user type to role
     const roleMapping = {
-      club: 'admin' as const,
-      coach: 'coach' as const,
-      freelancer: 'coach' as const,
-      parent: 'student' as const,
+      club: 'CLUB_ADMIN' as const,
+      coach: 'COACH' as const,
+      freelancer: 'FREELANCER' as const,
+      parent: 'PARENT' as const,
     }
 
     const role = roleMapping[selectedType as keyof typeof roleMapping]
@@ -105,7 +107,7 @@ export default function RegisterPage() {
 
     startLoading('auth-register', 'Creating account...')
     try {
-      await authService.register({
+      await authRegister({
         email: formData.email,
         password: formData.password,
         firstName,
@@ -298,6 +300,77 @@ export default function RegisterPage() {
               )}
             </Button>
           </form>
+
+          {/* Testing Buttons */}
+          <div className="space-y-2">
+            <p className="text-xs text-muted-foreground text-center">Quick Test Registration:</p>
+            <div className="grid grid-cols-2 gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="text-xs h-8 glass-input border-white/30 hover:bg-white/30 bg-transparent"
+                onClick={() => {
+                  setSelectedType("club")
+                  setFormData({
+                    fullName: "John Admin",
+                    email: "admin@test.com",
+                    password: "password123"
+                  })
+                }}
+              >
+                Admin (Club)
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="text-xs h-8 glass-input border-white/30 hover:bg-white/30 bg-transparent"
+                onClick={() => {
+                  setSelectedType("coach")
+                  setFormData({
+                    fullName: "Sarah Coach",
+                    email: "coach@test.com",
+                    password: "password123"
+                  })
+                }}
+              >
+                Coach
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="text-xs h-8 glass-input border-white/30 hover:bg-white/30 bg-transparent"
+                onClick={() => {
+                  setSelectedType("freelancer")
+                  setFormData({
+                    fullName: "Mike Freelancer",
+                    email: "freelancer@test.com",
+                    password: "password123"
+                  })
+                }}
+              >
+                Freelancer
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="text-xs h-8 glass-input border-white/30 hover:bg-white/30 bg-transparent"
+                onClick={() => {
+                  setSelectedType("parent")
+                  setFormData({
+                    fullName: "Jane Parent",
+                    email: "parent@test.com",
+                    password: "password123"
+                  })
+                }}
+              >
+                Parent
+              </Button>
+            </div>
+          </div>
 
           <div className="relative">
             <div className="absolute inset-0 flex items-center">

@@ -128,7 +128,75 @@ router.post('/register', async (req, res) => {
       }
     };
 
-    if (clubId) {
+    // Handle CLUB_ADMIN registration - create a club if not provided
+    if (role === 'CLUB_ADMIN' && !clubId) {
+      // First create the user
+      const user = await prisma.user.create({
+        data: userData,
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          role: true,
+          clubId: true,
+          profile: {
+            select: {
+              displayName: true
+            }
+          },
+          createdAt: true,
+          updatedAt: true
+        }
+      });
+
+      // Then create the club with the user's ID
+      const club = await prisma.club.create({
+        data: {
+          name: `${name}'s Club`,
+          location: 'To be updated',
+          description: 'Club created during registration',
+          adminId: user.id
+        }
+      });
+
+      // Update user with clubId
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { clubId: club.id }
+      });
+
+      // Create user role mapping
+      const roleRecord = await prisma.role.upsert({
+        where: { name: role },
+        update: {},
+        create: { name: role }
+      });
+
+      await prisma.userRoleAssignment.create({
+        data: {
+          userId: user.id,
+          roleId: roleRecord.id
+        }
+      });
+
+      // Generate JWT token
+      const token = jwt.sign({ sub: user.id, clubId: club.id }, process.env.JWT_SECRET || 'secret', { expiresIn: '7d' });
+
+      // Format user data for frontend
+      const formattedUser = {
+        id: user.id.toString(),
+        email: user.email,
+        firstName: user.name.split(' ')[0] || '',
+        lastName: user.name.split(' ').slice(1).join(' ') || '',
+        role: role.toLowerCase() as 'admin' | 'coach' | 'student', // Convert to frontend expected format
+        clubId: club.id.toString(),
+        avatar: null,
+        createdAt: user.createdAt.toISOString(),
+        updatedAt: user.updatedAt.toISOString()
+      };
+
+      return res.json({ token, user: formattedUser });
+    } else if (clubId) {
       const club = await prisma.club.findUnique({
         where: { id: parseInt(clubId) },
         select: { id: true }
@@ -144,6 +212,16 @@ router.post('/register', async (req, res) => {
       select: {
         id: true,
         email: true,
+        name: true,
+        role: true,
+        clubId: true,
+        profile: {
+          select: {
+            displayName: true
+          }
+        },
+        createdAt: true,
+        updatedAt: true
       }
     });
 
@@ -161,7 +239,23 @@ router.post('/register', async (req, res) => {
       }
     });
 
-    res.json(user);
+    // Generate JWT token
+    const token = jwt.sign({ sub: user.id, clubId: user.clubId }, process.env.JWT_SECRET || 'secret', { expiresIn: '7d' });
+
+    // Format user data for frontend
+    const formattedUser = {
+      id: user.id.toString(),
+      email: user.email,
+      firstName: user.name.split(' ')[0] || '',
+      lastName: user.name.split(' ').slice(1).join(' ') || '',
+      role: role.toLowerCase() as 'admin' | 'coach' | 'student', // Convert to frontend expected format
+      clubId: user.clubId?.toString(),
+      avatar: null,
+      createdAt: user.createdAt.toISOString(),
+      updatedAt: user.updatedAt.toISOString()
+    };
+
+    res.json({ token, user: formattedUser });
   } catch (err) {
     console.error(err);
     if ((err as any).code === 'P2002') {

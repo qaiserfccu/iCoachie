@@ -2,21 +2,32 @@ import { apiClient } from '../api'
 
 // Types
 export interface Session {
-  id: string
+  id: number
   title: string
   description?: string
+  sessionDate: string
   startTime: string
   endTime: string
-  maxCapacity: number
-  currentCapacity: number
-  price?: number
   location?: string
-  clubId: string
-  coachId: string
-  tenantId: string
-  status: 'scheduled' | 'in_progress' | 'completed' | 'cancelled'
+  maxCapacity?: number
+  currentEnrolled: number
+  status: string
   createdAt: string
-  updatedAt: string
+  coach: {
+    id: number
+    name: string
+    profile: {
+      displayName: string
+    }
+  }
+  club: {
+    id: number
+    name: string
+  }
+  _count: {
+    enrollments: number
+    attendances: number
+  }
 }
 
 export interface CreateSessionData {

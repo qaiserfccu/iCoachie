@@ -10,7 +10,7 @@ export interface RegisterData {
   password: string
   firstName: string
   lastName: string
-  role: 'admin' | 'coach' | 'student'
+  role: 'CLUB_ADMIN' | 'COACH' | 'FREELANCER' | 'PARENT'
   clubId?: string
 }
 
@@ -53,7 +53,16 @@ class AuthService {
   // Register new user
   async register(userData: RegisterData): Promise<AuthResponse> {
     try {
-      const response = await apiClient.post<AuthResponse>('/auth/register', userData)
+      // Combine firstName and lastName into name for backend compatibility
+      const registerPayload = {
+        email: userData.email,
+        password: userData.password,
+        name: `${userData.firstName} ${userData.lastName}`.trim(),
+        role: userData.role.toUpperCase(), // Backend expects uppercase roles
+        clubId: userData.clubId
+      };
+
+      const response = await apiClient.post<AuthResponse>('/auth/register', registerPayload)
 
       // Store token and user data
       this.setToken(response.token)

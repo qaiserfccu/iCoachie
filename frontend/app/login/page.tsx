@@ -173,6 +173,61 @@ export default function LoginPage() {
               </Button>
             </form>
 
+            {/* Testing Buttons */}
+            <div className="space-y-2">
+              <p className="text-xs text-muted-foreground text-center">Quick Test Login:</p>
+              <div className="grid grid-cols-2 gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="text-xs h-8 glass-input border-white/30 hover:bg-white/30 bg-transparent"
+                  onClick={() => {
+                    setEmail("admin@test.com")
+                    setPassword("password123")
+                  }}
+                >
+                  Admin
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="text-xs h-8 glass-input border-white/30 hover:bg-white/30 bg-transparent"
+                  onClick={() => {
+                    setEmail("coach@test.com")
+                    setPassword("password123")
+                  }}
+                >
+                  Coach
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="text-xs h-8 glass-input border-white/30 hover:bg-white/30 bg-transparent"
+                  onClick={() => {
+                    setEmail("freelancer@test.com")
+                    setPassword("password123")
+                  }}
+                >
+                  Freelancer
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="text-xs h-8 glass-input border-white/30 hover:bg-white/30 bg-transparent"
+                  onClick={() => {
+                    setEmail("parent@test.com")
+                    setPassword("password123")
+                  }}
+                >
+                  Parent
+                </Button>
+              </div>
+            </div>
+
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-white/30" />

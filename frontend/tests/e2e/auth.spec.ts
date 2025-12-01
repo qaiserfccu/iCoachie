@@ -17,6 +17,9 @@ test.describe('Authentication', () => {
 
     // Verify dashboard access
     await expect(page).toHaveURL(/.*dashboard/);
+    
+    // Wait for user data to load and check role
+    await page.waitForSelector('[data-testid="user-role"]');
     await expect(page.locator('[data-testid="user-role"]')).toContainText('Club Admin');
 
     // Logout

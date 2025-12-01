@@ -1,17 +1,10 @@
 import { PrismaClient, UserRole, UserStatus } from '@prisma/client';
-import { PrismaPg } from '@prisma/adapter-pg';
-import { Pool } from 'pg';
 import dotenv from 'dotenv';
 
 // Load test environment variables
 dotenv.config({ path: '.env.test' });
 
-// Create test database connection
-const connectionString = process.env.DATABASE_URL_TEST || process.env.DATABASE_URL;
-const pool = new Pool({ connectionString });
-const adapter = new PrismaPg(pool);
-
-export const prisma = new PrismaClient({ adapter });
+export const prisma = new PrismaClient();
 
 // Global test setup
 beforeAll(async () => {

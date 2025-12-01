@@ -2,15 +2,26 @@ import { apiClient } from '../api'
 
 // Types
 export interface Attendance {
-  id: string
-  sessionId: string
-  studentId: string
-  status: 'present' | 'absent' | 'late'
-  checkInTime?: string
+  id: number
+  status: string
+  checkinTime?: string
   notes?: string
-  tenantId: string
-  createdAt: string
-  updatedAt: string
+  recordedAt: string
+  student: {
+    id: number
+    name: string
+    user: {
+      profile: {
+        displayName: string
+      }
+    }
+  }
+  recorder: {
+    name: string
+    profile: {
+      displayName: string
+    }
+  }
 }
 
 export interface MarkAttendanceData {

@@ -1,0 +1,13 @@
+{
+  "name": "icoachie",
+  "version": "1.0.0",
+  "description": "iCoachie Monorepo",
+  "main": "backend/dist/server.js",
+  "scripts": {
+    "start": "concurrently --names \"API,WEB\" --prefix-colors \"yellow,magenta\"  \"cd /Users/qaisu/Downloads/iCoachie/backend & npm run dev --prefix backend\" \"cd /Users/qaisu/Downloads/iCoachie/frontend & npm run dev --prefix frontend\"",
+    "dev": "echo '> icoachie-backend-ts@1.0.0 dev  > ts-node-dev --respawn --transpile-only src/server.ts [INFO] 16:23:32 ts-node-dev ver. 2.0.0 (using ts-node ver. 10.9.2, typescript ver. 5.9.3) iCoachie Backend (TypeScript) listening on port 4000 > my-v0-project@0.1.0 dev > next dev ▲ Next.js 15.5.6 - Local:        http://localhost:3000   - Network:      http://192.168.0.112:3000 ✓ Starting... ✓ Ready in 1759ms'"
+  },
+  "devDependencies": {
+   
+  }
+}

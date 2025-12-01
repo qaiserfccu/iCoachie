@@ -49,9 +49,11 @@ describe('Authentication API', () => {
         .send(userData)
         .expect(200); // API returns 200, not 201
 
-      expect(response.body).toHaveProperty('id');
-      expect(response.body).toHaveProperty('email');
-      expect(response.body.email).toBe(userData.email);
+      expect(response.body).toHaveProperty('token');
+      expect(response.body).toHaveProperty('user');
+      expect(response.body.user).toHaveProperty('id');
+      expect(response.body.user).toHaveProperty('email');
+      expect(response.body.user.email).toBe(userData.email);
     });
 
     it('should reject registration with existing email', async () => {
