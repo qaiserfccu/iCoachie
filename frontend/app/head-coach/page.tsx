@@ -1,26 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Users, Calendar, ClipboardList, TrendingUp, ArrowRight, Crown, Star } from "lucide-react"
-
-const stats = [
-  { title: "Coaches", value: "8", subtitle: "Under supervision", icon: Users, color: "from-orange-500 to-red-500" },
-  { title: "Programs", value: "12", subtitle: "Active training", icon: ClipboardList, color: "from-blue-500 to-blue-600" },
-  { title: "Sessions", value: "24", subtitle: "This week", icon: Calendar, color: "from-green-500 to-green-600" },
-  { title: "Athletes", value: "156", subtitle: "Total roster", icon: TrendingUp, color: "from-purple-500 to-purple-600" },
-]
-
-const coaches = [
-  { name: "Sarah Williams", specialty: "Swimming", students: 28, sessions: 8, rating: 4.9 },
-  { name: "Mike Johnson", specialty: "Basketball", students: 24, sessions: 6, rating: 4.8 },
-  { name: "David Brown", specialty: "Soccer", students: 32, sessions: 10, rating: 4.7 },
-]
-
-const upcomingSessions = [
-  { program: "Elite Swimming", coach: "Sarah Williams", time: "10:00 AM", athletes: 12 },
-  { program: "Junior Basketball", coach: "Mike Johnson", time: "2:00 PM", athletes: 8 },
-  { program: "Soccer Academy", coach: "David Brown", time: "4:00 PM", athletes: 15 },
-]
+import { Users, ArrowRight, Crown, Star } from "lucide-react"
+import { headCoachStats, headCoachCoaches, headCoachUpcomingSessions } from "@/lib/services/mockDataService"
 
 export default function HeadCoachDashboard() {
   return (
@@ -39,7 +21,7 @@ export default function HeadCoachDashboard() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {stats.map((stat) => (
+        {headCoachStats.map((stat) => (
           <Card key={stat.title} className="glass-card border-white/20 hover-lift">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
@@ -64,7 +46,7 @@ export default function HeadCoachDashboard() {
             <Button variant="ghost" size="sm" className="text-orange-500">View All</Button>
           </CardHeader>
           <CardContent className="space-y-4">
-            {coaches.map((coach, index) => (
+            {headCoachCoaches.map((coach, index) => (
               <div key={index} className="flex items-center justify-between p-4 rounded-xl glass-subtle hover:bg-white/20 transition-colors">
                 <div className="flex items-center gap-4">
                   <div className="w-10 h-10 rounded-xl bg-orange-500/20 flex items-center justify-center">
@@ -92,10 +74,10 @@ export default function HeadCoachDashboard() {
         <Card className="glass-card border-white/20">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-lg font-semibold">Today&apos;s Sessions</CardTitle>
-            <Badge className="bg-green-500/20 text-green-500">{upcomingSessions.length} Scheduled</Badge>
+            <Badge className="bg-green-500/20 text-green-500">{headCoachUpcomingSessions.length} Scheduled</Badge>
           </CardHeader>
           <CardContent className="space-y-4">
-            {upcomingSessions.map((session, index) => (
+            {headCoachUpcomingSessions.map((session, index) => (
               <div key={index} className="flex items-center justify-between p-4 rounded-xl glass-subtle">
                 <div>
                   <p className="font-medium">{session.program}</p>

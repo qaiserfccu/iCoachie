@@ -9,64 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Search, Filter, UserPlus, MoreVertical, Download, Users, UserCheck, Clock, AlertCircle } from "lucide-react"
-
-const members = [
-  {
-    id: 1,
-    name: "Emma Davis",
-    avatar: "ED",
-    age: 12,
-    sport: "Swimming",
-    coach: "John Smith",
-    membership: "Premium",
-    status: "Active",
-    joined: "Jan 15, 2024",
-    parent: "Robert Davis",
-  },
-  {
-    id: 2,
-    name: "Jack Wilson",
-    avatar: "JW",
-    age: 14,
-    sport: "Basketball",
-    coach: "Mike Johnson",
-    membership: "Standard",
-    status: "Active",
-    joined: "Dec 20, 2023",
-    parent: "Sarah Wilson",
-  },
-  {
-    id: 3,
-    name: "Sophie Miller",
-    avatar: "SM",
-    age: 10,
-    sport: "Soccer",
-    coach: "Sarah Wilson",
-    membership: "Premium",
-    status: "Active",
-    joined: "Feb 1, 2024",
-    parent: "Tom Miller",
-  },
-  {
-    id: 4,
-    name: "Lucas Brown",
-    avatar: "LB",
-    age: 13,
-    sport: "Tennis",
-    coach: "David Lee",
-    membership: "Standard",
-    status: "Inactive",
-    joined: "Nov 5, 2023",
-    parent: "Mike Brown",
-  },
-]
-
-const memberStats = [
-  { label: "Total Members", value: "450", icon: Users, color: "from-blue-500 to-blue-600" },
-  { label: "Active", value: "420", icon: UserCheck, color: "from-green-500 to-green-600" },
-  { label: "New This Month", value: "28", icon: Clock, color: "from-teal-500 to-teal-600" },
-  { label: "Expiring Soon", value: "15", icon: AlertCircle, color: "from-yellow-500 to-orange-500" },
-]
+import { clubMembers, clubMemberStats } from "@/lib/services/mockDataService"
 
 export default function MembersPage() {
   const [searchQuery, setSearchQuery] = useState("")
@@ -92,15 +35,15 @@ export default function MembersPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {memberStats.map((stat) => (
-          <Card key={stat.label} className="glass-card border-white/20">
+        {clubMemberStats.map((stat) => (
+          <Card key={stat.title} className="glass-card border-white/20">
             <CardContent className="p-4 flex items-center gap-4">
               <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${stat.color} flex items-center justify-center`}>
                 <stat.icon className="w-6 h-6 text-white" />
               </div>
               <div>
                 <p className="text-2xl font-bold">{stat.value}</p>
-                <p className="text-sm text-muted-foreground">{stat.label}</p>
+                <p className="text-sm text-muted-foreground">{stat.title}</p>
               </div>
             </CardContent>
           </Card>

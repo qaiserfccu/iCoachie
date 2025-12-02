@@ -3,40 +3,8 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Progress } from "@/components/ui/progress"
-import { Users, Calendar, UserCheck, GraduationCap, Clock, ArrowRight, AlertCircle, TrendingUp } from "lucide-react"
-
-const stats = [
-  { title: "My Students", value: "45", change: "+3 this week", icon: Users, color: "from-teal-500 to-teal-600" },
-  { title: "Sessions Today", value: "4", change: "2 completed", icon: Calendar, color: "from-blue-500 to-blue-600" },
-  { title: "Attendance Rate", value: "94%", change: "+2%", icon: UserCheck, color: "from-green-500 to-green-600" },
-  {
-    title: "Pending Evaluations",
-    value: "8",
-    change: "Due this week",
-    icon: GraduationCap,
-    color: "from-yellow-500 to-orange-500",
-  },
-]
-
-const todaySessions = [
-  { time: "09:00 AM", name: "Junior Swimming", students: 15, status: "completed", duration: "1h" },
-  { time: "11:00 AM", name: "Intermediate Swimming", students: 12, status: "ongoing", duration: "1.5h" },
-  { time: "02:00 PM", name: "Advanced Techniques", students: 8, status: "upcoming", duration: "1h" },
-  { time: "04:00 PM", name: "Private Lesson", students: 1, status: "upcoming", duration: "45m" },
-]
-
-const recentStudents = [
-  { name: "Emma Davis", avatar: "ED", lastSession: "Today", progress: 92, status: "Excellent" },
-  { name: "Jack Wilson", avatar: "JW", lastSession: "Yesterday", progress: 85, status: "Good" },
-  { name: "Sophie Miller", avatar: "SM", lastSession: "Today", progress: 78, status: "Improving" },
-  { name: "Lucas Brown", avatar: "LB", lastSession: "2 days ago", progress: 65, status: "Needs Focus" },
-]
-
-const pendingEvaluations = [
-  { student: "Emma Davis", type: "Monthly Progress", dueDate: "Nov 30" },
-  { student: "Jack Wilson", type: "Skill Assessment", dueDate: "Dec 1" },
-  { student: "Sophie Miller", type: "Monthly Progress", dueDate: "Dec 2" },
-]
+import { UserCheck, Clock, ArrowRight, AlertCircle, TrendingUp, GraduationCap } from "lucide-react"
+import { coachStats, coachTodaySessions, coachRecentStudents, coachPendingEvaluations } from "@/lib/services/mockDataService"
 
 export default function CoachDashboard() {
   return (
@@ -59,7 +27,7 @@ export default function CoachDashboard() {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {stats.map((stat) => (
+        {coachStats.map((stat) => (
           <Card key={stat.title} className="glass-card border-white/20 hover-lift">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
@@ -89,7 +57,7 @@ export default function CoachDashboard() {
             </Button>
           </CardHeader>
           <CardContent className="space-y-4">
-            {todaySessions.map((session, index) => (
+            {coachTodaySessions.map((session, index) => (
               <div
                 key={index}
                 className="flex items-center justify-between p-4 rounded-xl glass-subtle hover:bg-white/20 transition-colors"
@@ -159,7 +127,7 @@ export default function CoachDashboard() {
               <CardTitle className="text-lg font-semibold">Pending Evaluations</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              {pendingEvaluations.map((eval_, index) => (
+              {coachPendingEvaluations.map((eval_, index) => (
                 <div key={index} className="p-3 rounded-xl glass-subtle">
                   <div className="flex items-center justify-between mb-1">
                     <p className="font-medium text-sm">{eval_.student}</p>
@@ -188,7 +156,7 @@ export default function CoachDashboard() {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {recentStudents.map((student) => (
+            {coachRecentStudents.map((student) => (
               <div
                 key={student.name}
                 className="p-4 rounded-xl glass-subtle hover:bg-white/20 transition-colors cursor-pointer"

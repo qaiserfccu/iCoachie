@@ -3,82 +3,15 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
-  Calendar,
   CreditCard,
-  Users,
   Star,
-  TrendingUp,
   Clock,
   ArrowRight,
   AlertCircle,
-  DollarSign,
+  TrendingUp,
   Eye,
 } from "lucide-react"
-
-const stats = [
-  {
-    title: "Total Earnings",
-    value: "$4,850",
-    change: "+$620 this week",
-    icon: DollarSign,
-    color: "from-green-500 to-green-600",
-  },
-  { title: "Active Clients", value: "28", change: "+5 this month", icon: Users, color: "from-blue-500 to-blue-600" },
-  {
-    title: "Sessions This Week",
-    value: "12",
-    change: "4 completed",
-    icon: Calendar,
-    color: "from-yellow-500 to-orange-500",
-  },
-  { title: "Rating", value: "4.9", change: "32 reviews", icon: Star, color: "from-purple-500 to-purple-600" },
-]
-
-const upcomingBookings = [
-  {
-    time: "Today, 2:00 PM",
-    client: "Emma Davis",
-    type: "Swimming Lesson",
-    duration: "1h",
-    amount: "$75",
-    status: "confirmed",
-  },
-  {
-    time: "Today, 4:00 PM",
-    client: "Jack Wilson",
-    type: "Private Training",
-    duration: "1.5h",
-    amount: "$100",
-    status: "confirmed",
-  },
-  {
-    time: "Tomorrow, 10:00 AM",
-    client: "Sophie Miller",
-    type: "Swimming Lesson",
-    duration: "1h",
-    amount: "$75",
-    status: "pending",
-  },
-  {
-    time: "Tomorrow, 3:00 PM",
-    client: "New Client",
-    type: "Trial Session",
-    duration: "45m",
-    amount: "$50",
-    status: "pending",
-  },
-]
-
-const recentClients = [
-  { name: "Emma Davis", sessions: 12, totalSpent: "$900", lastSession: "Today", rating: 5 },
-  { name: "Jack Wilson", sessions: 8, totalSpent: "$600", lastSession: "Yesterday", rating: 5 },
-  { name: "Sophie Miller", sessions: 6, totalSpent: "$450", lastSession: "2 days ago", rating: 4 },
-]
-
-const recentReviews = [
-  { client: "Emma Davis", rating: 5, comment: "Excellent coach! Very patient and knowledgeable.", date: "2 days ago" },
-  { client: "Jack Wilson", rating: 5, comment: "Great session, learned a lot!", date: "1 week ago" },
-]
+import { freelancerStats, freelancerUpcomingBookings, freelancerRecentClients, freelancerRecentReviews } from "@/lib/services/mockDataService"
 
 export default function FreelancerDashboard() {
   return (
@@ -102,7 +35,7 @@ export default function FreelancerDashboard() {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {stats.map((stat) => (
+        {freelancerStats.map((stat) => (
           <Card key={stat.title} className="glass-card border-white/20 hover-lift">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
@@ -132,7 +65,7 @@ export default function FreelancerDashboard() {
             </Button>
           </CardHeader>
           <CardContent className="space-y-4">
-            {upcomingBookings.map((booking, index) => (
+            {freelancerUpcomingBookings.map((booking, index) => (
               <div
                 key={index}
                 className="flex items-center justify-between p-4 rounded-xl glass-subtle hover:bg-white/20 transition-colors"
@@ -205,7 +138,7 @@ export default function FreelancerDashboard() {
               <Star className="w-5 h-5 text-yellow-500" />
             </CardHeader>
             <CardContent className="space-y-4">
-              {recentReviews.map((review, index) => (
+              {freelancerRecentReviews.map((review, index) => (
                 <div key={index} className="p-3 rounded-xl glass-subtle">
                   <div className="flex items-center justify-between mb-2">
                     <span className="font-medium text-sm">{review.client}</span>
@@ -234,7 +167,7 @@ export default function FreelancerDashboard() {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {recentClients.map((client) => (
+            {freelancerRecentClients.map((client) => (
               <div
                 key={client.name}
                 className="p-4 rounded-xl glass-subtle hover:bg-white/20 transition-colors cursor-pointer"

@@ -5,34 +5,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Calendar, Clock, Users, CheckCircle, XCircle, AlertCircle, Save } from "lucide-react"
-
-const currentSession = {
-  name: "Intermediate Swimming",
-  time: "11:00 AM - 12:30 PM",
-  date: "November 29, 2024",
-  location: "Pool A",
-}
-
-const students = [
-  { id: 1, name: "Emma Davis", avatar: "ED", status: "present" },
-  { id: 2, name: "Jack Wilson", avatar: "JW", status: "present" },
-  { id: 3, name: "Sophie Miller", avatar: "SM", status: "present" },
-  { id: 4, name: "Lucas Brown", avatar: "LB", status: "absent" },
-  { id: 5, name: "Olivia Johnson", avatar: "OJ", status: "present" },
-  { id: 6, name: "Noah Williams", avatar: "NW", status: "late" },
-  { id: 7, name: "Ava Martinez", avatar: "AM", status: "present" },
-  { id: 8, name: "Liam Garcia", avatar: "LG", status: "present" },
-]
-
-const attendanceStats = [
-  { label: "Present", count: 6, icon: CheckCircle, color: "text-green-500 bg-green-500/20" },
-  { label: "Late", count: 1, icon: AlertCircle, color: "text-yellow-500 bg-yellow-500/20" },
-  { label: "Absent", count: 1, icon: XCircle, color: "text-red-500 bg-red-500/20" },
-]
+import { coachCurrentSession, coachAttendanceStudents, coachAttendanceStats } from "@/lib/services/mockDataService"
 
 export default function AttendancePage() {
   const [attendance, setAttendance] = useState(
-    students.reduce(
+    coachAttendanceStudents.reduce(
       (acc, student) => ({
         ...acc,
         [student.id]: student.status,
@@ -67,21 +44,21 @@ export default function AttendancePage() {
                 <Users className="w-8 h-8 text-white" />
               </div>
               <div>
-                <h2 className="text-xl font-bold">{currentSession.name}</h2>
+                <h2 className="text-xl font-bold">{coachCurrentSession.name}</h2>
                 <div className="flex items-center gap-4 mt-1 text-sm text-muted-foreground">
                   <span className="flex items-center gap-1">
                     <Calendar className="w-4 h-4" />
-                    {currentSession.date}
+                    {coachCurrentSession.date}
                   </span>
                   <span className="flex items-center gap-1">
                     <Clock className="w-4 h-4" />
-                    {currentSession.time}
+                    {coachCurrentSession.time}
                   </span>
                 </div>
               </div>
             </div>
             <div className="flex items-center gap-3">
-              {attendanceStats.map((stat) => (
+              {coachAttendanceStats.map((stat) => (
                 <div key={stat.label} className={`flex items-center gap-2 px-4 py-2 rounded-xl ${stat.color}`}>
                   <stat.icon className="w-5 h-5" />
                   <span className="font-medium">{stat.count}</span>
@@ -96,11 +73,11 @@ export default function AttendancePage() {
       {/* Student List */}
       <Card className="glass-card border-white/20">
         <CardHeader>
-          <CardTitle>Students ({students.length})</CardTitle>
+          <CardTitle>Students ({coachAttendanceStudents.length})</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
-            {students.map((student) => (
+            {coachAttendanceStudents.map((student) => (
               <div
                 key={student.id}
                 className="flex items-center justify-between p-4 rounded-xl glass-subtle hover:bg-white/20 transition-colors"

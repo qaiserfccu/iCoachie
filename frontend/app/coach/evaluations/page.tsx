@@ -8,44 +8,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Star, Plus, Clock } from "lucide-react"
-
-const pendingEvaluations = [
-  {
-    student: "Emma Davis",
-    avatar: "ED",
-    type: "Monthly Progress",
-    dueDate: "Nov 30, 2024",
-    priority: "high",
-  },
-  {
-    student: "Jack Wilson",
-    avatar: "JW",
-    type: "Skill Assessment",
-    dueDate: "Dec 1, 2024",
-    priority: "medium",
-  },
-  {
-    student: "Sophie Miller",
-    avatar: "SM",
-    type: "Monthly Progress",
-    dueDate: "Dec 2, 2024",
-    priority: "medium",
-  },
-  {
-    student: "Lucas Brown",
-    avatar: "LB",
-    type: "Performance Review",
-    dueDate: "Dec 3, 2024",
-    priority: "low",
-  },
-]
-
-const evaluationTypes = [
-  { name: "Monthly Progress", count: 12 },
-  { name: "Skill Assessment", count: 8 },
-  { name: "Performance Review", count: 5 },
-  { name: "Level Upgrade", count: 3 },
-]
+import { coachPendingEvaluationsList, coachEvaluationTypes } from "@/lib/services/mockDataService"
 
 export default function EvaluationsPage() {
   return (
@@ -63,7 +26,7 @@ export default function EvaluationsPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {evaluationTypes.map((type) => (
+        {coachEvaluationTypes.map((type) => (
           <Card key={type.name} className="glass-card border-white/20 hover-lift cursor-pointer">
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">{type.name}</p>
@@ -80,11 +43,11 @@ export default function EvaluationsPage() {
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-lg font-semibold">Pending Evaluations</CardTitle>
             <Badge variant="secondary" className="bg-yellow-500/20 text-yellow-600">
-              {pendingEvaluations.length} Pending
+              {coachPendingEvaluationsList.length} Pending
             </Badge>
           </CardHeader>
           <CardContent className="space-y-4">
-            {pendingEvaluations.map((eval_, index) => (
+            {coachPendingEvaluationsList.map((eval_, index) => (
               <div
                 key={index}
                 className="flex items-center justify-between p-4 rounded-xl glass-subtle hover:bg-white/20 transition-colors cursor-pointer"

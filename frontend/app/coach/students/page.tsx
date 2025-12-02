@@ -7,75 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Progress } from "@/components/ui/progress"
 import { Search, Filter, MessageSquare, FileText, Star } from "lucide-react"
-
-const students = [
-  {
-    id: 1,
-    name: "Emma Davis",
-    avatar: "ED",
-    age: 12,
-    level: "Advanced",
-    progress: 92,
-    attendance: 98,
-    nextSession: "Today, 11:00 AM",
-    parentContact: "Robert Davis",
-  },
-  {
-    id: 2,
-    name: "Jack Wilson",
-    avatar: "JW",
-    age: 14,
-    level: "Intermediate",
-    progress: 85,
-    attendance: 95,
-    nextSession: "Today, 2:00 PM",
-    parentContact: "Sarah Wilson",
-  },
-  {
-    id: 3,
-    name: "Sophie Miller",
-    avatar: "SM",
-    age: 10,
-    level: "Intermediate",
-    progress: 78,
-    attendance: 90,
-    nextSession: "Tomorrow, 10:00 AM",
-    parentContact: "Tom Miller",
-  },
-  {
-    id: 4,
-    name: "Lucas Brown",
-    avatar: "LB",
-    age: 13,
-    level: "Beginner",
-    progress: 65,
-    attendance: 82,
-    nextSession: "Tomorrow, 3:00 PM",
-    parentContact: "Mike Brown",
-  },
-  {
-    id: 5,
-    name: "Olivia Johnson",
-    avatar: "OJ",
-    age: 11,
-    level: "Intermediate",
-    progress: 80,
-    attendance: 92,
-    nextSession: "Today, 4:00 PM",
-    parentContact: "Lisa Johnson",
-  },
-  {
-    id: 6,
-    name: "Noah Williams",
-    avatar: "NW",
-    age: 15,
-    level: "Advanced",
-    progress: 88,
-    attendance: 96,
-    nextSession: "Dec 1, 9:00 AM",
-    parentContact: "James Williams",
-  },
-]
+import { coachStudents } from "@/lib/services/mockDataService"
 
 export default function StudentsPage() {
   return (
@@ -101,7 +33,7 @@ export default function StudentsPage() {
 
       {/* Students Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {students.map((student) => (
+        {coachStudents.map((student) => (
           <Card key={student.id} className="glass-card border-white/20 hover-lift">
             <CardContent className="p-6">
               <div className="flex items-start justify-between mb-4">

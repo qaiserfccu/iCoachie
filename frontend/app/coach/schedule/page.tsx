@@ -2,47 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Calendar, Clock, Users, MapPin, ChevronLeft, ChevronRight } from "lucide-react"
-
-const weekSchedule = [
-  {
-    day: "Monday",
-    date: "Nov 25",
-    sessions: [
-      { time: "09:00 AM", name: "Junior Swimming", students: 15, location: "Pool A", duration: "1h" },
-      { time: "02:00 PM", name: "Advanced Techniques", students: 8, location: "Pool B", duration: "1.5h" },
-    ],
-  },
-  {
-    day: "Tuesday",
-    date: "Nov 26",
-    sessions: [
-      { time: "10:00 AM", name: "Intermediate Class", students: 12, location: "Pool A", duration: "1h" },
-      { time: "04:00 PM", name: "Private Lesson", students: 1, location: "Pool B", duration: "45m" },
-    ],
-  },
-  {
-    day: "Wednesday",
-    date: "Nov 27",
-    sessions: [
-      { time: "09:00 AM", name: "Junior Swimming", students: 15, location: "Pool A", duration: "1h" },
-      { time: "11:00 AM", name: "Adult Beginners", students: 10, location: "Pool B", duration: "1h" },
-    ],
-  },
-  {
-    day: "Thursday",
-    date: "Nov 28",
-    sessions: [{ time: "02:00 PM", name: "Competition Prep", students: 6, location: "Pool A", duration: "2h" }],
-  },
-  {
-    day: "Friday",
-    date: "Nov 29",
-    sessions: [
-      { time: "09:00 AM", name: "Junior Swimming", students: 15, location: "Pool A", duration: "1h" },
-      { time: "11:00 AM", name: "Intermediate Class", students: 12, location: "Pool A", duration: "1.5h" },
-      { time: "04:00 PM", name: "Private Lesson", students: 1, location: "Pool B", duration: "45m" },
-    ],
-  },
-]
+import { coachWeekSchedule } from "@/lib/services/mockDataService"
 
 export default function SchedulePage() {
   return (
@@ -78,7 +38,7 @@ export default function SchedulePage() {
 
       {/* Schedule List */}
       <div className="space-y-4">
-        {weekSchedule.map((day) => (
+        {coachWeekSchedule.map((day) => (
           <Card key={day.day} className="glass-card border-white/20">
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">

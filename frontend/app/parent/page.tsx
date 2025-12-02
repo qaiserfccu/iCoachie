@@ -4,75 +4,7 @@ import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Progress } from "@/components/ui/progress"
 import { Users, Calendar, GraduationCap, CreditCard, Clock, ArrowRight, Trophy, Star, TrendingUp } from "lucide-react"
-
-const stats = [
-  { title: "My Kids", value: "2", subtitle: "Active enrollments", icon: Users, color: "from-pink-500 to-rose-500" },
-  { title: "Upcoming Sessions", value: "5", subtitle: "This week", icon: Calendar, color: "from-blue-500 to-blue-600" },
-  {
-    title: "Avg Progress",
-    value: "87%",
-    subtitle: "+5% this month",
-    icon: GraduationCap,
-    color: "from-green-500 to-green-600",
-  },
-  {
-    title: "Total Spent",
-    value: "$450",
-    subtitle: "This month",
-    icon: CreditCard,
-    color: "from-yellow-500 to-orange-500",
-  },
-]
-
-const kids = [
-  {
-    name: "Emma Thompson",
-    age: 10,
-    avatar: "ET",
-    sport: "Swimming",
-    coach: "John Smith",
-    nextSession: "Today, 4:00 PM",
-    progress: 92,
-    badges: 5,
-  },
-  {
-    name: "Jake Thompson",
-    age: 8,
-    avatar: "JT",
-    sport: "Basketball",
-    coach: "Mike Johnson",
-    nextSession: "Tomorrow, 10:00 AM",
-    progress: 78,
-    badges: 3,
-  },
-]
-
-const upcomingSessions = [
-  { kid: "Emma", sport: "Swimming", coach: "John Smith", time: "Today, 4:00 PM", duration: "1h", location: "Pool A" },
-  {
-    kid: "Jake",
-    sport: "Basketball",
-    coach: "Mike Johnson",
-    time: "Tomorrow, 10:00 AM",
-    duration: "1.5h",
-    location: "Court 3",
-  },
-  { kid: "Emma", sport: "Swimming", coach: "John Smith", time: "Dec 2, 4:00 PM", duration: "1h", location: "Pool A" },
-  {
-    kid: "Jake",
-    sport: "Basketball",
-    coach: "Mike Johnson",
-    time: "Dec 3, 10:00 AM",
-    duration: "1.5h",
-    location: "Court 3",
-  },
-]
-
-const recentAchievements = [
-  { kid: "Emma", achievement: "Completed 10 Swimming Sessions", date: "2 days ago", type: "milestone" },
-  { kid: "Jake", achievement: "First Basket Score!", date: "1 week ago", type: "skill" },
-  { kid: "Emma", achievement: "Perfect Attendance Badge", date: "1 week ago", type: "badge" },
-]
+import { parentStats, parentKids, parentUpcomingSessions, parentRecentAchievements } from "@/lib/services/mockDataService"
 
 export default function ParentDashboard() {
   return (
@@ -95,7 +27,7 @@ export default function ParentDashboard() {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {stats.map((stat) => (
+        {parentStats.map((stat) => (
           <Card key={stat.title} className="glass-card border-white/20 hover-lift">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
@@ -117,7 +49,7 @@ export default function ParentDashboard() {
 
       {/* Kids Cards */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {kids.map((kid) => (
+        {parentKids.map((kid) => (
           <Card key={kid.name} className="glass-card border-white/20 hover-lift">
             <CardContent className="p-6">
               <div className="flex items-start gap-4">
@@ -182,7 +114,7 @@ export default function ParentDashboard() {
             </Button>
           </CardHeader>
           <CardContent className="space-y-4">
-            {upcomingSessions.map((session, index) => (
+            {parentUpcomingSessions.map((session, index) => (
               <div
                 key={index}
                 className="flex items-center justify-between p-4 rounded-xl glass-subtle hover:bg-white/20 transition-colors"
@@ -247,7 +179,7 @@ export default function ParentDashboard() {
               <Trophy className="w-5 h-5 text-yellow-500" />
             </CardHeader>
             <CardContent className="space-y-3">
-              {recentAchievements.map((item, index) => (
+              {parentRecentAchievements.map((item, index) => (
                 <div key={index} className="p-3 rounded-xl glass-subtle">
                   <div className="flex items-center gap-2 mb-1">
                     <Star className="w-4 h-4 text-yellow-500" />
