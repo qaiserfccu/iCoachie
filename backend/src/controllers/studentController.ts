@@ -1,76 +1,138 @@
 import express from 'express';
 import prisma from '../db';
 import { requireAuth, AuthRequest } from '../middleware/jwtAuth';
-import { requireRole } from '../middleware/requireRole';
+import { requireRole, requirePermission } from '../middleware';
+import {
+  parsePaginationParams,
+  buildPageInfo,
+  PaginatedResponse
+} from '../utils/pagination';
 
 const router = express.Router();
 
-// Get students in user's club
+// =============================================================================
+// Card 19 - Complete DTO Shapes for Student
+// =============================================================================
+
+const studentSelect = {
+  id: true,
+  userId: true,
+  parentId: true,
+  clubId: true,
+  coachId: true,
+  name: true,
+  age: true,
+  level: true,
+  sport: true,
+  createdAt: true,
+  updatedAt: true,
+  deletedAt: true,
+  user: {
+    select: {
+      id: true,
+      email: true,
+      profile: {
+        select: { displayName: true, phone: true, avatarUrl: true }
+      }
+    }
+  },
+  parent: {
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      profile: {
+        select: { displayName: true, phone: true }
+      }
+    }
+  },
+  coach: {
+    select: {
+      id: true,
+      name: true,
+      profile: {
+        select: { displayName: true }
+      }
+    }
+  }
+};
+
+// Response mapper for consistent DTOs
+const mapStudentResponse = (student: any) => ({
+  id: student.id,
+  userId: student.userId,
+  parentId: student.parentId,
+  clubId: student.clubId,
+  coachId: student.coachId,
+  name: student.name,
+  age: student.age,
+  level: student.level,
+  sport: student.sport,
+  user: student.user || null,
+  parent: student.parent || null,
+  coach: student.coach || null,
+  enrollmentCount: student._count?.enrollments,
+  attendanceCount: student._count?.attendances,
+  evaluationCount: student._count?.evaluations,
+  createdAt: student.createdAt,
+  updatedAt: student.updatedAt,
+  deletedAt: student.deletedAt
+});
+
+// Get students in user's club - Card 22 & 23: Pagination + soft delete filter
 router.get('/', requireAuth, async (req: AuthRequest, res) => {
   try {
     const clubId = req.user!.clubId;
+    const { page, pageSize, search } = parsePaginationParams(req.query);
+    const includeDeleted = req.query.includeDeleted === 'true';
+    const coachId = req.query.coachId ? parseInt(req.query.coachId as string) : undefined;
+    const level = req.query.level as string | undefined;
+    const sport = req.query.sport as string | undefined;
 
-    const students = await prisma.student.findMany({
-      where: {
-        clubId,
-        deletedAt: null
-      },
-      select: {
-        id: true,
-        name: true,
-        age: true,
-        level: true,
-        sport: true,
-        createdAt: true,
-        user: {
-          select: {
-            id: true,
-            email: true,
-            profile: {
-              select: {
-                displayName: true,
-                phone: true
-              }
-            }
+    const where: any = {
+      clubId,
+      ...(includeDeleted ? {} : { deletedAt: null }),
+      ...(coachId ? { coachId } : {}),
+      ...(level ? { level } : {}),
+      ...(sport ? { sport } : {}),
+      ...(search ? {
+        OR: [
+          { name: { contains: search, mode: 'insensitive' } },
+          { sport: { contains: search, mode: 'insensitive' } },
+          { level: { contains: search, mode: 'insensitive' } }
+        ]
+      } : {})
+    };
+
+    const [students, total] = await Promise.all([
+      prisma.student.findMany({
+        where,
+        select: {
+          ...studentSelect,
+          _count: {
+            select: { enrollments: true, attendances: true, evaluations: true }
           }
         },
-        parent: {
-          select: {
-            id: true,
-            name: true,
-            profile: {
-              select: {
-                displayName: true,
-                phone: true
-              }
-            }
-          }
-        },
-        coach: {
-          select: {
-            id: true,
-            name: true,
-            profile: {
-              select: {
-                displayName: true
-              }
-            }
-          }
-        }
-      },
-      orderBy: {
-        createdAt: 'desc'
-      }
-    });
+        orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * pageSize,
+        take: pageSize
+      }),
+      prisma.student.count({ where })
+    ]);
 
-    res.json(students);
+    const response: PaginatedResponse<any> = {
+      data: students.map(mapStudentResponse),
+      pageInfo: buildPageInfo(total, page, pageSize),
+      filtersApplied: { search, includeDeleted, coachId, level, sport }
+    };
+    res.json(response);
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Internal error' });
   }
 });
 
-// Get student by ID (in user's club)
+// Get student by ID (in user's club) - Card 19: Complete DTO
 router.get('/:id', requireAuth, async (req: AuthRequest, res) => {
   try {
     const studentId = parseInt(req.params.id);
@@ -83,115 +145,60 @@ router.get('/:id', requireAuth, async (req: AuthRequest, res) => {
         deletedAt: null
       },
       select: {
-        id: true,
-        name: true,
-        age: true,
-        level: true,
-        sport: true,
-        createdAt: true,
-        user: {
-          select: {
-            id: true,
-            email: true,
-            profile: {
-              select: {
-                displayName: true,
-                phone: true
-              }
-            }
-          }
-        },
-        parent: {
-          select: {
-            id: true,
-            name: true,
-            profile: {
-              select: {
-                displayName: true,
-                phone: true
-              }
-            }
-          }
-        },
-        coach: {
-          select: {
-            id: true,
-            name: true,
-            profile: {
-              select: {
-                displayName: true
-              }
-            }
-          }
-        },
+        ...studentSelect,
         enrollments: {
+          where: { deletedAt: null },
           select: {
             id: true,
             session: {
-              select: {
-                id: true,
-                title: true,
-                sessionDate: true
-              }
+              select: { id: true, title: true, sessionDate: true }
             },
             enrolledAt: true,
             status: true
           }
         },
         attendances: {
+          where: { deletedAt: null },
           select: {
             id: true,
             session: {
-              select: {
-                id: true,
-                title: true,
-                sessionDate: true
-              }
+              select: { id: true, title: true, sessionDate: true }
             },
             status: true,
             checkinTime: true,
             notes: true,
             recordedAt: true
           },
-          orderBy: {
-            recordedAt: 'desc'
-          }
+          orderBy: { recordedAt: 'desc' }
         },
         evaluations: {
+          where: { deletedAt: null },
           select: {
             id: true,
-            coach: {
-              select: {
-                name: true
-              }
-            },
-            session: {
-              select: {
-                title: true,
-                sessionDate: true
-              }
-            },
+            coach: { select: { name: true } },
+            session: { select: { title: true, sessionDate: true } },
             evaluationType: true,
             overallScore: true,
             comments: true,
             createdAt: true
           },
-          orderBy: {
-            createdAt: 'desc'
-          }
+          orderBy: { createdAt: 'desc' }
+        },
+        _count: {
+          select: { enrollments: true, attendances: true, evaluations: true }
         }
       }
     });
 
     if (!student) return res.status(404).json({ message: 'Student not found' });
-    res.json(student);
+    res.json(mapStudentResponse(student));
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Internal error' });
   }
 });
 
-// Create student (admin or coach)
+// Create student (admin or coach) - Card 19: Accept all fields
 router.post('/', requireAuth, async (req: AuthRequest, res) => {
   try {
     const clubId = req.user!.clubId;
@@ -199,17 +206,11 @@ router.post('/', requireAuth, async (req: AuthRequest, res) => {
 
     // Check if user is admin or coach
     const isAdmin = await prisma.userRoleAssignment.findFirst({
-      where: {
-        userId: currentUserId,
-        role: { code: 'SUPER_ADMIN' }
-      }
+      where: { userId: currentUserId, role: { code: 'SUPER_ADMIN' } }
     });
 
     const isCoach = await prisma.coach.findFirst({
-      where: {
-        userId: currentUserId,
-        clubId
-      }
+      where: { userId: currentUserId, clubId }
     });
 
     if (!isAdmin && !isCoach) {
@@ -261,27 +262,20 @@ router.post('/', requireAuth, async (req: AuthRequest, res) => {
         coachId: coachId ? parseInt(coachId) : null,
         name,
         age: age ? parseInt(age) : null,
-        level,
-        sport
+        level: level || null,
+        sport: sport || null
       },
-      select: {
-        id: true,
-        name: true,
-        age: true,
-        level: true,
-        sport: true,
-        createdAt: true
-      }
+      select: studentSelect
     });
 
-    res.json(student);
+    res.status(201).json(mapStudentResponse(student));
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Internal error' });
   }
 });
 
-// Update student (admin or coach)
+// Update student (admin or coach) - Card 19: Accept all fields
 router.put('/:id', requireAuth, async (req: AuthRequest, res) => {
   try {
     const studentId = parseInt(req.params.id);
@@ -290,10 +284,7 @@ router.put('/:id', requireAuth, async (req: AuthRequest, res) => {
 
     // Check if user is admin or coach
     const isAdmin = await prisma.userRoleAssignment.findFirst({
-      where: {
-        userId: currentUserId,
-        role: { code: 'SUPER_ADMIN' }
-      }
+      where: { userId: currentUserId, role: { code: 'SUPER_ADMIN' } }
     });
 
     const isCoach = await prisma.coach.findFirst({
@@ -355,24 +346,17 @@ router.put('/:id', requireAuth, async (req: AuthRequest, res) => {
         sport,
         updatedAt: new Date()
       },
-      select: {
-        id: true,
-        name: true,
-        age: true,
-        level: true,
-        sport: true,
-        updatedAt: true
-      }
+      select: studentSelect
     });
 
-    res.json(updatedStudent);
+    res.json(mapStudentResponse(updatedStudent));
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Internal error' });
   }
 });
 
-// Soft delete student (admin only)
+// Soft delete student (admin only) - Card 22
 router.delete('/:id', requireAuth, requireRole(['SUPER_ADMIN']), async (req: AuthRequest, res) => {
   try {
     const studentId = parseInt(req.params.id);
@@ -391,12 +375,36 @@ router.delete('/:id', requireAuth, requireRole(['SUPER_ADMIN']), async (req: Aut
 
     await prisma.student.update({
       where: { id: studentId },
-      data: {
-        deletedAt: new Date()
-      }
+      data: { deletedAt: new Date() }
     });
 
-    res.json({ ok: true });
+    res.json({ ok: true, message: 'Student soft deleted' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Internal error' });
+  }
+});
+
+// Restore student (admin only) - Card 22
+router.post('/:id/restore', requireAuth, requireRole(['SUPER_ADMIN']), async (req: AuthRequest, res) => {
+  try {
+    const studentId = parseInt(req.params.id);
+    const clubId = req.user!.clubId;
+
+    const existing = await prisma.student.findFirst({
+      where: { id: studentId, clubId }
+    });
+    
+    if (!existing) return res.status(404).json({ message: 'Student not found' });
+    if (!existing.deletedAt) return res.status(400).json({ message: 'Student is not deleted' });
+
+    const restored = await prisma.student.update({
+      where: { id: studentId },
+      data: { deletedAt: null },
+      select: studentSelect
+    });
+
+    res.json(mapStudentResponse(restored));
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Internal error' });
