@@ -7,118 +7,73 @@ import { cn } from "@/lib/utils"
 import {
   LayoutDashboard,
   Users,
-  Shield,
-  Building2,
-  UserCog,
-  Briefcase,
-  Baby,
+  Calendar,
+  GraduationCap,
   CreditCard,
+  MessageSquare,
   Settings,
-  BarChart3,
-  Bell,
-  FileText,
+  HelpCircle,
+  LogOut,
   ChevronLeft,
   ChevronDown,
-  LogOut,
-  HelpCircle,
-  Database,
-  Globe,
+  Bell,
+  Heart,
+  Trophy,
 } from "lucide-react"
 
 const menuItems = [
-  { icon: LayoutDashboard, label: "Dashboard", href: "/admin" },
+  { icon: LayoutDashboard, label: "Dashboard", href: "/parent" },
   {
     icon: Users,
-    label: "User Management",
-    href: "/admin/users",
+    label: "My Kids",
+    href: "/parent/kids",
     subItems: [
-      { label: "All Users", href: "/admin/users" },
-      { label: "Admins", href: "/admin/users/admins" },
-      { label: "Pending Approvals", href: "/admin/users/pending" },
+      { label: "All Kids", href: "/parent/kids" },
+      { label: "Add Child", href: "/parent/kids/add" },
     ],
   },
   {
-    icon: Shield,
-    label: "Roles & Permissions",
-    href: "/admin/roles",
+    icon: Calendar,
+    label: "Bookings",
+    href: "/parent/bookings",
     subItems: [
-      { label: "Manage Roles", href: "/admin/roles" },
-      { label: "Permissions", href: "/admin/roles/permissions" },
+      { label: "All Bookings", href: "/parent/bookings" },
+      { label: "Book Session", href: "/parent/bookings/new" },
+      { label: "Calendar", href: "/parent/bookings/calendar" },
     ],
   },
   {
-    icon: Building2,
-    label: "Clubs",
-    href: "/admin/clubs",
+    icon: GraduationCap,
+    label: "Progress",
+    href: "/parent/progress",
     subItems: [
-      { label: "All Clubs", href: "/admin/clubs" },
-      { label: "Pending Clubs", href: "/admin/clubs/pending" },
-      { label: "Club Analytics", href: "/admin/clubs/analytics" },
+      { label: "Overview", href: "/parent/progress" },
+      { label: "Evaluations", href: "/parent/progress/evaluations" },
+      { label: "Reports", href: "/parent/progress/reports" },
     ],
-  },
-  {
-    icon: UserCog,
-    label: "Coaches",
-    href: "/admin/coaches",
-    subItems: [
-      { label: "All Coaches", href: "/admin/coaches" },
-      { label: "Verifications", href: "/admin/coaches/verifications" },
-    ],
-  },
-  {
-    icon: Briefcase,
-    label: "Freelancers",
-    href: "/admin/freelancers",
-  },
-  {
-    icon: Baby,
-    label: "Parents & Kids",
-    href: "/admin/families",
   },
   {
     icon: CreditCard,
     label: "Payments",
-    href: "/admin/payments",
+    href: "/parent/payments",
     subItems: [
-      { label: "Transactions", href: "/admin/payments" },
-      { label: "Subscriptions", href: "/admin/payments/subscriptions" },
-      { label: "Refunds", href: "/admin/payments/refunds" },
+      { label: "History", href: "/parent/payments" },
+      { label: "Subscriptions", href: "/parent/payments/subscriptions" },
+      { label: "Invoices", href: "/parent/payments/invoices" },
     ],
   },
-  {
-    icon: BarChart3,
-    label: "Analytics",
-    href: "/admin/analytics",
-  },
-  {
-    icon: FileText,
-    label: "Reports",
-    href: "/admin/reports",
-  },
-  {
-    icon: Bell,
-    label: "Notifications",
-    href: "/admin/notifications",
-  },
+  { icon: Trophy, label: "Achievements", href: "/parent/achievements" },
+  { icon: MessageSquare, label: "Messages", href: "/parent/messages" },
+  { icon: Bell, label: "Notifications", href: "/parent/notifications" },
 ]
 
 const bottomItems = [
-  {
-    icon: Settings,
-    label: "System Settings",
-    href: "/admin/settings",
-    subItems: [
-      { label: "General", href: "/admin/settings" },
-      { label: "Email Templates", href: "/admin/settings/emails" },
-      { label: "Integrations", href: "/admin/settings/integrations" },
-    ],
-  },
-  { icon: Database, label: "Database", href: "/admin/database" },
-  { icon: Globe, label: "View Site", href: "/" },
-  { icon: HelpCircle, label: "Help", href: "/admin/help" },
+  { icon: Heart, label: "My Account", href: "/parent/account" },
+  { icon: Settings, label: "Settings", href: "/parent/settings" },
+  { icon: HelpCircle, label: "Help", href: "/parent/help" },
 ]
 
-export function AdminSidebar() {
+export function ParentSidebar() {
   const [collapsed, setCollapsed] = useState(false)
   const [openMenus, setOpenMenus] = useState<string[]>([])
   const pathname = usePathname()
@@ -138,14 +93,14 @@ export function AdminSidebar() {
         )}
       >
         <div className="flex items-center justify-between p-4 border-b border-white/20">
-          <Link href="/admin" className={cn("flex items-center gap-2", collapsed && "justify-center")}>
-            <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-orange-500 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg">
-              <Shield className="w-5 h-5 text-white" />
+          <Link href="/parent" className={cn("flex items-center gap-2", collapsed && "justify-center")}>
+            <div className="w-10 h-10 bg-gradient-to-br from-pink-500 to-rose-500 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg">
+              <Heart className="w-5 h-5 text-white" />
             </div>
             {!collapsed && (
               <div>
-                <span className="text-lg font-bold text-foreground">iCoachie</span>
-                <span className="block text-xs text-muted-foreground">Super Admin</span>
+                <span className="text-lg font-bold text-foreground">Sarah Thompson</span>
+                <span className="block text-xs text-muted-foreground">Parent Account</span>
               </div>
             )}
           </Link>
@@ -170,7 +125,7 @@ export function AdminSidebar() {
                     className={cn(
                       "w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium transition-all",
                       isActive(item.href)
-                        ? "bg-gradient-to-r from-primary/20 to-secondary/20 text-primary border border-primary/20"
+                        ? "bg-gradient-to-r from-pink-500/20 to-rose-500/20 text-pink-500 border border-pink-500/20"
                         : "text-muted-foreground hover:bg-white/20 hover:text-foreground",
                       collapsed && "justify-center px-2",
                     )}
@@ -194,7 +149,7 @@ export function AdminSidebar() {
                           className={cn(
                             "block px-3 py-2 rounded-lg text-sm transition-colors",
                             pathname === sub.href
-                              ? "text-primary bg-primary/10"
+                              ? "text-pink-500 bg-pink-500/10"
                               : "text-muted-foreground hover:text-foreground hover:bg-white/10",
                           )}
                         >
@@ -210,7 +165,7 @@ export function AdminSidebar() {
                   className={cn(
                     "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all",
                     isActive(item.href)
-                      ? "bg-gradient-to-r from-primary/20 to-secondary/20 text-primary border border-primary/20"
+                      ? "bg-gradient-to-r from-pink-500/20 to-rose-500/20 text-pink-500 border border-pink-500/20"
                       : "text-muted-foreground hover:bg-white/20 hover:text-foreground",
                     collapsed && "justify-center px-2",
                   )}
@@ -225,58 +180,17 @@ export function AdminSidebar() {
 
         <div className="p-3 border-t border-white/20 space-y-1">
           {bottomItems.map((item) => (
-            <div key={item.label}>
-              {item.subItems ? (
-                <>
-                  <button
-                    onClick={() => toggleMenu(item.label)}
-                    className={cn(
-                      "w-full flex items-center justify-between px-3 py-2 rounded-xl text-sm font-medium text-muted-foreground hover:bg-white/20 hover:text-foreground transition-colors",
-                      collapsed && "justify-center px-2",
-                    )}
-                  >
-                    <div className="flex items-center gap-3">
-                      <item.icon className="w-5 h-5 flex-shrink-0" />
-                      {!collapsed && <span>{item.label}</span>}
-                    </div>
-                    {!collapsed && (
-                      <ChevronDown
-                        className={cn("w-4 h-4 transition-transform", openMenus.includes(item.label) && "rotate-180")}
-                      />
-                    )}
-                  </button>
-                  {!collapsed && openMenus.includes(item.label) && (
-                    <div className="ml-4 mt-1 space-y-1 border-l-2 border-white/20 pl-4">
-                      {item.subItems.map((sub) => (
-                        <Link
-                          key={sub.href}
-                          href={sub.href}
-                          className={cn(
-                            "block px-3 py-2 rounded-lg text-sm transition-colors",
-                            pathname === sub.href
-                              ? "text-primary bg-primary/10"
-                              : "text-muted-foreground hover:text-foreground hover:bg-white/10",
-                          )}
-                        >
-                          {sub.label}
-                        </Link>
-                      ))}
-                    </div>
-                  )}
-                </>
-              ) : (
-                <Link
-                  href={item.href}
-                  className={cn(
-                    "flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium text-muted-foreground hover:bg-white/20 hover:text-foreground transition-colors",
-                    collapsed && "justify-center px-2",
-                  )}
-                >
-                  <item.icon className="w-5 h-5 flex-shrink-0" />
-                  {!collapsed && <span>{item.label}</span>}
-                </Link>
+            <Link
+              key={item.label}
+              href={item.href}
+              className={cn(
+                "flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium text-muted-foreground hover:bg-white/20 hover:text-foreground transition-colors",
+                collapsed && "justify-center px-2",
               )}
-            </div>
+            >
+              <item.icon className="w-5 h-5 flex-shrink-0" />
+              {!collapsed && <span>{item.label}</span>}
+            </Link>
           ))}
           <button
             className={cn(
@@ -299,7 +213,7 @@ export function AdminSidebar() {
               href={item.href}
               className={cn(
                 "flex flex-col items-center gap-1 px-3 py-2 rounded-lg text-xs",
-                isActive(item.href) ? "text-primary" : "text-muted-foreground",
+                isActive(item.href) ? "text-pink-500" : "text-muted-foreground",
               )}
             >
               <item.icon className="w-5 h-5" />

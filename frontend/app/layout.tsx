@@ -2,10 +2,6 @@ import type React from "react"
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
-import { ErrorProvider } from "@/lib/contexts/ErrorContext"
-import { LoadingProvider } from "@/lib/contexts/LoadingContext"
-import { AuthProvider } from "@/lib/contexts/AuthContext"
-import { GlobalLoadingDisplay } from "@/lib/contexts/LoadingContext"
 
 const inter = Inter({
   subsets: ["latin"],
@@ -24,20 +20,11 @@ export const metadata: Metadata = {
 export default function RootLayout({
   children,
 }: Readonly<{
-  children: ReactNode
+  children: React.ReactNode
 }>) {
   return (
     <html lang="en" className={`${inter.variable} antialiased`}>
-      <body className="font-sans">
-        <ErrorProvider>
-          <LoadingProvider>
-            <AuthProvider>
-              {children}
-              <GlobalLoadingDisplay />
-            </AuthProvider>
-          </LoadingProvider>
-        </ErrorProvider>
-      </body>
+      <body className="font-sans">{children}</body>
     </html>
   )
 }

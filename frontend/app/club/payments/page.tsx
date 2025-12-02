@@ -1,6 +1,5 @@
 "use client"
 
-import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -19,120 +18,63 @@ import {
   Clock,
   XCircle,
 } from "lucide-react"
-import { clubPaymentsService, PaymentTransaction, PaymentStats } from "@/lib/services"
-import { useLoading } from "@/lib/contexts/LoadingContext"
-import { useError } from "@/lib/contexts/ErrorContext"
+
+const stats = [
+  { title: "Total Revenue", value: "$48,250", change: "+12%", icon: DollarSign, color: "from-green-500 to-green-600" },
+  { title: "This Month", value: "$12,400", change: "+8%", icon: TrendingUp, color: "from-blue-500 to-blue-600" },
+  { title: "Pending", value: "$2,150", change: "8 invoices", icon: Clock, color: "from-yellow-500 to-orange-500" },
+  { title: "Refunds", value: "$450", change: "3 requests", icon: ArrowDownLeft, color: "from-red-500 to-red-600" },
+]
+
+const transactions = [
+  {
+    id: "TXN001",
+    member: "Emma Davis",
+    type: "Membership",
+    amount: "$200",
+    date: "Nov 28, 2024",
+    method: "Credit Card",
+    status: "completed",
+  },
+  {
+    id: "TXN002",
+    member: "Jack Wilson",
+    type: "Session Fee",
+    amount: "$50",
+    date: "Nov 28, 2024",
+    method: "PayPal",
+    status: "completed",
+  },
+  {
+    id: "TXN003",
+    member: "Sophie Miller",
+    type: "Membership",
+    amount: "$150",
+    date: "Nov 27, 2024",
+    method: "Bank Transfer",
+    status: "pending",
+  },
+  {
+    id: "TXN004",
+    member: "Lucas Brown",
+    type: "Equipment",
+    amount: "$75",
+    date: "Nov 26, 2024",
+    method: "Credit Card",
+    status: "completed",
+  },
+  {
+    id: "TXN005",
+    member: "Olivia Johnson",
+    type: "Refund",
+    amount: "-$100",
+    date: "Nov 25, 2024",
+    method: "Credit Card",
+    status: "refunded",
+  },
+]
 
 export default function PaymentsPage() {
-  const [transactions, setTransactions] = useState<PaymentTransaction[]>([])
-  const [filteredTransactions, setFilteredTransactions] = useState<PaymentTransaction[]>([])
-  const [stats, setStats] = useState<PaymentStats | null>(null)
-  const [searchTerm, setSearchTerm] = useState("")
-  const { showLoading, hideLoading } = useLoading()
-  const { showError } = useError()
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        showLoading("Loading payment data...")
-
-        // Fetch transactions and stats in parallel
-        const [transactionsData, statsData] = await Promise.all([
-          clubPaymentsService.getPaymentTransactions(),
-          clubPaymentsService.getPaymentStats()
-        ])
-
-        setTransactions(transactionsData)
-        setFilteredTransactions(transactionsData)
-        setStats(statsData)
-      } catch (error) {
-        console.error("Error fetching payment data:", error)
-        showError("Failed to load payment data. Please try again.")
-      } finally {
-        hideLoading()
-      }
-    }
-
-    fetchData()
-  }, [showLoading, hideLoading, showError])
-
-  // Filter transactions based on search term
-  useEffect(() => {
-    if (!searchTerm.trim()) {
-      setFilteredTransactions(transactions)
-    } else {
-      const filtered = transactions.filter(
-        (txn) =>
-          txn.member.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          txn.type.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          txn.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          txn.method.toLowerCase().includes(searchTerm.toLowerCase())
-      )
-      setFilteredTransactions(filtered)
-    }
-  }, [searchTerm, transactions])
-
-  const getDisplayStats = () => {
-    if (!stats) return []
-
-    return [
-      {
-        title: "Total Revenue",
-        value: `$${stats.totalRevenue.toLocaleString()}`,
-        change: stats.totalRevenueChange,
-        icon: DollarSign,
-        color: "from-green-500 to-green-600"
-      },
-      {
-        title: "This Month",
-        value: `$${stats.thisMonthRevenue.toLocaleString()}`,
-        change: stats.thisMonthChange,
-        icon: TrendingUp,
-        color: "from-blue-500 to-blue-600"
-      },
-      {
-        title: "Pending",
-        value: `$${stats.pendingAmount.toLocaleString()}`,
-        change: `${stats.pendingCount} invoices`,
-        icon: Clock,
-        color: "from-yellow-500 to-orange-500"
-      },
-      {
-        title: "Refunds",
-        value: `$${stats.refundAmount.toLocaleString()}`,
-        change: `${stats.refundCount} requests`,
-        icon: ArrowDownLeft,
-        color: "from-red-500 to-red-600"
-      },
-    ]
-  }
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case "completed":
-        return <CheckCircle className="w-3 h-3 mr-1" />
-      case "pending":
-        return <Clock className="w-3 h-3 mr-1" />
-      case "refunded":
-        return <XCircle className="w-3 h-3 mr-1" />
-      default:
-        return null
-    }
-  }
-
-  const getStatusBadgeClass = (status: string) => {
-    switch (status) {
-      case "completed":
-        return "bg-green-500/20 text-green-600"
-      case "pending":
-        return "bg-yellow-500/20 text-yellow-600"
-      case "refunded":
-        return "bg-red-500/20 text-red-600"
-      default:
-        return "bg-gray-500/20 text-gray-600"
-    }
-  }
-
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -154,16 +96,14 @@ export default function PaymentsPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {getDisplayStats().map((stat) => (
+        {stats.map((stat) => (
           <Card key={stat.title} className="glass-card border-white/20 hover-lift">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">{stat.title}</p>
                   <p className="text-2xl font-bold mt-1">{stat.value}</p>
-                  <p className={`text-sm mt-1 ${stat.change.startsWith('+') ? 'text-green-500' : stat.change.startsWith('-') ? 'text-red-500' : 'text-muted-foreground'}`}>
-                    {stat.change}
-                  </p>
+                  <p className="text-sm text-green-500 mt-1">{stat.change}</p>
                 </div>
                 <div
                   className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${stat.color} flex items-center justify-center`}
@@ -187,8 +127,6 @@ export default function PaymentsPage() {
                 <Input
                   placeholder="Search transactions..."
                   className="border-0 bg-transparent focus-visible:ring-0 p-0 h-auto w-48"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </div>
               <Button variant="outline" size="icon" className="glass-subtle border-white/20 bg-transparent">
@@ -212,39 +150,41 @@ export default function PaymentsPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredTransactions.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
-                      {searchTerm ? "No transactions found matching your search." : "No transactions found."}
+                {transactions.map((txn) => (
+                  <TableRow key={txn.id} className="hover:bg-white/10">
+                    <TableCell className="font-mono text-sm">{txn.id}</TableCell>
+                    <TableCell>{txn.member}</TableCell>
+                    <TableCell>{txn.type}</TableCell>
+                    <TableCell
+                      className={txn.amount.startsWith("-") ? "text-red-500 font-medium" : "text-green-500 font-medium"}
+                    >
+                      {txn.amount}
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">{txn.date}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <CreditCard className="w-4 h-4 text-muted-foreground" />
+                        {txn.method}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        className={
+                          txn.status === "completed"
+                            ? "bg-green-500/20 text-green-600"
+                            : txn.status === "pending"
+                              ? "bg-yellow-500/20 text-yellow-600"
+                              : "bg-red-500/20 text-red-600"
+                        }
+                      >
+                        {txn.status === "completed" && <CheckCircle className="w-3 h-3 mr-1" />}
+                        {txn.status === "pending" && <Clock className="w-3 h-3 mr-1" />}
+                        {txn.status === "refunded" && <XCircle className="w-3 h-3 mr-1" />}
+                        {txn.status}
+                      </Badge>
                     </TableCell>
                   </TableRow>
-                ) : (
-                  filteredTransactions.map((txn) => (
-                    <TableRow key={txn.id} className="hover:bg-white/10">
-                      <TableCell className="font-mono text-sm">{txn.id}</TableCell>
-                      <TableCell>{txn.member}</TableCell>
-                      <TableCell>{txn.type}</TableCell>
-                      <TableCell
-                        className={txn.amount.startsWith("-") ? "text-red-500 font-medium" : "text-green-500 font-medium"}
-                      >
-                        {txn.amount}
-                      </TableCell>
-                      <TableCell className="text-muted-foreground">{txn.date}</TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <CreditCard className="w-4 h-4 text-muted-foreground" />
-                          {txn.method}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge className={getStatusBadgeClass(txn.status)}>
-                          {getStatusIcon(txn.status)}
-                          {txn.status}
-                        </Badge>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
+                ))}
               </TableBody>
             </Table>
           </div>

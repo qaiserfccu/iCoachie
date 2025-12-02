@@ -1,5 +1,3 @@
-"use client"
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -18,102 +16,47 @@ import {
   Star,
   Trophy,
 } from "lucide-react"
-import { useEffect, useState } from "react"
-import { clubDashboardService } from "@/lib/services/clubDashboardService"
-import { useLoading } from "@/lib/contexts/LoadingContext"
-import { useError } from "@/lib/contexts/ErrorContext"
 
-interface ClubStats {
-  totalMembers: number
-  activeCoaches: number
-  sessionsToday: number
-  monthlyRevenue: number
-  revenueChange: string
-}
+const stats = [
+  { title: "Total Members", value: "450", change: "+12", icon: Users, color: "from-blue-500 to-blue-600" },
+  { title: "Active Coaches", value: "12", change: "+2", icon: UserCog, color: "from-teal-500 to-teal-600" },
+  { title: "Sessions Today", value: "8", change: "3 ongoing", icon: Calendar, color: "from-green-500 to-green-600" },
+  {
+    title: "Monthly Revenue",
+    value: "$12,400",
+    change: "+18%",
+    icon: CreditCard,
+    color: "from-yellow-500 to-orange-500",
+  },
+]
 
-interface TodaySession {
-  id: string
-  time: string
-  name: string
-  coach: string
-  enrolled: number
-  capacity: number
-  status: 'completed' | 'ongoing' | 'upcoming'
-}
+const todaySessions = [
+  { time: "09:00 AM", name: "Junior Swimming", coach: "John Smith", enrolled: 15, capacity: 20, status: "completed" },
+  {
+    time: "11:00 AM",
+    name: "Basketball Training",
+    coach: "Mike Johnson",
+    enrolled: 18,
+    capacity: 20,
+    status: "ongoing",
+  },
+  { time: "02:00 PM", name: "Soccer Practice", coach: "Sarah Wilson", enrolled: 22, capacity: 25, status: "upcoming" },
+  { time: "04:00 PM", name: "Tennis Lessons", coach: "David Lee", enrolled: 8, capacity: 10, status: "upcoming" },
+]
 
-interface TopPerformer {
-  id: string
-  name: string
-  sport: string
-  progress: number
-  badge: 'Gold' | 'Silver' | 'Bronze'
-}
+const topPerformers = [
+  { name: "Emma Davis", sport: "Swimming", progress: 95, badge: "Gold" },
+  { name: "Jack Wilson", sport: "Basketball", progress: 88, badge: "Silver" },
+  { name: "Sophie Miller", sport: "Soccer", progress: 82, badge: "Bronze" },
+]
 
-interface RecentPayment {
-  id: string
-  member: string
-  amount: string
-  type: string
-  date: string
-  status: 'completed' | 'pending'
-}
+const recentPayments = [
+  { member: "John Smith", amount: "$150", type: "Monthly", date: "Today", status: "completed" },
+  { member: "Emma Davis", amount: "$200", type: "Quarterly", date: "Yesterday", status: "completed" },
+  { member: "Mike Brown", amount: "$150", type: "Monthly", date: "2 days ago", status: "pending" },
+]
 
 export default function ClubDashboard() {
-  const [stats, setStats] = useState<ClubStats>({
-    totalMembers: 0,
-    activeCoaches: 0,
-    sessionsToday: 0,
-    monthlyRevenue: 0,
-    revenueChange: '+0%'
-  })
-  const [todaySessions, setTodaySessions] = useState<TodaySession[]>([])
-  const [topPerformers, setTopPerformers] = useState<TopPerformer[]>([])
-  const [recentPayments, setRecentPayments] = useState<RecentPayment[]>([])
-
-  const { showLoading, hideLoading } = useLoading()
-  const { showError } = useError()
-
-  const statsCards = [
-    { title: "Total Members", value: stats.totalMembers.toString(), change: "+12", icon: Users, color: "from-blue-500 to-blue-600" },
-    { title: "Active Coaches", value: stats.activeCoaches.toString(), change: "+2", icon: UserCog, color: "from-teal-500 to-teal-600" },
-    { title: "Sessions Today", value: stats.sessionsToday.toString(), change: "3 ongoing", icon: Calendar, color: "from-green-500 to-green-600" },
-    {
-      title: "Monthly Revenue",
-      value: `$${stats.monthlyRevenue.toLocaleString()}`,
-      change: stats.revenueChange,
-      icon: CreditCard,
-      color: "from-yellow-500 to-orange-500",
-    },
-  ]
-
-  useEffect(() => {
-    const fetchDashboardData = async () => {
-      try {
-        showLoading('Loading club dashboard...')
-
-        // Fetch all data in parallel
-        const [clubStats, sessions, performers, payments] = await Promise.all([
-          clubDashboardService.getClubStats(),
-          clubDashboardService.getTodaysSessions(),
-          clubDashboardService.getTopPerformers(),
-          clubDashboardService.getRecentPayments()
-        ])
-
-        setStats(clubStats)
-        setTodaySessions(sessions)
-        setTopPerformers(performers)
-        setRecentPayments(payments)
-      } catch (error) {
-        showError('Failed to load club dashboard data')
-        console.error('Error fetching club dashboard data:', error)
-      } finally {
-        hideLoading()
-      }
-    }
-
-    fetchDashboardData()
-  }, [showLoading, hideLoading, showError])
-
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -134,7 +77,7 @@ export default function ClubDashboard() {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {statsCards.map((stat) => (
+        {stats.map((stat) => (
           <Card key={stat.title} className="glass-card border-white/20 hover-lift">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">

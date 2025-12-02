@@ -1,5 +1,3 @@
-"use client"
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -16,74 +14,73 @@ import {
   DollarSign,
   Eye,
 } from "lucide-react"
-import { useState, useEffect } from "react"
-import { freelancerDashboardService, FreelancerStats, FreelancerBooking, FreelancerClient, FreelancerReview } from "@/lib/services/freelancerDashboardService"
-import { useLoading } from "@/lib/contexts/LoadingContext"
-import { useError } from "@/lib/contexts/ErrorContext"
+
+const stats = [
+  {
+    title: "Total Earnings",
+    value: "$4,850",
+    change: "+$620 this week",
+    icon: DollarSign,
+    color: "from-green-500 to-green-600",
+  },
+  { title: "Active Clients", value: "28", change: "+5 this month", icon: Users, color: "from-blue-500 to-blue-600" },
+  {
+    title: "Sessions This Week",
+    value: "12",
+    change: "4 completed",
+    icon: Calendar,
+    color: "from-yellow-500 to-orange-500",
+  },
+  { title: "Rating", value: "4.9", change: "32 reviews", icon: Star, color: "from-purple-500 to-purple-600" },
+]
+
+const upcomingBookings = [
+  {
+    time: "Today, 2:00 PM",
+    client: "Emma Davis",
+    type: "Swimming Lesson",
+    duration: "1h",
+    amount: "$75",
+    status: "confirmed",
+  },
+  {
+    time: "Today, 4:00 PM",
+    client: "Jack Wilson",
+    type: "Private Training",
+    duration: "1.5h",
+    amount: "$100",
+    status: "confirmed",
+  },
+  {
+    time: "Tomorrow, 10:00 AM",
+    client: "Sophie Miller",
+    type: "Swimming Lesson",
+    duration: "1h",
+    amount: "$75",
+    status: "pending",
+  },
+  {
+    time: "Tomorrow, 3:00 PM",
+    client: "New Client",
+    type: "Trial Session",
+    duration: "45m",
+    amount: "$50",
+    status: "pending",
+  },
+]
+
+const recentClients = [
+  { name: "Emma Davis", sessions: 12, totalSpent: "$900", lastSession: "Today", rating: 5 },
+  { name: "Jack Wilson", sessions: 8, totalSpent: "$600", lastSession: "Yesterday", rating: 5 },
+  { name: "Sophie Miller", sessions: 6, totalSpent: "$450", lastSession: "2 days ago", rating: 4 },
+]
+
+const recentReviews = [
+  { client: "Emma Davis", rating: 5, comment: "Excellent coach! Very patient and knowledgeable.", date: "2 days ago" },
+  { client: "Jack Wilson", rating: 5, comment: "Great session, learned a lot!", date: "1 week ago" },
+]
 
 export default function FreelancerDashboard() {
-  const [stats, setStats] = useState<FreelancerStats | null>(null)
-  const [upcomingBookings, setUpcomingBookings] = useState<FreelancerBooking[]>([])
-  const [topClients, setTopClients] = useState<FreelancerClient[]>([])
-  const [recentReviews, setRecentReviews] = useState<FreelancerReview[]>([])
-  const { setLoading } = useLoading()
-  const { setError } = useError()
-
-  useEffect(() => {
-    const loadDashboardData = async () => {
-      try {
-        setLoading(true)
-        const [statsData, bookingsData, clientsData, reviewsData] = await Promise.all([
-          freelancerDashboardService.getFreelancerStats(),
-          freelancerDashboardService.getUpcomingBookings(),
-          freelancerDashboardService.getTopClients(),
-          freelancerDashboardService.getRecentReviews()
-        ])
-        setStats(statsData)
-        setUpcomingBookings(bookingsData)
-        setTopClients(clientsData)
-        setRecentReviews(reviewsData)
-      } catch (error) {
-        console.error('Error loading dashboard data:', error)
-        setError('Failed to load dashboard data')
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    loadDashboardData()
-  }, [setLoading, setError])
-
-  const statsCards = stats ? [
-    {
-      title: "Total Earnings",
-      value: `$${stats.totalEarnings.toLocaleString()}`,
-      change: `+$${stats.weeklyEarnings} this week`,
-      icon: DollarSign,
-      color: "from-green-500 to-green-600",
-    },
-    {
-      title: "Active Clients",
-      value: stats.activeClients.toString(),
-      change: `${stats.monthlyClientGrowth >= 0 ? '+' : ''}${stats.monthlyClientGrowth} this month`,
-      icon: Users,
-      color: "from-blue-500 to-blue-600"
-    },
-    {
-      title: "Sessions This Week",
-      value: stats.sessionsThisWeek.toString(),
-      change: `${stats.completedSessions} completed`,
-      icon: Calendar,
-      color: "from-yellow-500 to-orange-500",
-    },
-    {
-      title: "Rating",
-      value: stats.averageRating.toString(),
-      change: `${stats.totalReviews} reviews`,
-      icon: Star,
-      color: "from-purple-500 to-purple-600"
-    },
-  ] : []
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -105,7 +102,7 @@ export default function FreelancerDashboard() {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {statsCards.map((stat) => (
+        {stats.map((stat) => (
           <Card key={stat.title} className="glass-card border-white/20 hover-lift">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
@@ -135,9 +132,9 @@ export default function FreelancerDashboard() {
             </Button>
           </CardHeader>
           <CardContent className="space-y-4">
-            {upcomingBookings.map((booking) => (
+            {upcomingBookings.map((booking, index) => (
               <div
-                key={booking.id}
+                key={index}
                 className="flex items-center justify-between p-4 rounded-xl glass-subtle hover:bg-white/20 transition-colors"
               >
                 <div className="flex items-center gap-4">
@@ -146,14 +143,14 @@ export default function FreelancerDashboard() {
                     <span className="text-sm font-medium">{booking.time}</span>
                   </div>
                   <div>
-                    <p className="font-medium">{booking.clientName}</p>
+                    <p className="font-medium">{booking.client}</p>
                     <p className="text-sm text-muted-foreground">
                       {booking.type} ({booking.duration})
                     </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className="font-semibold text-green-500">${booking.amount}</span>
+                  <span className="font-semibold text-green-500">{booking.amount}</span>
                   <Badge
                     className={
                       booking.status === "confirmed"
@@ -208,10 +205,10 @@ export default function FreelancerDashboard() {
               <Star className="w-5 h-5 text-yellow-500" />
             </CardHeader>
             <CardContent className="space-y-4">
-              {recentReviews.map((review) => (
-                <div key={review.id} className="p-3 rounded-xl glass-subtle">
+              {recentReviews.map((review, index) => (
+                <div key={index} className="p-3 rounded-xl glass-subtle">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="font-medium text-sm">{review.clientName}</span>
+                    <span className="font-medium text-sm">{review.client}</span>
                     <div className="flex items-center gap-1">
                       {[...Array(review.rating)].map((_, i) => (
                         <Star key={i} className="w-3 h-3 fill-yellow-500 text-yellow-500" />
@@ -237,16 +234,19 @@ export default function FreelancerDashboard() {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {topClients.map((client) => (
+            {recentClients.map((client) => (
               <div
-                key={client.id}
+                key={client.name}
                 className="p-4 rounded-xl glass-subtle hover:bg-white/20 transition-colors cursor-pointer"
               >
                 <div className="flex items-center gap-3 mb-3">
                   <Avatar className="h-12 w-12">
                     <AvatarImage src={`/.jpg?key=zllm9&height=48&width=48&query=${client.name}`} />
                     <AvatarFallback className="bg-gradient-to-br from-yellow-500 to-orange-500 text-white">
-                      {client.avatar}
+                      {client.name
+                        .split(" ")
+                        .map((n) => n[0])
+                        .join("")}
                     </AvatarFallback>
                   </Avatar>
                   <div>
@@ -257,11 +257,11 @@ export default function FreelancerDashboard() {
                 <div className="grid grid-cols-2 gap-2 text-sm">
                   <div>
                     <p className="text-muted-foreground">Sessions</p>
-                    <p className="font-medium">{client.sessionsCount}</p>
+                    <p className="font-medium">{client.sessions}</p>
                   </div>
                   <div>
                     <p className="text-muted-foreground">Total Spent</p>
-                    <p className="font-medium text-green-500">${client.totalSpent}</p>
+                    <p className="font-medium text-green-500">{client.totalSpent}</p>
                   </div>
                 </div>
               </div>

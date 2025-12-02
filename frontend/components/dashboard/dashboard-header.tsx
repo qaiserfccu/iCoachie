@@ -12,11 +12,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Bell, Search, Menu, Plus, User, Settings, LogOut } from "lucide-react"
-import { useAuth } from "@/lib/contexts/AuthContext"
 
 export function DashboardHeader() {
   const [showMobileMenu, setShowMobileMenu] = useState(false)
-  const { logout, user } = useAuth()
 
   return (
     <header className="sticky top-0 z-30 bg-card/95 backdrop-blur-sm border-b border-border">
@@ -75,15 +73,11 @@ export function DashboardHeader() {
             <DropdownMenuTrigger asChild>
               <button className="flex items-center gap-3 p-1.5 rounded-lg hover:bg-muted">
                 <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
-                  <span className="text-primary-foreground font-semibold text-sm">
-                    {user?.firstName?.charAt(0) || 'U'}
-                  </span>
+                  <span className="text-primary-foreground font-semibold text-sm">JD</span>
                 </div>
                 <div className="hidden md:block text-left">
-                  <p className="text-sm font-medium text-foreground">{user?.firstName} {user?.lastName}</p>
-                  <p className="text-xs text-muted-foreground" data-testid="user-role">
-                    {user?.role?.name || 'User'}
-                  </p>
+                  <p className="text-sm font-medium text-foreground">John Doe</p>
+                  <p className="text-xs text-muted-foreground">Head Coach</p>
                 </div>
               </button>
             </DropdownMenuTrigger>
@@ -99,7 +93,7 @@ export function DashboardHeader() {
                 Settings
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-destructive" onClick={logout}>
+              <DropdownMenuItem className="text-destructive">
                 <LogOut className="w-4 h-4 mr-2" />
                 Log out
               </DropdownMenuItem>
