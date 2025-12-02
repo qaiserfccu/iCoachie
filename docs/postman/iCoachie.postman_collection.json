@@ -1,0 +1,272 @@
+{
+  "info": {
+    "_postman_id": "1a5d7a0c-icoachie-collection",
+    "name": "iCoachie API",
+    "description": "Role-aware API requests covering the primary controllers exposed by the iCoachie backend.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"superadmin@example.com\",\n  \"password\": \"changeme\"\n}"
+            },
+            "url": {
+              "raw": "{{apiBaseUrl}}/auth/login",
+              "host": [
+                "{{apiBaseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Login succeeded', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.token, 'token present').to.be.a('string');",
+                  "  pm.collectionVariables.set('authToken', json.token);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Current User",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{apiBaseUrl}}/users/me",
+              "host": [
+                "{{apiBaseUrl}}"
+              ],
+              "path": [
+                "users",
+                "me"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Fetched user profile', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.user).to.be.an('object');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Clubs",
+      "item": [
+        {
+          "name": "List Clubs",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{apiBaseUrl}}/clubs?includeDeleted=false&page=1&pageSize=20",
+              "host": [
+                "{{apiBaseUrl}}"
+              ],
+              "path": [
+                "clubs"
+              ],
+              "query": [
+                { "key": "includeDeleted", "value": "false" },
+                { "key": "page", "value": "1" },
+                { "key": "pageSize", "value": "20" }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Club listing returns pagination envelope', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.pageInfo).to.have.property('total');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create Club",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Postman Test Club\",\n  \"location\": \"123 Main St\",\n  \"description\": \"Smoke test club\",\n  \"logoUrl\": \"https://example.com/logo.png\",\n  \"adminId\": 1\n}"
+            },
+            "url": {
+              "raw": "{{apiBaseUrl}}/clubs",
+              "host": [
+                "{{apiBaseUrl}}"
+              ],
+              "path": [
+                "clubs"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Students",
+      "item": [
+        {
+          "name": "List Students",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{apiBaseUrl}}/students?page=1&pageSize=20",
+              "host": [
+                "{{apiBaseUrl}}"
+              ],
+              "path": [
+                "students"
+              ],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "pageSize", "value": "20" }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Student list secured', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Facilities",
+      "item": [
+        {
+          "name": "List Facilities",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{apiBaseUrl}}/facilities?page=1&pageSize=20",
+              "host": [
+                "{{apiBaseUrl}}"
+              ],
+              "path": [
+                "facilities"
+              ],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "pageSize", "value": "20" }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Files",
+      "item": [
+        {
+          "name": "Current User Files",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{apiBaseUrl}}/files/user",
+              "host": [
+                "{{apiBaseUrl}}"
+              ],
+              "path": [
+                "files",
+                "user"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Generate File Token",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{apiBaseUrl}}/files/1/token",
+              "host": [
+                "{{apiBaseUrl}}"
+              ],
+              "path": [
+                "files",
+                "1",
+                "token"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{authToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "apiBaseUrl",
+      "value": "{{apiBaseUrl}}",
+      "type": "string"
+    },
+    {
+      "key": "authToken",
+      "value": "{{authToken}}",
+      "type": "string"
+    }
+  ]
+}

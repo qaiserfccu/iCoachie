@@ -8,6 +8,7 @@
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
     "build": "tsc",
     "migrate": "node dist/migrations/run.js",
+    "swagger:export": "ts-node scripts/export-swagger.ts",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage"

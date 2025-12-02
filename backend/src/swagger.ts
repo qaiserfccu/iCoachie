@@ -11,9 +11,13 @@ const options = {
     },
     servers: [
       {
-        url: 'http://localhost:3000',
-        description: 'Development server',
+        url: 'http://localhost:4000/api',
+        description: 'Local development server',
       },
+      {
+        url: 'https://api.icoachie.com/api',
+        description: 'Production server',
+      }
     ],
     components: {
       securitySchemes: {
@@ -23,7 +27,63 @@ const options = {
           bearerFormat: 'JWT',
         },
       },
+      parameters: {
+        PageParam: {
+          in: 'query',
+          name: 'page',
+          schema: { type: 'integer', minimum: 1, default: 1 },
+          description: '1-based page index for paginated resources.',
+        },
+        PageSizeParam: {
+          in: 'query',
+          name: 'pageSize',
+          schema: { type: 'integer', minimum: 1, maximum: 100, default: 20 },
+          description: 'Number of results to return per page (max 100).',
+        },
+        SearchParam: {
+          in: 'query',
+          name: 'search',
+          schema: { type: 'string' },
+          description: 'Case-insensitive search keyword applied to name/description fields.',
+        },
+        IncludeDeletedParam: {
+          in: 'query',
+          name: 'includeDeleted',
+          schema: { type: 'boolean', default: false },
+          description: 'Set true to include soft-deleted rows (admin endpoints only).',
+        }
+      },
       schemas: {
+        StandardResponse: {
+          type: 'object',
+          properties: {
+            success: { type: 'boolean', example: true },
+            message: { type: 'string', example: 'Operation completed' },
+          },
+        },
+        PageInfo: {
+          type: 'object',
+          properties: {
+            page: { type: 'integer', example: 1 },
+            pageSize: { type: 'integer', example: 20 },
+            total: { type: 'integer', example: 120 },
+            totalPages: { type: 'integer', example: 6 },
+            hasNext: { type: 'boolean', example: true },
+            hasPrev: { type: 'boolean', example: false },
+          },
+        },
+        PaginatedResponse: {
+          type: 'object',
+          properties: {
+            data: { type: 'array', items: { type: 'object' } },
+            pageInfo: { $ref: '#/components/schemas/PageInfo' },
+            filtersApplied: {
+              type: 'object',
+              additionalProperties: true,
+              example: { search: 'academy', includeDeleted: false },
+            }
+          }
+        },
         User: {
           type: 'object',
           properties: {

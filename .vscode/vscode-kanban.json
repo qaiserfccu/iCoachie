@@ -59,52 +59,12 @@
       "references": [],
       "title": "16 - Frontend/backend integration readiness",
       "type": "note"
-    },
-    {
-      "assignedTo": {
-        "name": "Copilot Agent"
-      },
-      "category": "testing",
-      "creation_time": "2025-12-02T00:00:00.000Z",
-      "description": {
-        "content": "Develop comprehensive unit-test coverage for backend services/controllers and ensure they run in CI.",
-        "mime": "text/markdown"
-      },
-      "details": {
-        "content": "# Task 4 - Backend Unit Test Coverage (Priority 7)\n\n## Goals\n- Identify critical modules lacking unit tests (middleware, utils, controllers).\n- Write focused unit specs with dependency mocks.\n- Achieve agreed code coverage threshold (e.g., 80%).\n- Integrate coverage reports into CI and code review gates.\n\n## Checklist\n1. Coverage audit report attached to ticket.\n2. Test plan per module (what to mock, expected inputs/outputs).\n3. New tests committed with descriptive names.\n4. Coverage badge updated in README.\n5. Failing tests in CI block merges.\n\n## Deliverables\n- `npm run test:unit` script.\n- Coverage reports uploaded (lcov + HTML).\n- Documentation for running tests locally.",
-        "mime": "text/markdown"
-      },
-      "id": "14",
-      "prio": 7,
-      "references": [],
-      "title": "14 - Backend unit test expansion",
-      "type": "note"
-    },
-    {
-      "assignedTo": {
-        "name": "Copilot Agent"
-      },
-      "category": "testing",
-      "creation_time": "2025-12-02T00:00:00.000Z",
-      "description": {
-        "content": "Design and execute a backend smoke-test suite that runs quickly and validates mission-critical flows end-to-end.",
-        "mime": "text/markdown"
-      },
-      "details": {
-        "content": "# Task 3 - Backend Smoke Test Suite (Priority 6)\n\n## Requirements\n- Cover auth/login, RBAC gates, CRUD of each major module (Club, Facility, Venue, Ground, Sessions).\n- Run in <5 minutes on CI.\n- Provide human-readable report with pass/fail summary.\n\n## Action Plan\n1. Define smoke criteria per module.\n2. Implement Jest/Supertest specs (or Playwright API) hitting live server with seeded data.\n3. Add npm script `test:smoke`.\n4. Integrate into CI pipeline with badge/report.\n5. Document runbook + data reset strategy.\n\n## Acceptance\n- Green test run attached to PR.\n- Instructions added to CONTRIBUTING.md.",
-        "mime": "text/markdown"
-      },
-      "id": "13",
-      "prio": 6,
-      "references": [],
-      "title": "13 - Backend smoke testing",
-      "type": "note"
     }
   ],
   "in-progress": [
     {
       "assignedTo": {
-        "name": "Cloud Agent"
+        "name": "Cloud Copilot Agent"
       },
       "category": "frontend",
       "creation_time": "2025-12-02T00:00:00.000Z",
@@ -120,6 +80,45 @@
       "prio": 8,
       "references": [],
       "title": "15 - Frontend screen completion"
+    },
+    {
+      "assignedTo": {
+        "name": "Cloud Copilot Agent"
+      },
+      "category": "testing",
+      "creation_time": "2025-12-02T00:00:00.000Z",
+      "description": {
+        "content": "Develop comprehensive unit-test coverage for backend services/controllers and ensure they run in CI.",
+        "mime": "text/markdown"
+      },
+      "details": {
+        "content": "# Task 4 - Backend Unit Test Coverage (Priority 7)\n\n## Goals\n- Identify critical modules lacking unit tests (middleware, utils, controllers).\n- Write focused unit specs with dependency mocks.\n- Achieve agreed code coverage threshold (e.g., 80%).\n- Integrate coverage reports into CI and code review gates.\n\n## Checklist\n1. Coverage audit report attached to ticket.\n2. Test plan per module (what to mock, expected inputs/outputs).\n3. New tests committed with descriptive names.\n4. Coverage badge updated in README.\n5. Failing tests in CI block merges.\n\n## Deliverables\n- `npm run test:unit` script.\n- Coverage reports uploaded (lcov + HTML).\n- Documentation for running tests locally.",
+        "mime": "text/markdown"
+      },
+      "id": "14",
+      "prio": 7,
+      "references": [],
+      "title": "14 - Backend unit test expansion",
+      "type": "bug"
+    },
+    {
+      "assignedTo": {
+        "name": "Cloud Copilot Agent"
+      },
+      "category": "testing",
+      "creation_time": "2025-12-02T00:00:00.000Z",
+      "description": {
+        "content": "Design and execute a backend smoke-test suite that runs quickly and validates mission-critical flows end-to-end.",
+        "mime": "text/markdown"
+      },
+      "details": {
+        "content": "# Task 3 - Backend Smoke Test Suite (Priority 6)\n\n## Requirements\n- Cover auth/login, RBAC gates, CRUD of each major module (Club, Facility, Venue, Ground, Sessions).\n- Run in <5 minutes on CI.\n- Provide human-readable report with pass/fail summary.\n\n## Action Plan\n1. Define smoke criteria per module.\n2. Implement Jest/Supertest specs (or Playwright API) hitting live server with seeded data.\n3. Add npm script `test:smoke`.\n4. Integrate into CI pipeline with badge/report.\n5. Document runbook + data reset strategy.\n\n## Acceptance\n- Green test run attached to PR.\n- Instructions added to CONTRIBUTING.md.",
+        "mime": "text/markdown"
+      },
+      "id": "13",
+      "prio": 6,
+      "references": [],
+      "title": "13 - Backend smoke testing"
     },
     {
       "assignedTo": {
