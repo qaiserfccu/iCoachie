@@ -372,7 +372,7 @@ router.put('/:id', requireAuth, async (req: AuthRequest, res) => {
   }
 });
 
-// Delete attendance record (admin only)
+// Soft delete attendance record (admin only) - Card 22
 router.delete('/:id', requireAuth, requireRole(['SUPER_ADMIN']), async (req: AuthRequest, res) => {
   try {
     const attendanceId = parseInt(req.params.id);
@@ -382,19 +382,56 @@ router.delete('/:id', requireAuth, requireRole(['SUPER_ADMIN']), async (req: Aut
     const attendance = await prisma.attendance.findFirst({
       where: {
         id: attendanceId,
-        session: {
-          clubId
-        }
+        session: { clubId },
+        deletedAt: null
       }
     });
 
     if (!attendance) return res.status(404).json({ message: 'Attendance record not found' });
 
-    await prisma.attendance.delete({
-      where: { id: attendanceId }
+    await prisma.attendance.update({
+      where: { id: attendanceId },
+      data: { deletedAt: new Date() }
     });
 
-    res.json({ ok: true });
+    res.json({ ok: true, message: 'Attendance record soft deleted' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Internal error' });
+  }
+});
+
+// Restore attendance record (admin only) - Card 22
+router.post('/:id/restore', requireAuth, requireRole(['SUPER_ADMIN']), async (req: AuthRequest, res) => {
+  try {
+    const attendanceId = parseInt(req.params.id);
+    const clubId = req.user!.clubId;
+
+    const existing = await prisma.attendance.findFirst({
+      where: {
+        id: attendanceId,
+        session: { clubId }
+      }
+    });
+    
+    if (!existing) return res.status(404).json({ message: 'Attendance record not found' });
+    if (!existing.deletedAt) return res.status(400).json({ message: 'Attendance record is not deleted' });
+
+    const restored = await prisma.attendance.update({
+      where: { id: attendanceId },
+      data: { deletedAt: null },
+      select: {
+        id: true,
+        status: { select: { code: true, name: true } },
+        checkinTime: true,
+        notes: true,
+        recordedAt: true,
+        student: { select: { id: true, name: true } },
+        recorder: { select: { name: true } }
+      }
+    });
+
+    res.json(restored);
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Internal error' });

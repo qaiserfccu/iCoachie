@@ -548,4 +548,67 @@ router.get('/freelancers/available', async (req: AuthRequest, res) => {
   }
 });
 
+// =============================================================================
+// Card 22 - Restore Soft-Deleted Booking
+// =============================================================================
+
+// Restore a soft-deleted booking
+router.post('/:id/restore', async (req: AuthRequest, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user!.id;
+
+    const existing = await prisma.booking.findFirst({
+      where: {
+        id: parseInt(id, 10),
+        OR: [
+          { clientId: userId },
+          { freelancerId: userId },
+        ],
+      },
+    });
+
+    if (!existing) {
+      return res.status(404).json({
+        success: false,
+        error: 'Booking not found',
+      });
+    }
+
+    if (!existing.deletedAt) {
+      return res.status(400).json({
+        success: false,
+        error: 'Booking is not deleted',
+      });
+    }
+
+    const restored = await prisma.booking.update({
+      where: { id: existing.id },
+      data: { deletedAt: null },
+      include: {
+        freelancer: {
+          select: { id: true, name: true, email: true },
+        },
+        client: {
+          select: { id: true, name: true, email: true },
+        },
+        status: {
+          select: { code: true, name: true }
+        }
+      },
+    });
+
+    res.json({
+      success: true,
+      data: restored,
+    });
+  } catch (error) {
+    console.error('Error restoring booking:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error',
+    });
+  }
+});
+
 export default router;

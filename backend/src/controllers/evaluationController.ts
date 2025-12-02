@@ -339,7 +339,7 @@ router.put('/:id', requireAuth, async (req: AuthRequest, res) => {
   }
 });
 
-// Delete evaluation (admin only)
+// Soft delete evaluation (admin only) - Card 22
 router.delete('/:id', requireAuth, requireRole(['SUPER_ADMIN']), async (req: AuthRequest, res) => {
   try {
     const evaluationId = parseInt(req.params.id);
@@ -349,19 +349,55 @@ router.delete('/:id', requireAuth, requireRole(['SUPER_ADMIN']), async (req: Aut
     const evaluation = await prisma.evaluation.findFirst({
       where: {
         id: evaluationId,
-        session: {
-          clubId
-        }
+        session: { clubId },
+        deletedAt: null
       }
     });
 
     if (!evaluation) return res.status(404).json({ message: 'Evaluation not found' });
 
-    await prisma.evaluation.delete({
-      where: { id: evaluationId }
+    await prisma.evaluation.update({
+      where: { id: evaluationId },
+      data: { deletedAt: new Date() }
     });
 
-    res.json({ ok: true });
+    res.json({ ok: true, message: 'Evaluation soft deleted' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Internal error' });
+  }
+});
+
+// Restore evaluation (admin only) - Card 22
+router.post('/:id/restore', requireAuth, requireRole(['SUPER_ADMIN']), async (req: AuthRequest, res) => {
+  try {
+    const evaluationId = parseInt(req.params.id);
+    const clubId = req.user!.clubId;
+
+    const existing = await prisma.evaluation.findFirst({
+      where: {
+        id: evaluationId,
+        session: { clubId }
+      }
+    });
+    
+    if (!existing) return res.status(404).json({ message: 'Evaluation not found' });
+    if (!existing.deletedAt) return res.status(400).json({ message: 'Evaluation is not deleted' });
+
+    const restored = await prisma.evaluation.update({
+      where: { id: evaluationId },
+      data: { deletedAt: null },
+      select: {
+        id: true,
+        overallScore: true,
+        comments: true,
+        createdAt: true,
+        student: { select: { id: true, name: true } },
+        coach: { select: { name: true } }
+      }
+    });
+
+    res.json(restored);
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Internal error' });
