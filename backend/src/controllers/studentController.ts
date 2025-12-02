@@ -201,7 +201,7 @@ router.post('/', requireAuth, async (req: AuthRequest, res) => {
     const isAdmin = await prisma.userRoleAssignment.findFirst({
       where: {
         userId: currentUserId,
-        role: { name: 'SuperAdmin' }
+        role: { code: 'SUPER_ADMIN' }
       }
     });
 
@@ -292,7 +292,7 @@ router.put('/:id', requireAuth, async (req: AuthRequest, res) => {
     const isAdmin = await prisma.userRoleAssignment.findFirst({
       where: {
         userId: currentUserId,
-        role: { name: 'SuperAdmin' }
+        role: { code: 'SUPER_ADMIN' }
       }
     });
 

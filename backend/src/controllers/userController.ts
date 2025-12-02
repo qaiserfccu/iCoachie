@@ -224,7 +224,7 @@ router.put('/users/:id', requireAuth, async (req: AuthRequest, res) => {
     const isAdmin = req.user && await prisma.userRoleAssignment.findFirst({
       where: {
         userId: currentUserId,
-        role: { name: 'SuperAdmin' }
+        role: { code: 'SUPER_ADMIN' }
       }
     });
 

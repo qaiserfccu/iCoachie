@@ -98,7 +98,7 @@ const scopeRank: Record<string, number> = {
   INDEPENDENT: 1
 };
 
-function hasScope(userScope?: string | null, required: string): boolean {
+function hasScope(userScope: string | null | undefined, required: string): boolean {
   if (!required) return true;
   if (!userScope) return false;
   const u = scopeRank[userScope] ?? 0;

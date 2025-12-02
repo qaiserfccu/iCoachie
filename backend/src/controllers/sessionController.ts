@@ -186,7 +186,7 @@ router.post('/', requireAuth, async (req: AuthRequest, res) => {
     const isAdmin = await prisma.userRoleAssignment.findFirst({
       where: {
         userId: currentUserId,
-        role: { name: 'SuperAdmin' }
+        role: { code: 'SUPER_ADMIN' }
       }
     });
 
@@ -270,7 +270,7 @@ router.put('/:id', requireAuth, async (req: AuthRequest, res) => {
     const isAdmin = await prisma.userRoleAssignment.findFirst({
       where: {
         userId: currentUserId,
-        role: { name: 'SuperAdmin' }
+        role: { code: 'SUPER_ADMIN' }
       }
     });
 
@@ -430,7 +430,7 @@ router.post('/:id/enroll', requireAuth, async (req: AuthRequest, res) => {
     const isAdmin = await prisma.userRoleAssignment.findFirst({
       where: {
         userId: currentUserId,
-        role: { name: 'SuperAdmin' }
+        role: { code: 'SUPER_ADMIN' }
       }
     });
 
@@ -507,7 +507,7 @@ router.delete('/:id/enroll/:studentId', requireAuth, async (req: AuthRequest, re
     const isAdmin = await prisma.userRoleAssignment.findFirst({
       where: {
         userId: currentUserId,
-        role: { name: 'SuperAdmin' }
+        role: { code: 'SUPER_ADMIN' }
       }
     });
 

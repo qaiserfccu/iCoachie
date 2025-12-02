@@ -102,7 +102,7 @@ router.get('/student/:studentId', requireAuth, async (req: AuthRequest, res) => 
     const isAdmin = await prisma.userRoleAssignment.findFirst({
       where: {
         userId: currentUserId,
-        role: { name: 'SuperAdmin' }
+        role: { code: 'SUPER_ADMIN' }
       }
     });
 
@@ -212,7 +212,7 @@ router.post('/session/:sessionId/student/:studentId', requireAuth, async (req: A
     const isAdmin = await prisma.userRoleAssignment.findFirst({
       where: {
         userId: currentUserId,
-        role: { name: 'SuperAdmin' }
+        role: { code: 'SUPER_ADMIN' }
       }
     });
 
@@ -318,7 +318,7 @@ router.put('/:id', requireAuth, async (req: AuthRequest, res) => {
     const isAdmin = await prisma.userRoleAssignment.findFirst({
       where: {
         userId: currentUserId,
-        role: { name: 'SuperAdmin' }
+        role: { code: 'SUPER_ADMIN' }
       }
     });
 
@@ -431,7 +431,7 @@ router.post('/session/:sessionId/bulk', requireAuth, async (req: AuthRequest, re
     const isAdmin = await prisma.userRoleAssignment.findFirst({
       where: {
         userId: currentUserId,
-        role: { name: 'SuperAdmin' }
+        role: { code: 'SUPER_ADMIN' }
       }
     });
 
