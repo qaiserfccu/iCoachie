@@ -805,6 +805,61 @@ export const studentAchievements: StudentAchievement[] = [
   { title: "100 Laps Milestone", date: "Nov 1", icon: CheckCircle, color: "text-blue-500" },
 ]
 
+export interface StudentPageStat {
+  title: string
+  value: string
+  subtitle: string
+  icon: LucideIcon
+  color: string
+}
+
+export const studentPageStats: StudentPageStat[] = [
+  { title: "Upcoming Sessions", value: "4", subtitle: "This week", icon: Calendar, color: "from-indigo-500 to-purple-500" },
+  { title: "Overall Progress", value: "78%", subtitle: "+5% this month", icon: TrendingUp, color: "from-green-500 to-green-600" },
+  { title: "Badges Earned", value: "12", subtitle: "2 new this month", icon: Star, color: "from-yellow-500 to-orange-500" },
+  { title: "Attendance", value: "95%", subtitle: "Excellent!", icon: CheckCircle, color: "from-blue-500 to-blue-600" },
+]
+
+export interface StudentPageSession {
+  sport: string
+  coach: string
+  time: string
+  location: string
+  duration: string
+}
+
+export const studentPageUpcomingSessions: StudentPageSession[] = [
+  { sport: "Swimming", coach: "John Smith", time: "Today, 4:00 PM", location: "Pool A", duration: "1h" },
+  { sport: "Swimming", coach: "John Smith", time: "Tomorrow, 4:00 PM", location: "Pool A", duration: "1h" },
+  { sport: "Fitness Training", coach: "Mike Brown", time: "Wed, 10:00 AM", location: "Gym B", duration: "45min" },
+]
+
+export interface StudentPageEvaluation {
+  skill: string
+  score: number
+  date: string
+  feedback: string
+}
+
+export const studentPageRecentEvaluations: StudentPageEvaluation[] = [
+  { skill: "Freestyle Technique", score: 85, date: "Nov 28", feedback: "Great improvement!" },
+  { skill: "Breathing Control", score: 78, date: "Nov 25", feedback: "Keep practicing" },
+  { skill: "Endurance", score: 90, date: "Nov 20", feedback: "Excellent progress" },
+]
+
+export interface StudentPageAchievement {
+  name: string
+  description: string
+  date: string
+  icon: string
+}
+
+export const studentPageAchievements: StudentPageAchievement[] = [
+  { name: "First Lap!", description: "Completed first 50m lap", date: "1 week ago", icon: "🏊" },
+  { name: "Perfect Attendance", description: "Attended all sessions this month", date: "2 weeks ago", icon: "⭐" },
+  { name: "Skill Master", description: "Mastered freestyle basics", date: "3 weeks ago", icon: "🏆" },
+]
+
 // ============================================================================
 // FRONT DESK DASHBOARD DATA
 // ============================================================================

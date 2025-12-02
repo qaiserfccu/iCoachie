@@ -2,33 +2,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Calendar, TrendingUp, Trophy, Clock, ArrowRight, Star, CheckCircle, Target } from "lucide-react"
-
-const stats = [
-  { title: "Upcoming Sessions", value: "4", subtitle: "This week", icon: Calendar, color: "from-indigo-500 to-purple-500" },
-  { title: "Overall Progress", value: "78%", subtitle: "+5% this month", icon: TrendingUp, color: "from-green-500 to-green-600" },
-  { title: "Badges Earned", value: "12", subtitle: "2 new this month", icon: Trophy, color: "from-yellow-500 to-orange-500" },
-  { title: "Attendance", value: "95%", subtitle: "Excellent!", icon: CheckCircle, color: "from-blue-500 to-blue-600" },
-]
-
-const upcomingSessions = [
-  { sport: "Swimming", coach: "John Smith", time: "Today, 4:00 PM", location: "Pool A", duration: "1h" },
-  { sport: "Swimming", coach: "John Smith", time: "Tomorrow, 4:00 PM", location: "Pool A", duration: "1h" },
-  { sport: "Fitness Training", coach: "Mike Brown", time: "Wed, 10:00 AM", location: "Gym B", duration: "45min" },
-]
-
-const recentEvaluations = [
-  { skill: "Freestyle Technique", score: 85, date: "Nov 28", feedback: "Great improvement!" },
-  { skill: "Breathing Control", score: 78, date: "Nov 25", feedback: "Keep practicing" },
-  { skill: "Endurance", score: 90, date: "Nov 20", feedback: "Excellent progress" },
-]
-
-const achievements = [
-  { name: "First Lap!", description: "Completed first 50m lap", date: "1 week ago", icon: "🏊" },
-  { name: "Perfect Attendance", description: "Attended all sessions this month", date: "2 weeks ago", icon: "⭐" },
-  { name: "Skill Master", description: "Mastered freestyle basics", date: "3 weeks ago", icon: "🏆" },
-]
+import { Calendar, TrendingUp, Trophy, Clock, ArrowRight, Star, Target } from "lucide-react"
+import { studentPageStats, studentPageUpcomingSessions, studentPageRecentEvaluations, studentPageAchievements } from "@/lib/services/mockDataService"
 
 export default function StudentDashboard() {
   return (
@@ -47,7 +22,7 @@ export default function StudentDashboard() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {stats.map((stat) => (
+        {studentPageStats.map((stat) => (
           <Card key={stat.title} className="glass-card border-white/20 hover-lift">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
@@ -70,7 +45,7 @@ export default function StudentDashboard() {
             <Button variant="ghost" size="sm" className="text-indigo-500">View All</Button>
           </CardHeader>
           <CardContent className="space-y-4">
-            {upcomingSessions.map((session, index) => (
+            {studentPageUpcomingSessions.map((session, index) => (
               <div key={index} className="flex items-center justify-between p-4 rounded-xl glass-subtle hover:bg-white/20 transition-colors">
                 <div className="flex items-center gap-4">
                   <div className="text-center min-w-[80px]">
@@ -98,7 +73,7 @@ export default function StudentDashboard() {
             <Trophy className="w-5 h-5 text-yellow-500" />
           </CardHeader>
           <CardContent className="space-y-4">
-            {achievements.map((achievement, index) => (
+            {studentPageAchievements.map((achievement, index) => (
               <div key={index} className="p-3 rounded-xl glass-subtle">
                 <div className="flex items-center gap-3 mb-1">
                   <span className="text-2xl">{achievement.icon}</span>
@@ -116,7 +91,7 @@ export default function StudentDashboard() {
         <Card className="glass-card border-white/20">
           <CardHeader className="pb-2"><CardTitle className="text-lg font-semibold">Recent Evaluations</CardTitle></CardHeader>
           <CardContent className="space-y-4">
-            {recentEvaluations.map((evaluation, index) => (
+            {studentPageRecentEvaluations.map((evaluation, index) => (
               <div key={index} className="p-4 rounded-xl glass-subtle">
                 <div className="flex items-center justify-between mb-2">
                   <span className="font-medium">{evaluation.skill}</span>
