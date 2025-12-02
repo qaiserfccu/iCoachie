@@ -54,6 +54,7 @@ playwright/.tests/
 /test-results/
 /tmp/
 /temp/
+/*/sample_code
 
 # === Environment & secrets ===
 .env
