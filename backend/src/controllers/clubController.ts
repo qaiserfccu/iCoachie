@@ -1,7 +1,7 @@
 import express from 'express';
 import prisma from '../db';
 import { requireAuth, AuthRequest } from '../middleware/jwtAuth';
-import { requireRole } from '../middleware/requireRole';
+import { requireRole } from '../middleware';
 
 const router = express.Router();
 

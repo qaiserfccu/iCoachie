@@ -1,8 +1,9 @@
 import express from 'express';
 import prisma from '../db';
 import { requireAuth, AuthRequest } from '../middleware/jwtAuth';
-import { requireRole } from '../middleware/requireRole';
+import { requireRole } from '../middleware';
 import Stripe from 'stripe';
+import { Prisma } from '@prisma/client';
 import { getPaymentStatusIdByCode } from '../utils/lookups';
 
 const router = express.Router();
@@ -12,21 +13,51 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
   apiVersion: '2025-11-17.clover',
 });
 
+const resolvePaymentStatusId = async (code: string) => {
+  const statusId = await getPaymentStatusIdByCode(code);
+  if (!statusId) {
+    throw new Error(`Payment status ${code} is not configured`);
+  }
+  return statusId;
+};
+
 // Get payments for user's club
 router.get('/', requireAuth, async (req: AuthRequest, res) => {
   try {
     const clubId = req.user!.clubId;
     const { status, paymentType, userId, limit = 50, offset = 0 } = req.query;
 
-    const where: any = {
+    const statusCode = Array.isArray(status)
+      ? (status[0] as string | undefined)
+      : typeof status === 'string'
+        ? status
+        : undefined;
+    const paymentTypeFilter = Array.isArray(paymentType)
+      ? (paymentType[0] as string | undefined)
+      : typeof paymentType === 'string'
+        ? paymentType
+        : undefined;
+    const userIdFilter = Array.isArray(userId)
+      ? parseInt(userId[0] as string)
+      : userId
+        ? parseInt(userId as string)
+        : undefined;
+
+    const where: Prisma.PaymentWhereInput = {
       user: {
         clubId
       }
     };
 
-    if (status) where.status = status;
-    if (paymentType) where.paymentType = paymentType;
-    if (userId) where.userId = parseInt(userId as string);
+    if (statusCode) {
+      where.status = {
+        is: {
+          code: statusCode
+        }
+      };
+    }
+    if (paymentTypeFilter) where.paymentType = paymentTypeFilter;
+    if (userIdFilter) where.userId = userIdFilter;
 
     const payments = await prisma.payment.findMany({
       where,
@@ -58,8 +89,8 @@ router.get('/', requireAuth, async (req: AuthRequest, res) => {
       orderBy: {
         createdAt: 'desc'
       },
-      take: parseInt(limit as string),
-      skip: parseInt(offset as string)
+      take: typeof limit === 'string' ? parseInt(limit) : Number(limit),
+      skip: typeof offset === 'string' ? parseInt(offset) : Number(offset)
     });
 
     res.json(payments);
@@ -87,7 +118,12 @@ router.get('/:id', requireAuth, async (req: AuthRequest, res) => {
         amount: true,
         currency: true,
         paymentType: true,
-        status: true,
+        status: {
+          select: {
+            code: true,
+            name: true
+          }
+        },
         description: true,
         createdAt: true,
         updatedAt: true,
@@ -162,6 +198,8 @@ router.post('/', requireAuth, async (req: AuthRequest, res) => {
       return res.status(403).json({ message: 'Access denied' });
     }
 
+    const pendingStatusId = await resolvePaymentStatusId('PENDING');
+
     const payment = await prisma.payment.create({
       data: {
         userId: parseInt(userId),
@@ -169,14 +207,20 @@ router.post('/', requireAuth, async (req: AuthRequest, res) => {
         currency,
         paymentType,
         description,
-        stripePaymentId
+        stripePaymentId,
+        statusId: pendingStatusId
       },
       select: {
         id: true,
         amount: true,
         currency: true,
         paymentType: true,
-        status: true,
+        status: {
+          select: {
+            code: true,
+            name: true
+          }
+        },
         description: true,
         createdAt: true,
         user: {
@@ -329,7 +373,7 @@ router.put('/:id', requireAuth, async (req: AuthRequest, res) => {
       return res.status(403).json({ message: 'Access denied' });
     }
 
-    if (payment.status.code === 'COMPLETED') {
+    if (payment.status?.code === 'COMPLETED') {
       return res.status(400).json({ message: 'Cannot modify completed payments' });
     }
 
@@ -397,7 +441,7 @@ router.delete('/:id', requireAuth, requireRole(['SUPER_ADMIN']), async (req: Aut
       }
     });
 
-    if (!payment || payment.status.code === 'COMPLETED') {
+    if (!payment || payment.status?.code === 'COMPLETED') {
       return res.status(404).json({ message: 'Payment not found or already completed' });
     }
 
@@ -462,9 +506,11 @@ router.get('/stats/overview', requireAuth, async (req: AuthRequest, res) => {
     });
 
     const totalAmount = payments.reduce((sum, p) => sum + parseFloat(p.amount.toString()), 0);
-    const completedPayments = payments.filter(p => p.status.code === 'COMPLETED');
+    const completedPayments = payments.filter(p => p.status?.code === 'COMPLETED');
     const completedAmount = completedPayments.reduce((sum, p) => sum + parseFloat(p.amount.toString()), 0);
-    const pendingAmount = payments.filter(p => p.status.code === 'PENDING').reduce((sum, p) => sum + parseFloat(p.amount.toString()), 0);
+    const pendingAmount = payments
+      .filter(p => p.status?.code === 'PENDING')
+      .reduce((sum, p) => sum + parseFloat(p.amount.toString()), 0);
 
     const typeBreakdown = payments.reduce((breakdown, p) => {
       const type = p.paymentType;
@@ -473,7 +519,8 @@ router.get('/stats/overview', requireAuth, async (req: AuthRequest, res) => {
     }, {} as Record<string, number>);
 
     const statusBreakdown = payments.reduce((breakdown, p) => {
-      breakdown[p.status.code] = (breakdown[p.status.code] || 0) + 1;
+      const code = p.status?.code ?? 'UNKNOWN';
+      breakdown[code] = (breakdown[code] || 0) + 1;
       return breakdown;
     }, {} as Record<string, number>);
 
@@ -527,6 +574,8 @@ router.post('/create-payment-intent', requireAuth, async (req: AuthRequest, res)
       },
     });
 
+    const pendingStatusId = await resolvePaymentStatusId('PENDING');
+
     // Create payment record in database
     const payment = await prisma.payment.create({
       data: {
@@ -536,14 +585,19 @@ router.post('/create-payment-intent', requireAuth, async (req: AuthRequest, res)
         paymentType: 'card',
         description: description || 'Payment via Stripe',
         stripePaymentId: paymentIntent.id,
-        status: 'PENDING'
+        statusId: pendingStatusId
       },
       select: {
         id: true,
         amount: true,
         currency: true,
         paymentType: true,
-        status: true,
+        status: {
+          select: {
+            code: true,
+            name: true
+          }
+        },
         description: true,
         createdAt: true,
         stripePaymentId: true
@@ -611,10 +665,11 @@ async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent)
     });
 
     if (payment) {
+      const completedStatusId = await resolvePaymentStatusId('COMPLETED');
       await prisma.payment.update({
         where: { id: payment.id },
         data: {
-          status: 'COMPLETED',
+          statusId: completedStatusId,
           updatedAt: new Date()
         }
       });
@@ -633,10 +688,11 @@ async function handlePaymentIntentFailed(paymentIntent: Stripe.PaymentIntent) {
     });
 
     if (payment) {
+      const failedStatusId = await resolvePaymentStatusId('FAILED');
       await prisma.payment.update({
         where: { id: payment.id },
         data: {
-          status: 'FAILED',
+          statusId: failedStatusId,
           updatedAt: new Date()
         }
       });

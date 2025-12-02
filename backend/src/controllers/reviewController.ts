@@ -60,7 +60,11 @@ router.post('/', async (req: AuthRequest, res) => {
             { clientId: reviewerId },
             { freelancerId: reviewerId },
           ],
-          status: 'COMPLETED',
+          status: {
+            is: {
+              code: 'COMPLETED'
+            }
+          },
           deletedAt: null,
         },
       });

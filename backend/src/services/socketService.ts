@@ -357,14 +357,24 @@ export class SocketService {
               { freelancer: { clubId: clubId } },
               { client: { clubId: clubId } },
             ],
-            status: { in: ['PENDING', 'CONFIRMED'] },
+            status: {
+              is: {
+                code: {
+                  in: ['PENDING', 'CONFIRMED']
+                }
+              }
+            },
             deletedAt: null,
           },
         }),
         prisma.session.count({
           where: {
             clubId: clubId,
-            status: 'COMPLETED',
+            status: {
+              is: {
+                code: 'COMPLETED'
+              }
+            },
             deletedAt: null,
           },
         }),

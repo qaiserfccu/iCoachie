@@ -305,9 +305,14 @@ router.post('/assign-role', requireAuth, requireRole(['SUPER_ADMIN']), async (re
     }
 
     const role = await prisma.role.upsert({
-      where: { name: roleName },
-      update: {},
-      create: { name: roleName }
+      where: { code: roleName },
+      update: {
+        name: roleName
+      },
+      create: {
+        code: roleName,
+        name: roleName
+      }
     });
 
     await prisma.userRoleAssignment.upsert({

@@ -1,8 +1,124 @@
 import express from 'express';
 import prisma from '../db';
 import bcrypt from 'bcrypt';
+import { Prisma } from '@prisma/client';
 import { requireAuth, AuthRequest } from '../middleware/jwtAuth';
-import { requireRole } from '../middleware/requireRole';
+import { requireRole } from '../middleware';
+import { getUserStatusIdByCode } from '../utils/lookups';
+
+const COACH_ACTIVE_SESSION_CODES: string[] = ['SCHEDULED', 'COMPLETED'];
+
+const coachListInclude = Prisma.validator<Prisma.CoachInclude>()({
+  user: {
+    include: {
+      profile: true,
+      status: {
+        select: {
+          code: true
+        }
+      },
+      reviewsReceived: {
+        select: {
+          rating: true
+        }
+      },
+      coachedStudents: {
+        where: {
+          deletedAt: null
+        },
+        select: {
+          id: true,
+          name: true,
+          sport: true
+        }
+      },
+      coachedSessions: {
+        where: {
+          deletedAt: null,
+          status: {
+            is: {
+              code: {
+                in: COACH_ACTIVE_SESSION_CODES
+              }
+            }
+          }
+        },
+        select: {
+          id: true,
+          title: true,
+          sessionDate: true,
+          status: {
+            select: {
+              code: true,
+              name: true
+            }
+          }
+        }
+      }
+    }
+  }
+});
+
+const coachDetailInclude = Prisma.validator<Prisma.CoachInclude>()({
+  user: {
+    include: {
+      profile: true,
+      status: {
+        select: {
+          code: true
+        }
+      },
+      reviewsReceived: {
+        select: {
+          rating: true,
+          comment: true,
+          createdAt: true,
+          reviewer: {
+            select: {
+              name: true
+            }
+          }
+        }
+      },
+      coachedStudents: {
+        where: {
+          deletedAt: null
+        },
+        select: {
+          id: true,
+          name: true,
+          sport: true
+        }
+      },
+      coachedSessions: {
+        where: {
+          deletedAt: null
+        },
+        select: {
+          id: true,
+          title: true,
+          sessionDate: true,
+          status: {
+            select: {
+              code: true,
+              name: true
+            }
+          }
+        }
+      }
+    }
+  }
+});
+
+type CoachListPayload = Prisma.CoachGetPayload<{ include: typeof coachListInclude }>;
+type CoachDetailPayload = Prisma.CoachGetPayload<{ include: typeof coachDetailInclude }>;
+
+const getAverageRating = (reviews: { rating: number }[]) => {
+  if (!reviews.length) return 0;
+  return reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length;
+};
+
+const formatUserStatus = (code?: string | null) => (code === 'ACTIVE' ? 'Active' : 'Inactive');
 
 const router = express.Router();
 
@@ -18,48 +134,20 @@ router.get('/', requireAuth, async (req: AuthRequest, res) => {
         deletedAt: null,
         user: {
           deletedAt: null,
-          status: 'ACTIVE'
-        }
-      },
-      include: {
-        user: {
-          include: {
-            profile: true,
-            reviewsReceived: {
-              select: {
-                rating: true
-              }
-            },
-            coachedStudents: {
-              where: {
-                deletedAt: null
-              },
-              select: {
-                id: true
-              }
-            },
-            coachedSessions: {
-              where: {
-                deletedAt: null,
-                status: {
-                  in: ['SCHEDULED', 'COMPLETED']
-                }
-              },
-              select: {
-                id: true
-              }
+          status: {
+            is: {
+              code: 'ACTIVE'
             }
           }
         }
-      }
-    });
+      },
+      include: coachListInclude
+    }) as CoachListPayload[];
 
     const result = coaches.map(coach => {
       const user = coach.user;
       const reviews = user.reviewsReceived;
-      const rating = reviews.length > 0
-        ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length
-        : 0;
+      const rating = getAverageRating(reviews);
 
       return {
         id: coach.id,
@@ -72,7 +160,7 @@ router.get('/', requireAuth, async (req: AuthRequest, res) => {
         rating: Math.round(rating * 10) / 10, // Round to 1 decimal
         students: user.coachedStudents.length,
         sessions: user.coachedSessions.length,
-        status: user.status === 'ACTIVE' ? 'Active' : 'Inactive',
+        status: formatUserStatus(user.status?.code),
         experienceYears: coach.experienceYears,
         certification: coach.certification,
         hourlyRate: coach.hourlyRate ? parseFloat(coach.hourlyRate.toString()) : undefined
@@ -98,47 +186,8 @@ router.get('/:id', requireAuth, async (req: AuthRequest, res) => {
         clubId,
         deletedAt: null
       },
-      include: {
-        user: {
-          include: {
-            profile: true,
-            reviewsReceived: {
-              select: {
-                rating: true,
-                comment: true,
-                createdAt: true,
-                reviewer: {
-                  select: {
-                    name: true
-                  }
-                }
-              }
-            },
-            coachedStudents: {
-              where: {
-                deletedAt: null
-              },
-              select: {
-                id: true,
-                name: true,
-                sport: true
-              }
-            },
-            coachedSessions: {
-              where: {
-                deletedAt: null
-              },
-              select: {
-                id: true,
-                title: true,
-                sessionDate: true,
-                status: true
-              }
-            }
-          }
-        }
-      }
-    });
+      include: coachDetailInclude
+    }) as CoachDetailPayload | null;
 
     if (!coach) {
       return res.status(404).json({ message: 'Coach not found' });
@@ -146,9 +195,7 @@ router.get('/:id', requireAuth, async (req: AuthRequest, res) => {
 
     const user = coach.user;
     const reviews = user.reviewsReceived;
-    const rating = reviews.length > 0
-      ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length
-      : 0;
+    const rating = getAverageRating(reviews);
 
     const result = {
       id: coach.id,
@@ -161,7 +208,7 @@ router.get('/:id', requireAuth, async (req: AuthRequest, res) => {
       rating: Math.round(rating * 10) / 10,
       students: user.coachedStudents.length,
       sessions: user.coachedSessions.length,
-      status: user.status === 'ACTIVE' ? 'Active' : 'Inactive',
+      status: formatUserStatus(user.status?.code),
       experienceYears: coach.experienceYears,
       certification: coach.certification,
       hourlyRate: coach.hourlyRate ? parseFloat(coach.hourlyRate.toString()) : undefined,
@@ -201,6 +248,24 @@ router.post('/', requireAuth, requireRole(['SUPER_ADMIN']), async (req: AuthRequ
 
     const clubId = req.user!.clubId;
     const hashed = await bcrypt.hash(password, 10);
+    const activeStatusId = await getUserStatusIdByCode('ACTIVE');
+
+    if (!activeStatusId) {
+      return res.status(500).json({ message: 'Unable to resolve ACTIVE user status' });
+    }
+
+    const coachRole = await prisma.role.upsert({
+      where: { code: 'COACH' },
+      update: {
+        name: 'Coach',
+        scope: 'CLUB'
+      },
+      create: {
+        code: 'COACH',
+        name: 'Coach',
+        scope: 'CLUB'
+      }
+    });
 
     // Create user first
     const user = await prisma.user.create({
@@ -208,11 +273,20 @@ router.post('/', requireAuth, requireRole(['SUPER_ADMIN']), async (req: AuthRequ
         email,
         passwordHash: hashed,
         name,
-        role: 'COACH',
         clubId,
+        primaryRoleId: coachRole.id,
+        statusId: activeStatusId,
         profile: {
           create: {
-            displayName: name,
+            displayName: name
+          }
+        }
+      },
+      include: {
+        profile: true,
+        status: {
+          select: {
+            code: true
           }
         }
       }
@@ -227,27 +301,13 @@ router.post('/', requireAuth, requireRole(['SUPER_ADMIN']), async (req: AuthRequ
         experienceYears,
         certification,
         hourlyRate: hourlyRate ? parseFloat(hourlyRate) : undefined
-      },
-      include: {
-        user: {
-          include: {
-            profile: true
-          }
-        }
       }
-    });
-
-    // Assign coach role
-    const role = await prisma.role.upsert({
-      where: { name: 'Coach' },
-      update: {},
-      create: { name: 'Coach' }
     });
 
     await prisma.userRoleAssignment.create({
       data: {
         userId: user.id,
-        roleId: role.id
+        roleId: coachRole.id
       }
     });
 
@@ -256,13 +316,13 @@ router.post('/', requireAuth, requireRole(['SUPER_ADMIN']), async (req: AuthRequ
       userId: user.id,
       name: user.name,
       email: user.email,
-      avatar: coach.user.profile?.avatarUrl,
-      phone: coach.user.profile?.phone,
+      avatar: user.profile?.avatarUrl,
+      phone: user.profile?.phone,
       specialty: coach.specializations,
       rating: 0,
       students: 0,
       sessions: 0,
-      status: 'Active',
+      status: formatUserStatus(user.status?.code),
       experienceYears: coach.experienceYears,
       certification: coach.certification,
       hourlyRate: coach.hourlyRate ? parseFloat(coach.hourlyRate.toString()) : undefined
@@ -348,44 +408,12 @@ router.put('/:id', requireAuth, async (req: AuthRequest, res) => {
         hourlyRate: hourlyRate ? parseFloat(hourlyRate) : undefined,
         updatedAt: new Date()
       },
-      include: {
-        user: {
-          include: {
-            profile: true,
-            reviewsReceived: {
-              select: {
-                rating: true
-              }
-            },
-            coachedStudents: {
-              where: {
-                deletedAt: null
-              },
-              select: {
-                id: true
-              }
-            },
-            coachedSessions: {
-              where: {
-                deletedAt: null,
-                status: {
-                  in: ['SCHEDULED', 'COMPLETED']
-                }
-              },
-              select: {
-                id: true
-              }
-            }
-          }
-        }
-      }
-    });
+      include: coachListInclude
+    }) as CoachListPayload;
 
     const user = updatedCoach.user;
     const reviews = user.reviewsReceived;
-    const rating = reviews.length > 0
-      ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length
-      : 0;
+    const rating = getAverageRating(reviews);
 
     const result = {
       id: updatedCoach.id,
@@ -398,7 +426,7 @@ router.put('/:id', requireAuth, async (req: AuthRequest, res) => {
       rating: Math.round(rating * 10) / 10,
       students: user.coachedStudents.length,
       sessions: user.coachedSessions.length,
-      status: user.status === 'ACTIVE' ? 'Active' : 'Inactive',
+      status: formatUserStatus(user.status?.code),
       experienceYears: updatedCoach.experienceYears,
       certification: updatedCoach.certification,
       hourlyRate: updatedCoach.hourlyRate ? parseFloat(updatedCoach.hourlyRate.toString()) : undefined
