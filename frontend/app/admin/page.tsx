@@ -3,104 +3,19 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
-  Users,
-  Building2,
-  UserCog,
-  CreditCard,
   TrendingUp,
   TrendingDown,
-  AlertTriangle,
   CheckCircle,
   Clock,
   ArrowRight,
+  AlertTriangle,
 } from "lucide-react"
-
-const stats = [
-  {
-    title: "Total Users",
-    value: "12,847",
-    change: "+12.5%",
-    trend: "up",
-    icon: Users,
-    color: "from-blue-500 to-blue-600",
-  },
-  {
-    title: "Active Clubs",
-    value: "284",
-    change: "+8.2%",
-    trend: "up",
-    icon: Building2,
-    color: "from-teal-500 to-teal-600",
-  },
-  {
-    title: "Verified Coaches",
-    value: "1,456",
-    change: "+15.3%",
-    trend: "up",
-    icon: UserCog,
-    color: "from-green-500 to-green-600",
-  },
-  {
-    title: "Monthly Revenue",
-    value: "$128,450",
-    change: "-2.4%",
-    trend: "down",
-    icon: CreditCard,
-    color: "from-yellow-500 to-orange-500",
-  },
-]
-
-const pendingActions = [
-  { type: "Club Approval", count: 5, icon: Building2, color: "text-blue-500" },
-  { type: "Coach Verification", count: 12, icon: UserCog, color: "text-teal-500" },
-  { type: "Refund Requests", count: 3, icon: CreditCard, color: "text-yellow-500" },
-  { type: "Support Tickets", count: 8, icon: AlertTriangle, color: "text-red-500" },
-]
-
-const recentActivities = [
-  {
-    user: "Champions FC",
-    action: "submitted club registration",
-    time: "2 min ago",
-    avatar: "CF",
-    type: "club",
-  },
-  {
-    user: "John Smith",
-    action: "completed coach verification",
-    time: "15 min ago",
-    avatar: "JS",
-    type: "coach",
-  },
-  {
-    user: "Sarah Wilson",
-    action: "requested refund for session",
-    time: "1 hour ago",
-    avatar: "SW",
-    type: "payment",
-  },
-  {
-    user: "Elite Sports Academy",
-    action: "upgraded to premium plan",
-    time: "2 hours ago",
-    avatar: "ES",
-    type: "subscription",
-  },
-  {
-    user: "Mike Johnson",
-    action: "registered as freelancer",
-    time: "3 hours ago",
-    avatar: "MJ",
-    type: "user",
-  },
-]
-
-const topClubs = [
-  { name: "Champions FC", members: 450, revenue: "$12,400", growth: "+18%" },
-  { name: "Elite Sports Academy", members: 380, revenue: "$10,800", growth: "+12%" },
-  { name: "Victory Athletics", members: 320, revenue: "$9,200", growth: "+8%" },
-  { name: "Premier Training", members: 290, revenue: "$8,500", growth: "+15%" },
-]
+import {
+  adminStats,
+  adminPendingActions,
+  adminRecentActivities,
+  adminTopClubs,
+} from "@/lib/services/mockDataService"
 
 export default function AdminDashboard() {
   return (
@@ -120,7 +35,7 @@ export default function AdminDashboard() {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {stats.map((stat) => (
+        {adminStats.map((stat) => (
           <Card key={stat.title} className="glass-card border-white/20 hover-lift">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
@@ -156,11 +71,11 @@ export default function AdminDashboard() {
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-lg font-semibold">Pending Actions</CardTitle>
             <Badge variant="secondary" className="bg-red-500/20 text-red-600">
-              {pendingActions.reduce((acc, item) => acc + item.count, 0)} Total
+              {adminPendingActions.reduce((acc, item) => acc + item.count, 0)} Total
             </Badge>
           </CardHeader>
           <CardContent className="space-y-3">
-            {pendingActions.map((item) => (
+            {adminPendingActions.map((item) => (
               <div
                 key={item.type}
                 className="flex items-center justify-between p-3 rounded-xl glass-subtle hover:bg-white/20 transition-colors cursor-pointer"
@@ -189,7 +104,7 @@ export default function AdminDashboard() {
             </Button>
           </CardHeader>
           <CardContent className="space-y-4">
-            {recentActivities.map((activity, index) => (
+            {adminRecentActivities.map((activity, index) => (
               <div key={index} className="flex items-center gap-4">
                 <Avatar className="h-10 w-10">
                   <AvatarImage src={`/.jpg?height=40&width=40&query=${activity.user} avatar`} />
@@ -238,7 +153,7 @@ export default function AdminDashboard() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {topClubs.map((club, index) => (
+              {adminTopClubs.map((club, index) => (
                 <div key={club.name} className="flex items-center gap-4">
                   <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center font-bold text-primary">
                     {index + 1}

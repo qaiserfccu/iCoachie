@@ -3,140 +3,8 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Shield, Building2, UserCog, Briefcase, Users, Baby, Plus, Edit, Check, X } from "lucide-react"
-
-const roles = [
-  {
-    id: 1,
-    name: "Super Admin",
-    icon: Shield,
-    color: "from-red-500 to-orange-500",
-    description: "Full system access with all permissions",
-    users: 3,
-    permissions: ["All Access"],
-  },
-  {
-    id: 2,
-    name: "Club Admin",
-    icon: Building2,
-    color: "from-blue-500 to-blue-600",
-    description: "Manage club operations, coaches, and members",
-    users: 284,
-    permissions: ["Club Management", "Coach Management", "Member Management", "Payments", "Reports"],
-  },
-  {
-    id: 3,
-    name: "Coach",
-    icon: UserCog,
-    color: "from-teal-500 to-teal-600",
-    description: "Manage sessions, attendance, and student progress",
-    users: 1456,
-    permissions: ["Schedule Management", "Attendance", "Progress Tracking", "Evaluations", "Messaging"],
-  },
-  {
-    id: 4,
-    name: "Freelancer",
-    icon: Briefcase,
-    color: "from-yellow-500 to-orange-500",
-    description: "Independent coach with booking and payment features",
-    users: 328,
-    permissions: ["Profile Management", "Booking Management", "Payments", "Client Communication"],
-  },
-  {
-    id: 5,
-    name: "Parent",
-    icon: Users,
-    color: "from-green-500 to-green-600",
-    description: "Manage kids, bookings, and view progress",
-    users: 8542,
-    permissions: ["Kid Management", "Booking", "Progress View", "Payments", "Messaging"],
-  },
-  {
-    id: 6,
-    name: "Kid",
-    icon: Baby,
-    color: "from-purple-500 to-purple-600",
-    description: "Limited access to view schedules and progress",
-    users: 2237,
-    permissions: ["View Schedule", "View Progress", "View Badges"],
-  },
-]
-
-const permissionMatrix = [
-  {
-    permission: "User Management",
-    admin: true,
-    clubAdmin: false,
-    coach: false,
-    freelancer: false,
-    parent: false,
-    kid: false,
-  },
-  {
-    permission: "Club Management",
-    admin: true,
-    clubAdmin: true,
-    coach: false,
-    freelancer: false,
-    parent: false,
-    kid: false,
-  },
-  {
-    permission: "Coach Management",
-    admin: true,
-    clubAdmin: true,
-    coach: false,
-    freelancer: false,
-    parent: false,
-    kid: false,
-  },
-  {
-    permission: "Session Management",
-    admin: true,
-    clubAdmin: true,
-    coach: true,
-    freelancer: true,
-    parent: false,
-    kid: false,
-  },
-  {
-    permission: "Attendance Tracking",
-    admin: true,
-    clubAdmin: true,
-    coach: true,
-    freelancer: true,
-    parent: false,
-    kid: false,
-  },
-  {
-    permission: "Progress & Evaluation",
-    admin: true,
-    clubAdmin: true,
-    coach: true,
-    freelancer: true,
-    parent: true,
-    kid: true,
-  },
-  {
-    permission: "Payment Processing",
-    admin: true,
-    clubAdmin: true,
-    coach: false,
-    freelancer: true,
-    parent: true,
-    kid: false,
-  },
-  {
-    permission: "Reports & Analytics",
-    admin: true,
-    clubAdmin: true,
-    coach: true,
-    freelancer: true,
-    parent: false,
-    kid: false,
-  },
-  { permission: "Messaging", admin: true, clubAdmin: true, coach: true, freelancer: true, parent: true, kid: false },
-]
+import { Plus, Edit, Check, X } from "lucide-react"
+import { adminRolesWithPermissions, adminPermissionsMatrix } from "@/lib/services/mockDataService"
 
 export default function RolesPage() {
   return (
@@ -154,7 +22,7 @@ export default function RolesPage() {
 
       {/* Roles Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {roles.map((role) => (
+        {adminRolesWithPermissions.map((role) => (
           <Card key={role.id} className="glass-card border-white/20 hover-lift">
             <CardHeader className="pb-3">
               <div className="flex items-start justify-between">
@@ -218,7 +86,7 @@ export default function RolesPage() {
                 </tr>
               </thead>
               <tbody>
-                {permissionMatrix.map((row) => (
+                {adminPermissionsMatrix.map((row) => (
                   <tr key={row.permission} className="border-b border-white/10 hover:bg-white/5">
                     <td className="py-3 px-4">{row.permission}</td>
                     <td className="text-center py-3 px-4">

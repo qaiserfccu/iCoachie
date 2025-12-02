@@ -5,9 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Progress } from "@/components/ui/progress"
 import {
   Users,
-  UserCog,
   Calendar,
-  CreditCard,
   TrendingUp,
   Clock,
   ArrowRight,
@@ -16,45 +14,7 @@ import {
   Star,
   Trophy,
 } from "lucide-react"
-
-const stats = [
-  { title: "Total Members", value: "450", change: "+12", icon: Users, color: "from-blue-500 to-blue-600" },
-  { title: "Active Coaches", value: "12", change: "+2", icon: UserCog, color: "from-teal-500 to-teal-600" },
-  { title: "Sessions Today", value: "8", change: "3 ongoing", icon: Calendar, color: "from-green-500 to-green-600" },
-  {
-    title: "Monthly Revenue",
-    value: "$12,400",
-    change: "+18%",
-    icon: CreditCard,
-    color: "from-yellow-500 to-orange-500",
-  },
-]
-
-const todaySessions = [
-  { time: "09:00 AM", name: "Junior Swimming", coach: "John Smith", enrolled: 15, capacity: 20, status: "completed" },
-  {
-    time: "11:00 AM",
-    name: "Basketball Training",
-    coach: "Mike Johnson",
-    enrolled: 18,
-    capacity: 20,
-    status: "ongoing",
-  },
-  { time: "02:00 PM", name: "Soccer Practice", coach: "Sarah Wilson", enrolled: 22, capacity: 25, status: "upcoming" },
-  { time: "04:00 PM", name: "Tennis Lessons", coach: "David Lee", enrolled: 8, capacity: 10, status: "upcoming" },
-]
-
-const topPerformers = [
-  { name: "Emma Davis", sport: "Swimming", progress: 95, badge: "Gold" },
-  { name: "Jack Wilson", sport: "Basketball", progress: 88, badge: "Silver" },
-  { name: "Sophie Miller", sport: "Soccer", progress: 82, badge: "Bronze" },
-]
-
-const recentPayments = [
-  { member: "John Smith", amount: "$150", type: "Monthly", date: "Today", status: "completed" },
-  { member: "Emma Davis", amount: "$200", type: "Quarterly", date: "Yesterday", status: "completed" },
-  { member: "Mike Brown", amount: "$150", type: "Monthly", date: "2 days ago", status: "pending" },
-]
+import { clubStats, clubTodaySessions, clubTopPerformers, clubRecentPayments } from "@/lib/services/mockDataService"
 
 export default function ClubDashboard() {
   return (
@@ -77,7 +37,7 @@ export default function ClubDashboard() {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {stats.map((stat) => (
+        {clubStats.map((stat) => (
           <Card key={stat.title} className="glass-card border-white/20 hover-lift">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
@@ -110,7 +70,7 @@ export default function ClubDashboard() {
             </Button>
           </CardHeader>
           <CardContent className="space-y-4">
-            {todaySessions.map((session, index) => (
+            {clubTodaySessions.map((session, index) => (
               <div
                 key={index}
                 className="flex items-center justify-between p-4 rounded-xl glass-subtle hover:bg-white/20 transition-colors"
@@ -183,7 +143,7 @@ export default function ClubDashboard() {
               <Trophy className="w-5 h-5 text-yellow-500" />
             </CardHeader>
             <CardContent className="space-y-4">
-              {topPerformers.map((performer, index) => (
+              {clubTopPerformers.map((performer, index) => (
                 <div key={performer.name} className="flex items-center gap-3">
                   <div className="relative">
                     <Avatar className="h-10 w-10">
@@ -246,7 +206,7 @@ export default function ClubDashboard() {
                 </tr>
               </thead>
               <tbody>
-                {recentPayments.map((payment, index) => (
+                {clubRecentPayments.map((payment, index) => (
                   <tr key={index} className="border-b border-white/10 hover:bg-white/5">
                     <td className="py-3 px-4">{payment.member}</td>
                     <td className="py-3 px-4 font-medium text-green-500">{payment.amount}</td>

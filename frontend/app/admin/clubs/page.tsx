@@ -20,69 +20,7 @@ import {
   TrendingUp,
 } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-
-const clubs = [
-  {
-    id: 1,
-    name: "Champions FC",
-    logo: "CF",
-    location: "New York, NY",
-    members: 450,
-    coaches: 12,
-    rating: 4.8,
-    status: "Verified",
-    revenue: "$12,400",
-    plan: "Premium",
-  },
-  {
-    id: 2,
-    name: "Elite Sports Academy",
-    logo: "ES",
-    location: "Los Angeles, CA",
-    members: 380,
-    coaches: 10,
-    rating: 4.7,
-    status: "Verified",
-    revenue: "$10,800",
-    plan: "Premium",
-  },
-  {
-    id: 3,
-    name: "Victory Athletics",
-    logo: "VA",
-    location: "Chicago, IL",
-    members: 320,
-    coaches: 8,
-    rating: 4.5,
-    status: "Verified",
-    revenue: "$9,200",
-    plan: "Standard",
-  },
-  {
-    id: 4,
-    name: "Rising Stars Club",
-    logo: "RS",
-    location: "Houston, TX",
-    members: 0,
-    coaches: 0,
-    rating: 0,
-    status: "Pending",
-    revenue: "$0",
-    plan: "Free Trial",
-  },
-  {
-    id: 5,
-    name: "Premier Training Center",
-    logo: "PT",
-    location: "Miami, FL",
-    members: 290,
-    coaches: 7,
-    rating: 4.6,
-    status: "Verified",
-    revenue: "$8,500",
-    plan: "Standard",
-  },
-]
+import { adminClubs } from "@/lib/services/mockDataService"
 
 export default function ClubsPage() {
   const [searchQuery, setSearchQuery] = useState("")
@@ -147,7 +85,7 @@ export default function ClubsPage() {
 
       {/* Clubs Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {clubs.map((club) => (
+        {adminClubs.map((club) => (
           <Card key={club.id} className="glass-card border-white/20 hover-lift">
             <CardContent className="p-6">
               <div className="flex items-start justify-between mb-4">

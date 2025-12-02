@@ -1,4 +1,5 @@
 // Export all service modules
+export * from './mockDataService'
 export { default as clubService } from './clubService'
 export { default as studentService } from './studentService'
 export { default as sessionService } from './sessionService'

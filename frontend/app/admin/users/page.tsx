@@ -20,75 +20,8 @@ import {
   Eye,
   Edit,
   Trash2,
-  Users,
-  UserCog,
-  Building2,
-  Baby,
 } from "lucide-react"
-
-const users = [
-  {
-    id: 1,
-    name: "John Smith",
-    email: "john.smith@email.com",
-    role: "Coach",
-    status: "Active",
-    joined: "Jan 15, 2024",
-    avatar: "JS",
-  },
-  {
-    id: 2,
-    name: "Champions FC",
-    email: "admin@championsfc.com",
-    role: "Club Admin",
-    status: "Active",
-    joined: "Dec 20, 2023",
-    avatar: "CF",
-  },
-  {
-    id: 3,
-    name: "Sarah Wilson",
-    email: "sarah.w@email.com",
-    role: "Parent",
-    status: "Active",
-    joined: "Feb 1, 2024",
-    avatar: "SW",
-  },
-  {
-    id: 4,
-    name: "Mike Johnson",
-    email: "mike.j@email.com",
-    role: "Freelancer",
-    status: "Pending",
-    joined: "Feb 10, 2024",
-    avatar: "MJ",
-  },
-  {
-    id: 5,
-    name: "Elite Academy",
-    email: "contact@eliteacademy.com",
-    role: "Club Admin",
-    status: "Suspended",
-    joined: "Nov 5, 2023",
-    avatar: "EA",
-  },
-  {
-    id: 6,
-    name: "Emma Davis",
-    email: "emma.d@email.com",
-    role: "Kid",
-    status: "Active",
-    joined: "Jan 28, 2024",
-    avatar: "ED",
-  },
-]
-
-const roleStats = [
-  { role: "Club Admins", count: 284, icon: Building2, color: "from-blue-500 to-blue-600" },
-  { role: "Coaches", count: 1456, icon: UserCog, color: "from-teal-500 to-teal-600" },
-  { role: "Freelancers", count: 328, icon: Users, color: "from-yellow-500 to-orange-500" },
-  { role: "Parents & Kids", count: 10779, icon: Baby, color: "from-green-500 to-green-600" },
-]
+import { adminUsers, adminRoleStats, getStatusColor } from "@/lib/services/mockDataService"
 
 export default function UsersPage() {
   const [searchQuery, setSearchQuery] = useState("")
@@ -114,7 +47,7 @@ export default function UsersPage() {
 
       {/* Role Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {roleStats.map((stat) => (
+        {adminRoleStats.map((stat) => (
           <Card key={stat.role} className="glass-card border-white/20 hover-lift cursor-pointer">
             <CardContent className="p-4 flex items-center gap-4">
               <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${stat.color} flex items-center justify-center`}>
@@ -163,7 +96,7 @@ export default function UsersPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {users.map((user) => (
+                {adminUsers.map((user) => (
                   <TableRow key={user.id} className="hover:bg-white/10">
                     <TableCell>
                       <div className="flex items-center gap-3">
