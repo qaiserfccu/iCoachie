@@ -1,5 +1,166 @@
 {
-  "todo": [],
+  "todo": [
+    {
+      "assignedTo": {
+        "name": "Copilot Agent"
+      },
+      "category": "backend",
+      "creation_time": "2025-12-02T00:00:00.000Z",
+      "description": {
+        "content": "Audit, wire, and document every REST endpoint required for Facility, Venue, Ground, and any other newly introduced tables so that frontend integration has complete coverage.",
+        "mime": "text/markdown"
+      },
+      "details": {
+        "content": "# Task 1 - Facility/Venue/Ground Endpoint Coverage (Priority 4)\n\n## Objectives\n- Inventory all CRUD and lookup endpoints required by the new facility-related tables.\n- Verify current implementations for correctness (HTTP verbs, RBAC, club scoping, payloads).\n- Identify any missing endpoints or response fields needed by the frontend.\n- Produce an implementation plan for any missing routes (controllers, Prisma operations, validation).\n\n## Acceptance Criteria\n1. Comprehensive endpoint matrix covering Facility, Venue, Ground, Facility Staff, Venue schedule, and Ground availability tables (where applicable).\n2. GitHub issues or sub-cards opened for any missing endpoints, each with owner, scope, and ETA.\n3. Confirmed RBAC requirements documented per endpoint (role, scope, permission).\n4. Shared reference document (Markdown) for frontend devs enumerating URL, method, request body, query params, success/error responses.\n5. Pull requests created or planned for missing endpoints with checklist: controller, route registration, validation, tests.",
+        "mime": "text/markdown"
+      },
+      "id": "11",
+      "prio": 4,
+      "references": [],
+      "title": "11 - Facility/Venue/Ground endpoint verification",
+      "type": "note"
+    },
+    {
+      "assignedTo": {
+        "name": "Copilot Agent"
+      },
+      "category": "documentation",
+      "creation_time": "2025-12-02T00:00:00.000Z",
+      "description": {
+        "content": "Update Swagger, OpenAPI, and Postman artifacts so every request/response structure reflects the latest backend contract.",
+        "mime": "text/markdown"
+      },
+      "details": {
+        "content": "# Task 2 - API Contract Sync (Priority 5)\n\n## Scope\n- Swagger YAML/JSON hosted in repo\n- OpenAPI spec consumed by tooling\n- Postman collection shared with frontend QA\n\n## Deliverables\n1. Regenerated or manually updated Swagger/OpenAPI spec capturing all new endpoints, parameters, enums, and response schemas.\n2. Postman collection with folders per domain (Auth, Facilities, Venues, Grounds, RBAC) including sample environments and tests.\n3. Change log summarizing contract updates and any deprecations sent to frontend + QA.\n4. Validation step using `swagger-cli validate` or equivalent to ensure specs compile.\n5. Commit/PR referencing updated artifacts and linking to acceptance review from frontend lead.\n\n## Steps\n- Diff current controllers vs spec to spot mismatches.\n- Add missing schema components (FacilityResponse, VenuePayload, etc.).\n- Document auth headers, pagination/query params, error envelopes.\n- Export validated Postman JSON and place under `/docs/postman`.\n- Update README with instructions for importing the refreshed collection.",
+        "mime": "text/markdown"
+      },
+      "id": "12",
+      "prio": 5,
+      "references": [],
+      "title": "12 - Refresh API docs (Swagger/Postman/OpenAPI)",
+      "type": "note"
+    },
+    {
+      "assignedTo": {
+        "name": "Copilot Agent"
+      },
+      "category": "testing",
+      "creation_time": "2025-12-02T00:00:00.000Z",
+      "description": {
+        "content": "Design and execute a backend smoke-test suite that runs quickly and validates mission-critical flows end-to-end.",
+        "mime": "text/markdown"
+      },
+      "details": {
+        "content": "# Task 3 - Backend Smoke Test Suite (Priority 6)\n\n## Requirements\n- Cover auth/login, RBAC gates, CRUD of each major module (Club, Facility, Venue, Ground, Sessions).\n- Run in <5 minutes on CI.\n- Provide human-readable report with pass/fail summary.\n\n## Action Plan\n1. Define smoke criteria per module.\n2. Implement Jest/Supertest specs (or Playwright API) hitting live server with seeded data.\n3. Add npm script `test:smoke`.\n4. Integrate into CI pipeline with badge/report.\n5. Document runbook + data reset strategy.\n\n## Acceptance\n- Green test run attached to PR.\n- Instructions added to CONTRIBUTING.md.",
+        "mime": "text/markdown"
+      },
+      "id": "13",
+      "prio": 6,
+      "references": [],
+      "title": "13 - Backend smoke testing",
+      "type": "note"
+    },
+    {
+      "assignedTo": {
+        "name": "Copilot Agent"
+      },
+      "category": "testing",
+      "creation_time": "2025-12-02T00:00:00.000Z",
+      "description": {
+        "content": "Develop comprehensive unit-test coverage for backend services/controllers and ensure they run in CI.",
+        "mime": "text/markdown"
+      },
+      "details": {
+        "content": "# Task 4 - Backend Unit Test Coverage (Priority 7)\n\n## Goals\n- Identify critical modules lacking unit tests (middleware, utils, controllers).\n- Write focused unit specs with dependency mocks.\n- Achieve agreed code coverage threshold (e.g., 80%).\n- Integrate coverage reports into CI and code review gates.\n\n## Checklist\n1. Coverage audit report attached to ticket.\n2. Test plan per module (what to mock, expected inputs/outputs).\n3. New tests committed with descriptive names.\n4. Coverage badge updated in README.\n5. Failing tests in CI block merges.\n\n## Deliverables\n- `npm run test:unit` script.\n- Coverage reports uploaded (lcov + HTML).\n- Documentation for running tests locally.",
+        "mime": "text/markdown"
+      },
+      "id": "14",
+      "prio": 7,
+      "references": [],
+      "title": "14 - Backend unit test expansion",
+      "type": "note"
+    },
+    {
+      "assignedTo": {
+        "name": "Copilot Agent"
+      },
+      "category": "frontend",
+      "creation_time": "2025-12-02T00:00:00.000Z",
+      "description": {
+        "content": "Implement any missing frontend screens per role/permission matrix, focusing on UI only (no integration).",
+        "mime": "text/markdown"
+      },
+      "details": {
+        "content": "# Task 5 - Build Remaining Frontend Screens (Priority 8)\n\n## Scope\n- Audit existing React/Next screens vs UX flows.\n- For each role (22 total), list mandatory screens/components (dashboards, management views, forms).\n- Implement missing UI following established folder/file conventions and design system.\n- Use mock data/services to decouple from backend.\n\n## Acceptance Criteria\n1. Inventory document mapping role -> required screens/components.\n2. New screens committed with Storybook stories (if applicable).\n3. Feature flag or routing guard ensures only relevant roles can access their screens.\n4. UI adheres to design tokens and responsive guidelines.\n5. QA review sign-off for visual parity with design mocks.",
+        "mime": "text/markdown"
+      },
+      "id": "15",
+      "prio": 8,
+      "references": [],
+      "title": "15 - Frontend screen completion",
+      "type": "note"
+    },
+    {
+      "assignedTo": {
+        "name": "Copilot Agent"
+      },
+      "category": "integration",
+      "creation_time": "2025-12-02T00:00:00.000Z",
+      "description": {
+        "content": "Ensure frontend has all necessary backend endpoints and author integration tests covering the full stack.",
+        "mime": "text/markdown"
+      },
+      "details": {
+        "content": "# Task 6 - Frontend ↔ Backend Gap Analysis & Integration Tests (Priority 9)\n\n## Steps\n1. Review frontend API calls/services to list required endpoints.\n2. Compare against backend routes to identify gaps/mismatches.\n3. Implement missing backend routes or adjust payloads.\n4. Create integration tests (Playwright, Cypress, or Pact) validating frontend modules against backend API with seeded data.\n5. Document API usage contract per screen.\n\n## Acceptance\n- Gap matrix signed off by frontend + backend leads.\n- All blocking backend endpoints implemented or scheduled.\n- Integration test suite added to CI with environment bootstrap instructions.",
+        "mime": "text/markdown"
+      },
+      "id": "16",
+      "prio": 9,
+      "references": [],
+      "title": "16 - Frontend/backend integration readiness",
+      "type": "note"
+    },
+    {
+      "assignedTo": {
+        "name": "Copilot Agent"
+      },
+      "category": "planning",
+      "creation_time": "2025-12-02T00:00:00.000Z",
+      "description": {
+        "content": "Create master card 'Backend integration (phase-2)' and break it into role-specific backend integration subtasks referencing OpenAPI/Postman assets.",
+        "mime": "text/markdown"
+      },
+      "details": {
+        "content": "# Task 7 - Backend Integration (Phase 2) Planning (Priority 10)\n\n## Deliverables\n1. Parent Kanban card titled \"Backend integration (phase-2)\" with summary, scope, timeline.\n2. 22 sub-cards (one per role or logical grouping) describing backend integration tasks, dependencies, APIs to consume, validation rules, and acceptance tests.\n3. Linking each sub-card to relevant OpenAPI sections, Postman requests, and Swagger docs for parameter alignment.\n4. Checklist covering request/response payload sync, error handling, and logging requirements.\n5. Communication plan with frontend owners for each role-based feature.\n\n## Notes\n- Include risk assessment + mitigation per role.\n- Highlight data migration or seeding needs for integration.\n- Outline testing strategy (unit, integration, UAT) for each subtask.",
+        "mime": "text/markdown"
+      },
+      "id": "17",
+      "prio": 10,
+      "references": [],
+      "title": "17 - Backend integration (phase-2) plan",
+      "type": "epic"
+    },
+    {
+      "assignedTo": {
+        "name": "Copilot Agent"
+      },
+      "category": "testing",
+      "creation_time": "2025-12-02T00:00:00.000Z",
+      "description": {
+        "content": "Author an end-to-end testing program with 22 child cards (one per role) covering full app journeys.",
+        "mime": "text/markdown"
+      },
+      "details": {
+        "content": "# Task 8 - End-to-End Test Matrix (Priority 11)\n\n## Parent Card\n- Title: E2E Testing Program\n- Scope: Full-stack user journeys from login to core workflows.\n\n## Child Cards (22)\n- One per role (SUPER_ADMIN, SYSTEM_SUPPORT, ... STUDENT).\n- Each child card must list: required test data, primary flows, alternate/negative flows, tooling (Playwright/Cypress), and pass/fail criteria.\n\n## Deliverables\n1. E2E test plan document mapping roles to flows and endpoints.\n2. Automated test scripts per role seeded with fixtures.\n3. CI pipeline stage executing role-based suites in parallel.\n4. Reporting dashboard capturing run history and flaky tests.\n5. Handoff notes for QA including how to add new roles/tests.\n\n## Acceptance Criteria\n- All 22 child cards created with actionable details.\n- At least baseline script scaffolding committed for each role.\n- Documentation stored under `docs/testing/e2e`.\n- Sign-off from QA lead.",
+        "mime": "text/markdown"
+      },
+      "id": "18",
+      "prio": 11,
+      "references": [],
+      "title": "18 - E2E testing program",
+      "type": "epic"
+    }
+  ],
   "in-progress": [],
   "testing": [],
   "done": [
