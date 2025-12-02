@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-iCoachie is a sports coaching management platform built for Kochi's academies, students, and parents. It enables scheduling of courses, student registration by coaches, attendance tracking, performance evaluations, and sports club management.
+iCoachie is a sports coaching management platform built for clubs, academies, students, coaches, freelancers, and parents. It enables scheduling of courses, student registration by coaches, attendance tracking, performance evaluations, and sports club management. An all-in-one solution.
 
 ## Technical Stack
 
@@ -66,7 +66,7 @@ res.status(400).json({
 ### Frontend Components
 - Use shadcn/ui components from the `components/ui` directory
 - Follow the existing glassmorphism design patterns
-- Components should support role-based access (Club Admin, Coach, Freelancer, Parent)
+- Components should support role-based access across all 22 user roles
 
 ## Build and Test Commands
 
@@ -91,7 +91,39 @@ npm run test:e2e     # Run Playwright E2E tests
 ```
 
 ## User Roles
-- **Club Admin**: Manages academies, coaches, and overall club operations
-- **Coach**: Registers students, manages sessions, tracks attendance
-- **Freelancer**: Independent coaches with their own schedules
-- **Parent**: Views child progress, books sessions, makes payments
+
+### Global Scope Roles (Platform-Wide)
+- **SUPER_ADMIN**: Platform-wide administrative access with full control over all organizations, users, and system settings
+- **SYSTEM_SUPPORT**: Technical support team with read access and limited troubleshooting capabilities across the platform
+
+### Club Scope Roles (Organization-Level)
+- **CLUB_ADMIN**: Full administrative control over a specific club/organization including user management, settings, and billing
+- **CLUB_MANAGER**: Operational management of club activities, scheduling, and day-to-day operations without billing access
+- **HEAD_COACH**: Lead coaching role with ability to manage other coaches, create training programs, and oversee all coaching activities
+- **COACH**: Individual coach who can manage their own sessions, evaluate students, and track attendance
+- **ACCOUNTANT**: Financial management including payments, billing, and financial reporting for the club
+- **FRONT_DESK**: Front desk personnel handling check-ins, inquiries, and basic administrative tasks
+- **CONTENT_MANAGER**: Manages digital content, announcements, and communications for the club
+- **MEDICAL_STAFF**: Medical personnel including physiotherapists, doctors, and first aid providers
+
+### Facility Scope Roles (Facility-Wide)
+- **FACILITY_MANAGER**: Overall management of a sports facility including all venues, grounds, staff, and operations
+- **BOOKINGS_COORDINATOR**: Manages all venue and ground bookings, scheduling, and coordination with clients
+- **MAINTENANCE_TECH**: Handles facility maintenance, repairs, and equipment servicing
+- **EQUIPMENT_MANAGER**: Manages sports equipment inventory, distribution, and maintenance
+- **SECURITY_STAFF**: Facility security personnel with access control and incident reporting
+- **CLEANING_STAFF**: Facility cleaning and housekeeping personnel
+
+### Venue Scope Roles (Venue-Specific)
+- **VENUE_MANAGER**: Manages a specific venue within a facility (e.g., indoor hall, court)
+
+### Ground Scope Roles (Ground-Specific)
+- **GROUND_MANAGER**: Manages a specific ground/field within a facility
+- **GROUNDSKEEPER**: Maintains grounds and fields, responsible for turf care, marking, and field preparation
+
+### Independent Scope Roles (Self-Managed)
+- **FREELANCER**: Independent coach not tied to a specific club, can create bookings and manage their own schedule
+
+### User Scope Roles (Personal)
+- **PARENT**: Guardian/parent account with access to their children's activities, progress, and communication with coaches
+- **STUDENT**: Student/athlete account with access to their own schedules, progress, and training materials
