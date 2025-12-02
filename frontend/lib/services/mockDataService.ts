@@ -1390,6 +1390,295 @@ export const systemSupportSystemStatus: SystemStatus[] = [
 ]
 
 // ============================================================================
+// COACH SUB-PAGES DATA
+// ============================================================================
+
+export interface CoachStudent {
+  id: number
+  name: string
+  avatar: string
+  age: number
+  level: string
+  progress: number
+  attendance: number
+  nextSession: string
+  parentContact: string
+}
+
+export const coachStudents: CoachStudent[] = [
+  { id: 1, name: "Emma Davis", avatar: "ED", age: 12, level: "Advanced", progress: 92, attendance: 98, nextSession: "Today, 11:00 AM", parentContact: "Robert Davis" },
+  { id: 2, name: "Jack Wilson", avatar: "JW", age: 14, level: "Intermediate", progress: 85, attendance: 95, nextSession: "Today, 2:00 PM", parentContact: "Sarah Wilson" },
+  { id: 3, name: "Sophie Miller", avatar: "SM", age: 10, level: "Intermediate", progress: 78, attendance: 90, nextSession: "Tomorrow, 10:00 AM", parentContact: "Tom Miller" },
+  { id: 4, name: "Lucas Brown", avatar: "LB", age: 13, level: "Beginner", progress: 65, attendance: 82, nextSession: "Tomorrow, 3:00 PM", parentContact: "Mike Brown" },
+  { id: 5, name: "Olivia Johnson", avatar: "OJ", age: 11, level: "Intermediate", progress: 80, attendance: 92, nextSession: "Dec 2, 10:00 AM", parentContact: "Lisa Johnson" },
+  { id: 6, name: "Noah Williams", avatar: "NW", age: 9, level: "Beginner", progress: 55, attendance: 88, nextSession: "Dec 2, 2:00 PM", parentContact: "James Williams" },
+]
+
+export interface AttendanceSession {
+  name: string
+  time: string
+  date: string
+  location: string
+}
+
+export const coachCurrentSession: AttendanceSession = {
+  name: "Intermediate Swimming",
+  time: "11:00 AM - 12:30 PM",
+  date: "November 29, 2024",
+  location: "Pool A",
+}
+
+export interface AttendanceStudent {
+  id: number
+  name: string
+  avatar: string
+  status: string
+}
+
+export const coachAttendanceStudents: AttendanceStudent[] = [
+  { id: 1, name: "Emma Davis", avatar: "ED", status: "present" },
+  { id: 2, name: "Jack Wilson", avatar: "JW", status: "present" },
+  { id: 3, name: "Sophie Miller", avatar: "SM", status: "present" },
+  { id: 4, name: "Lucas Brown", avatar: "LB", status: "absent" },
+  { id: 5, name: "Olivia Johnson", avatar: "OJ", status: "present" },
+  { id: 6, name: "Noah Williams", avatar: "NW", status: "late" },
+  { id: 7, name: "Ava Martinez", avatar: "AM", status: "present" },
+  { id: 8, name: "Liam Garcia", avatar: "LG", status: "present" },
+]
+
+export interface AttendanceStat {
+  label: string
+  count: number
+  icon: LucideIcon
+  color: string
+}
+
+export const coachAttendanceStats: AttendanceStat[] = [
+  { label: "Present", count: 6, icon: CheckCircle, color: "text-green-500 bg-green-500/20" },
+  { label: "Late", count: 1, icon: AlertTriangle, color: "text-yellow-500 bg-yellow-500/20" },
+  { label: "Absent", count: 1, icon: AlertTriangle, color: "text-red-500 bg-red-500/20" },
+]
+
+export interface PendingEvaluation {
+  student: string
+  avatar: string
+  type: string
+  dueDate: string
+  priority: string
+}
+
+export const coachPendingEvaluationsList: PendingEvaluation[] = [
+  { student: "Emma Davis", avatar: "ED", type: "Monthly Progress", dueDate: "Nov 30, 2024", priority: "high" },
+  { student: "Jack Wilson", avatar: "JW", type: "Skill Assessment", dueDate: "Dec 1, 2024", priority: "medium" },
+  { student: "Sophie Miller", avatar: "SM", type: "Monthly Progress", dueDate: "Dec 2, 2024", priority: "medium" },
+  { student: "Lucas Brown", avatar: "LB", type: "Performance Review", dueDate: "Dec 3, 2024", priority: "low" },
+]
+
+export interface EvaluationType {
+  name: string
+  count: number
+}
+
+export const coachEvaluationTypes: EvaluationType[] = [
+  { name: "Monthly Progress", count: 12 },
+  { name: "Skill Assessment", count: 8 },
+  { name: "Performance Review", count: 5 },
+  { name: "Level Upgrade", count: 3 },
+]
+
+export interface StudentProgressData {
+  name: string
+  avatar: string
+  overallProgress: number
+  trend: string
+  skills: { name: string; level: number }[]
+  recentAchievement: string
+  lastEvaluation: string
+}
+
+export const coachStudentProgress: StudentProgressData[] = [
+  {
+    name: "Emma Davis", avatar: "ED", overallProgress: 92, trend: "up",
+    skills: [{ name: "Freestyle", level: 95 }, { name: "Backstroke", level: 88 }, { name: "Breaststroke", level: 90 }, { name: "Butterfly", level: 85 }],
+    recentAchievement: "Gold Badge - Freestyle", lastEvaluation: "Nov 25, 2024",
+  },
+  {
+    name: "Jack Wilson", avatar: "JW", overallProgress: 85, trend: "up",
+    skills: [{ name: "Freestyle", level: 88 }, { name: "Backstroke", level: 82 }, { name: "Breaststroke", level: 85 }, { name: "Butterfly", level: 78 }],
+    recentAchievement: "Silver Badge - Endurance", lastEvaluation: "Nov 22, 2024",
+  },
+  {
+    name: "Sophie Miller", avatar: "SM", overallProgress: 78, trend: "up",
+    skills: [{ name: "Freestyle", level: 80 }, { name: "Backstroke", level: 75 }, { name: "Breaststroke", level: 78 }, { name: "Butterfly", level: 72 }],
+    recentAchievement: "Bronze Badge - Technique", lastEvaluation: "Nov 20, 2024",
+  },
+  {
+    name: "Lucas Brown", avatar: "LB", overallProgress: 65, trend: "down",
+    skills: [{ name: "Freestyle", level: 70 }, { name: "Backstroke", level: 62 }, { name: "Breaststroke", level: 65 }, { name: "Butterfly", level: 58 }],
+    recentAchievement: "Participation Badge", lastEvaluation: "Nov 18, 2024",
+  },
+]
+
+export interface WeekScheduleDay {
+  day: string
+  date: string
+  sessions: { time: string; name: string; students: number; location: string; duration: string }[]
+}
+
+export const coachWeekSchedule: WeekScheduleDay[] = [
+  { day: "Monday", date: "Nov 25", sessions: [
+    { time: "09:00 AM", name: "Junior Swimming", students: 15, location: "Pool A", duration: "1h" },
+    { time: "02:00 PM", name: "Advanced Techniques", students: 8, location: "Pool B", duration: "1.5h" },
+  ]},
+  { day: "Tuesday", date: "Nov 26", sessions: [
+    { time: "10:00 AM", name: "Intermediate Class", students: 12, location: "Pool A", duration: "1h" },
+    { time: "04:00 PM", name: "Private Lesson", students: 1, location: "Pool B", duration: "45m" },
+  ]},
+  { day: "Wednesday", date: "Nov 27", sessions: [
+    { time: "09:00 AM", name: "Junior Swimming", students: 15, location: "Pool A", duration: "1h" },
+    { time: "11:00 AM", name: "Adult Beginners", students: 10, location: "Pool B", duration: "1h" },
+  ]},
+  { day: "Thursday", date: "Nov 28", sessions: [
+    { time: "02:00 PM", name: "Competition Prep", students: 6, location: "Pool A", duration: "2h" },
+  ]},
+  { day: "Friday", date: "Nov 29", sessions: [
+    { time: "09:00 AM", name: "Junior Swimming", students: 15, location: "Pool A", duration: "1h" },
+    { time: "11:00 AM", name: "Intermediate Class", students: 12, location: "Pool A", duration: "1.5h" },
+    { time: "04:00 PM", name: "Private Lesson", students: 1, location: "Pool B", duration: "45m" },
+  ]},
+]
+
+// ============================================================================
+// CLUB SUB-PAGES DATA
+// ============================================================================
+
+export interface ClubMember {
+  id: number
+  name: string
+  avatar: string
+  age: number
+  sport: string
+  coach: string
+  membership: string
+  status: string
+  joined: string
+  parent: string
+}
+
+export const clubMembers: ClubMember[] = [
+  { id: 1, name: "Emma Davis", avatar: "ED", age: 12, sport: "Swimming", coach: "John Smith", membership: "Premium", status: "Active", joined: "Jan 15, 2024", parent: "Robert Davis" },
+  { id: 2, name: "Jack Wilson", avatar: "JW", age: 14, sport: "Basketball", coach: "Mike Johnson", membership: "Standard", status: "Active", joined: "Dec 20, 2023", parent: "Sarah Wilson" },
+  { id: 3, name: "Sophie Miller", avatar: "SM", age: 10, sport: "Soccer", coach: "Sarah Wilson", membership: "Premium", status: "Active", joined: "Feb 1, 2024", parent: "Tom Miller" },
+  { id: 4, name: "Lucas Brown", avatar: "LB", age: 13, sport: "Tennis", coach: "David Lee", membership: "Standard", status: "Inactive", joined: "Nov 5, 2023", parent: "Mike Brown" },
+  { id: 5, name: "Olivia Johnson", avatar: "OJ", age: 11, sport: "Swimming", coach: "John Smith", membership: "Premium", status: "Active", joined: "Jan 28, 2024", parent: "Lisa Johnson" },
+  { id: 6, name: "Noah Williams", avatar: "NW", age: 9, sport: "Soccer", coach: "Sarah Wilson", membership: "Standard", status: "Active", joined: "Feb 10, 2024", parent: "James Williams" },
+]
+
+export interface MemberStat {
+  title: string
+  value: string
+  icon: LucideIcon
+  color: string
+}
+
+export const clubMemberStats: MemberStat[] = [
+  { title: "Total Members", value: "450", icon: Users, color: "from-blue-500 to-blue-600" },
+  { title: "Active", value: "420", icon: UserCheck, color: "from-green-500 to-green-600" },
+  { title: "New This Month", value: "15", icon: Clock, color: "from-yellow-500 to-orange-500" },
+  { title: "Pending Renewal", value: "12", icon: AlertTriangle, color: "from-red-500 to-red-600" },
+]
+
+export interface ClubCoach {
+  id: number
+  name: string
+  avatar: string
+  sport: string
+  students: number
+  sessions: number
+  rating: number
+  status: string
+  joined: string
+}
+
+export const clubCoaches: ClubCoach[] = [
+  { id: 1, name: "John Smith", avatar: "JS", sport: "Swimming", students: 45, sessions: 24, rating: 4.9, status: "Active", joined: "Sep 2022" },
+  { id: 2, name: "Mike Johnson", avatar: "MJ", sport: "Basketball", students: 38, sessions: 18, rating: 4.7, status: "Active", joined: "Jan 2023" },
+  { id: 3, name: "Sarah Wilson", avatar: "SW", sport: "Soccer", students: 42, sessions: 20, rating: 4.8, status: "Active", joined: "Mar 2023" },
+  { id: 4, name: "David Lee", avatar: "DL", sport: "Tennis", students: 25, sessions: 15, rating: 4.6, status: "Active", joined: "Jun 2023" },
+  { id: 5, name: "Emily Davis", avatar: "ED", sport: "Swimming", students: 30, sessions: 16, rating: 4.5, status: "On Leave", joined: "Aug 2023" },
+]
+
+export interface ClubPaymentStat {
+  title: string
+  value: string
+  change: string
+  icon: LucideIcon
+  color: string
+}
+
+export const clubPaymentStats: ClubPaymentStat[] = [
+  { title: "Total Revenue", value: "$48,500", change: "+12%", icon: DollarSign, color: "from-green-500 to-green-600" },
+  { title: "Pending", value: "$3,200", change: "-5%", icon: Clock, color: "from-yellow-500 to-orange-500" },
+  { title: "This Month", value: "$12,400", change: "+18%", icon: CreditCard, color: "from-blue-500 to-blue-600" },
+  { title: "Overdue", value: "$850", change: "-20%", icon: AlertTriangle, color: "from-red-500 to-red-600" },
+]
+
+export interface ClubTransaction {
+  id: string
+  member: string
+  amount: string
+  type: string
+  status: string
+  date: string
+}
+
+export const clubTransactions: ClubTransaction[] = [
+  { id: "TXN001", member: "Emma Davis", amount: "$150", type: "Monthly Fee", status: "Completed", date: "Today" },
+  { id: "TXN002", member: "Jack Wilson", amount: "$85", type: "Session Fee", status: "Completed", date: "Today" },
+  { id: "TXN003", member: "Sophie Miller", amount: "$200", type: "Quarterly Fee", status: "Pending", date: "Yesterday" },
+  { id: "TXN004", member: "Lucas Brown", amount: "$150", type: "Monthly Fee", status: "Overdue", date: "Nov 25" },
+  { id: "TXN005", member: "Olivia Johnson", amount: "$300", type: "Annual Fee", status: "Completed", date: "Nov 24" },
+]
+
+export const clubSessionWeekDays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+export const clubSessionTimeSlots = ["09:00", "10:00", "11:00", "12:00", "14:00", "15:00", "16:00", "17:00"]
+
+export interface ClubSessionSchedule {
+  id: number
+  name: string
+  coach: string
+  day: number
+  time: string
+  duration: string
+  enrolled: number
+  capacity: number
+  sport: string
+}
+
+export const clubSessions: ClubSessionSchedule[] = [
+  { id: 1, name: "Junior Swimming", coach: "John Smith", day: 0, time: "09:00", duration: "1h", enrolled: 15, capacity: 20, sport: "Swimming" },
+  { id: 2, name: "Basketball Training", coach: "Mike Johnson", day: 0, time: "10:00", duration: "1.5h", enrolled: 18, capacity: 20, sport: "Basketball" },
+  { id: 3, name: "Soccer Practice", coach: "Sarah Wilson", day: 1, time: "09:00", duration: "1h", enrolled: 22, capacity: 25, sport: "Soccer" },
+  { id: 4, name: "Tennis Lessons", coach: "David Lee", day: 1, time: "14:00", duration: "1h", enrolled: 8, capacity: 10, sport: "Tennis" },
+  { id: 5, name: "Advanced Swimming", coach: "John Smith", day: 2, time: "11:00", duration: "1.5h", enrolled: 12, capacity: 15, sport: "Swimming" },
+]
+
+export interface ClubUpcomingSession {
+  name: string
+  coach: string
+  time: string
+  enrolled: number
+  capacity: number
+}
+
+export const clubUpcomingSessions: ClubUpcomingSession[] = [
+  { name: "Junior Swimming", coach: "John Smith", time: "Today, 9:00 AM", enrolled: 15, capacity: 20 },
+  { name: "Basketball Training", coach: "Mike Johnson", time: "Today, 10:00 AM", enrolled: 18, capacity: 20 },
+  { name: "Soccer Practice", coach: "Sarah Wilson", time: "Today, 2:00 PM", enrolled: 22, capacity: 25 },
+  { name: "Tennis Lessons", coach: "David Lee", time: "Tomorrow, 2:00 PM", enrolled: 8, capacity: 10 },
+]
+
+// ============================================================================
 // HELPER FUNCTIONS
 // ============================================================================
 
