@@ -1,6 +1,6 @@
 # Global Backend Endpoint Matrix
 
-_Last updated: 2025-12-02_
+_Last updated: 2025-12-02_- cc
 
 This document is the system-wide source of truth for every REST endpoint currently exposed by the iCoachie backend. It consolidates existing controllers, routes, RBAC enforcement, and known contract gaps so that frontend, QA, and platform teams can rely on a single reference while planning integrations.
 
