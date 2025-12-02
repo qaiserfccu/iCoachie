@@ -1,0 +1,82 @@
+# === OS / Editor cruft ===
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*.sw?
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+
+# === Logs & runtime data ===
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+.pnpm-debug.log*
+.pnp*
+pids/
+*.pid
+*.pid.lock
+*.seed
+
+# === Dependency directories & caches ===
+node_modules/
+jspm_packages/
+bower_components/
+.npm/
+.yarn-integrity
+.yarn/cache/
+.rpt2_cache/
+.rts2_cache_*/
+
+# === Build & dist outputs ===
+dist/
+build/
+.next/
+out/
+.storybook-out/
+.out/
+.cache/
+.parcel-cache/
+.nuxt/
+.vercel/
+coverage/
+.nyc_output/
+playwright-report/
+playwright/.cache/
+playwright/.temp/
+playwright/.tests/
+/test-results/
+/tmp/
+/temp/
+
+# === Environment & secrets ===
+.env
+.env.*
+!.env.example
+!.env.sample
+
+# === Framework / tooling artifacts ===
+.next-env.d.ts
+*.tsbuildinfo
+*.tgz
+.sentryclirc
+
+# === Backend specific ===
+src/generated/prisma/
+uploads/
+
+# === Database dumps ===
+*.sql
+!schema.sql
+
+# === Misc ===
+.cache-loader/
+.eslintcache
+.node_repl_history
+netlify.toml.local

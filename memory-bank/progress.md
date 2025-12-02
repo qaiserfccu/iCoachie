@@ -1,41 +1,29 @@
-# Progress (Updated: 2025-12-01)
+# Progress (Updated: 2025-12-02)
 
-## Latest Updates (2025-12-01)
+## Latest Updates (2025-12-02)
 
-### RBAC System Implementation - Phase 1 Complete ✅
-- **Schema Migration**: Successfully migrated from hardcoded enums to database-driven lookup tables
-  - Converted 7 enums (UserRole, UserStatus, SessionStatus, AttendanceStatus, PaymentStatus, BookingStatus, MembershipType) to database tables
-  - Enhanced Role model with code, scope, permissions, isActive, sortOrder fields
-  - Added Facility, Venue, Ground models for facility management
-  - User.role (enum) → User.primaryRoleId (foreign key)
-  - All status fields converted to foreign keys (statusId)
-  
-- **22-Role System**: All roles seeded successfully with complete definitions:
-  - **Global Scope**: SUPER_ADMIN, SYSTEM_SUPPORT
-  - **Club Scope**: CLUB_ADMIN, CLUB_MANAGER, HEAD_COACH, COACH, ACCOUNTANT, FRONT_DESK, CONTENT_MANAGER, MEDICAL_STAFF
-  - **Facility Scope**: FACILITY_MANAGER, BOOKINGS_COORDINATOR, MAINTENANCE_TECH, EQUIPMENT_MANAGER, SECURITY_STAFF, CLEANING_STAFF
-  - **Venue Scope**: VENUE_MANAGER
-  - **Ground Scope**: GROUND_MANAGER, GROUNDSKEEPER
-  - **Independent Scope**: FREELANCER
-  - **User Scope**: PARENT, STUDENT
+### Context Preservation & Ownership Change Prep
+- Captured entire helper conversation state inside `memory-bank/activeContext.md` so future agents can restore Cards 15/19 progress after the repository transfers ownership.
+- Highlighted dependencies, documentation entry points, and Kanban expectations to avoid drift once work resumes.
 
-- **Database Seeding**: Populated all lookup tables:
-  - 22 roles with descriptions, scopes, and permissions JSON
-  - 4 user statuses (ACTIVE, PENDING, SUSPENDED, INACTIVE)
-  - 4 session statuses (SCHEDULED, ONGOING, COMPLETED, CANCELLED)
-  - 3 attendance statuses (PRESENT, LATE, ABSENT)
-  - 4 payment statuses (PENDING, COMPLETED, FAILED, REFUNDED)
-  - 4 booking statuses (PENDING, CONFIRMED, COMPLETED, CANCELLED)
-  - 2 membership types (STANDARD, PREMIUM)
+### Card 15 – Frontend Role Screens
+- System Support workspace scaffolded under `frontend/app/system-support/*` with mock data until diagnostics/ticketing APIs exist.
+- `docs/frontend/role-screen-inventory.md` continues to track remaining 20 role experiences; waiting on role questionnaires before finishing remaining layouts.
 
-- **Kanban Board**: Created 6 detailed task cards for tracking RBAC implementation
+### Card 19 – Facility/Venue/Ground DTO Expansion
+- Work paused until backend Cards 20–24 (facility metadata, venue chaining, ground availability, DTO contracts, API exposure) finish; plan remains documented in `docs/backend/dto/facility-metadata-expansion.md`.
 
-### Next Steps
-- Update backend controllers to query role/status lookup tables instead of using enum values
-- Implement role-based access control middleware (requireRole, requirePermission, requireScope)
-- Update frontend to handle all 22 roles and fetch from API
-- Create facility management API endpoints
-- Regenerate Prisma client types for all controllers
+### Kanban & Documentation Hygiene
+- `.vscode/vscode-kanban.json` now focused on Cards 15, 19, and dependency stack; emphasized keeping docs plus new context snapshots in repo so the next helper can resume instantly.
+
+### Historical RBAC Phase 1 (Completed Earlier)
+- Previous migration from enums to lookup tables, 22-role seed, and facility/venue/ground schema changes remain valid foundations for current tasks.
+
+## Next Steps
+- Gather outstanding role-specific answers, then finish Card 15 UI wiring (role-specific dashboards, diagnostics routing, live data hooks).
+- Execute backend Cards 20–24 sequentially so Card 19 DTO work can restart with real API shapes.
+- Stand up ticketing/diagnostics endpoints plus mock/stub data services so System Support screens can flip from placeholder data to live sources.
+- Keep Kanban, docs, and memory bank entries updated after ownership change so no tribal knowledge is lost.
 
 ## Done
 
@@ -67,7 +55,9 @@
 
 ## Doing
 
-- All tasks completed - platform fully operational
+- Card 15 – Continue implementing finalized role flows (currently System Support) as soon as content answers arrive.
+- Card 19 – Prep DTO changes and stay blocked until dependency cards land; keep referencing `docs/backend/dto/facility-metadata-expansion.md`.
+- Cards 20–24 – Backend helper working through facility metadata dependencies required for Card 19.
 
 ## Backend Status (✅ COMPLETE)
 - **Database Design**: Complete Prisma schema with multi-tenancy
@@ -91,9 +81,8 @@
 - **Real-time Messaging**: Complete Socket.IO integration with live chat features
 - **Build Status**: ✅ Successfully compiles (31/31 routes optimized)
 
-## Overall Project Status: ✅ FULLY COMPLETE
-- **Backend**: 100% complete (Agents 1-7 finished)
-- **Frontend**: 100% complete (All 41 tasks finished)
-- **Integration**: 100% complete (Real-time messaging added)
-- **Build Verification**: Both frontend and backend compile successfully
-- **Platform Ready**: iCoachie is fully operational for production deployment
+## Overall Project Status: ✅ Core Platform Stable, Enhancements In Progress
+- **Backend**: Core services remain healthy; new facility metadata + diagnostics endpoints actively being designed.
+- **Frontend**: Existing modules ship; ongoing work adds new role-specific surfaces (System Support, additional admin roles).
+- **Integration**: Messaging/payments stay green; awaiting new DTOs before wiring fresh screens.
+- **Build Verification**: Frontend/backed still compile, but upcoming cards will require new migrations/tests before sign-off.
