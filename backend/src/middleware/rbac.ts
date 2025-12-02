@@ -168,9 +168,16 @@ export function requirePermission(permission: string) {
       const perms = flattenPermissions(access.primaryRole.permissions);
       if (perms.has(permission)) return next();
 
-      // Also allow dot-prefix matching: e.g., required 'venue.manage' satisfied by 'venue.manage.*'
+      // Also allow dot-prefix matching: e.g., required 'venue.manage.settings' satisfied by 'venue.manage.*'
       const candidates = [...perms];
-      if (candidates.some(p => p === '*' || p === `${permission}.*`)) return next();
+      if (candidates.some(p => {
+        if (p === '*') return true;
+        if (p.endsWith('.*')) {
+          const prefix = p.slice(0, -2);
+          return permission.startsWith(prefix);
+        }
+        return false;
+      })) return next();
 
       return res.status(403).json({ message: 'Forbidden' });
     } catch (err) {

@@ -278,6 +278,24 @@ describe('RBAC Middleware', () => {
 
       expect(mockNext).toHaveBeenCalled();
     });
+
+    it('should handle wildcard permissions with a prefix', async () => {
+      (mockPrisma.user.findUnique as jest.Mock).mockResolvedValue({
+        id: 1,
+        primaryRole: {
+          code: 'MANAGER',
+          name: 'Manager',
+          scope: 'CLUB',
+          permissions: { 'venue.manage.*': true },
+        },
+        userRoles: [],
+      });
+
+      const middleware = requirePermission('venue.manage.settings');
+      await middleware(mockReq as AuthRequest, mockRes, mockNext);
+
+      expect(mockNext).toHaveBeenCalled();
+    });
   });
 
   describe('requireScope', () => {
