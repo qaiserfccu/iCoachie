@@ -70,8 +70,18 @@ describe('🚀 Backend Smoke Tests', () => {
   let parentUser: any;
   let parentToken: string;
 
-  beforeAll(async () => {
-    // Seed required lookup data
+  // Helper to assign SuperAdmin role to a user
+  async function assignSuperAdminRole(userId: number) {
+    const superAdminRole = await prisma.role.findUnique({ where: { code: 'SUPER_ADMIN' } });
+    if (superAdminRole) {
+      await prisma.userRoleAssignment.create({
+        data: { userId, roleId: superAdminRole.id }
+      });
+    }
+  }
+
+  // Helper to seed all required lookup data
+  async function seedLookupData() {
     await ensureRole('SUPER_ADMIN', 'GLOBAL');
     await ensureRole('CLUB_ADMIN', 'CLUB');
     await ensureRole('COACH', 'CLUB');
@@ -79,19 +89,18 @@ describe('🚀 Backend Smoke Tests', () => {
     await ensureRole('VENUE_MANAGER', 'VENUE');
     await ensureRole('FACILITY_MANAGER', 'FACILITY');
     await ensureStatus('ACTIVE');
+  }
+
+  beforeAll(async () => {
+    // Initial seed of lookup data
+    await seedLookupData();
   });
 
   beforeEach(async () => {
     await resetDatabase();
     
-    // Re-seed lookup data after reset
-    await ensureRole('SUPER_ADMIN', 'GLOBAL');
-    await ensureRole('CLUB_ADMIN', 'CLUB');
-    await ensureRole('COACH', 'CLUB');
-    await ensureRole('PARENT', 'USER');
-    await ensureRole('VENUE_MANAGER', 'VENUE');
-    await ensureRole('FACILITY_MANAGER', 'FACILITY');
-    await ensureStatus('ACTIVE');
+    // Re-seed lookup data after reset (uses upsert so it's efficient)
+    await seedLookupData();
 
     // Create test club with admin
     testClub = await createTestClub();
@@ -104,12 +113,7 @@ describe('🚀 Backend Smoke Tests', () => {
     });
 
     // Create SuperAdmin role assignment for admin user
-    const superAdminRole = await prisma.role.findUnique({ where: { code: 'SUPER_ADMIN' } });
-    if (superAdminRole) {
-      await prisma.userRoleAssignment.create({
-        data: { userId: adminUser.id, roleId: superAdminRole.id }
-      });
-    }
+    await assignSuperAdminRole(adminUser.id);
 
     adminToken = generateToken(adminUser.id, testClub.id);
 

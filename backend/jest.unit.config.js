@@ -17,6 +17,6 @@ module.exports = {
   ],
   coverageDirectory: 'coverage/unit',
   coverageReporters: ['text', 'lcov', 'html'],
-  // No database setup for unit tests
+  // Unit tests can run in parallel since they don't access the database
   maxWorkers: 4,
 };
