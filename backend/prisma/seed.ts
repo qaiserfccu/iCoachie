@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+import { buildPermissionMap } from './data/permissions';
 
 const prisma = new PrismaClient();
 
@@ -112,14 +113,7 @@ async function main() {
       name: 'Super Administrator',
       description: 'Platform-wide administrative access with full control over all organizations, users, and system settings',
       scope: 'GLOBAL',
-      permissions: {
-        canManageSystem: true,
-        canManageAllOrgs: true,
-        canViewAllData: true,
-        canModifySettings: true,
-        canManageUsers: true,
-        canManageRoles: true,
-      },
+      permissions: buildPermissionMap('SUPER_ADMIN'),
       sortOrder: 1,
     },
     {
@@ -127,12 +121,7 @@ async function main() {
       name: 'System Support',
       description: 'Technical support team with read access and limited troubleshooting capabilities across the platform',
       scope: 'GLOBAL',
-      permissions: {
-        canViewAllData: true,
-        canAccessLogs: true,
-        canProvideSupport: true,
-        canResetPasswords: true,
-      },
+      permissions: buildPermissionMap('SYSTEM_SUPPORT'),
       sortOrder: 2,
     },
     {
@@ -140,15 +129,7 @@ async function main() {
       name: 'Club Administrator',
       description: 'Full administrative control over a specific club/organization including user management, settings, and billing',
       scope: 'CLUB',
-      permissions: {
-        canManageClub: true,
-        canManageClubUsers: true,
-        canViewClubData: true,
-        canManageClubSettings: true,
-        canManageBilling: true,
-        canManageCoaches: true,
-        canManageStudents: true,
-      },
+      permissions: buildPermissionMap('CLUB_ADMIN'),
       sortOrder: 3,
     },
     {
@@ -156,13 +137,7 @@ async function main() {
       name: 'Club Manager',
       description: 'Operational management of club activities, scheduling, and day-to-day operations without billing access',
       scope: 'CLUB',
-      permissions: {
-        canManageSchedules: true,
-        canManageCoaches: true,
-        canManageStudents: true,
-        canViewClubData: true,
-        canManageSessions: true,
-      },
+      permissions: buildPermissionMap('CLUB_MANAGER'),
       sortOrder: 4,
     },
     {
@@ -170,14 +145,7 @@ async function main() {
       name: 'Head Coach',
       description: 'Lead coaching role with ability to manage other coaches, create training programs, and oversee all coaching activities',
       scope: 'CLUB',
-      permissions: {
-        canManageCoaches: true,
-        canCreatePrograms: true,
-        canManageSessions: true,
-        canViewStudentData: true,
-        canEvaluateStudents: true,
-        canManageSchedules: true,
-      },
+      permissions: buildPermissionMap('HEAD_COACH'),
       sortOrder: 5,
     },
     {
@@ -185,13 +153,7 @@ async function main() {
       name: 'Coach',
       description: 'Individual coach who can manage their own sessions, evaluate students, and track attendance',
       scope: 'CLUB',
-      permissions: {
-        canManageOwnSessions: true,
-        canEvaluateStudents: true,
-        canMarkAttendance: true,
-        canViewAssignedStudents: true,
-        canCommunicateWithParents: true,
-      },
+      permissions: buildPermissionMap('COACH'),
       sortOrder: 6,
     },
     {
@@ -199,13 +161,7 @@ async function main() {
       name: 'Freelance Coach',
       description: 'Independent coach not tied to a specific club, can create bookings and manage their own schedule',
       scope: 'INDEPENDENT',
-      permissions: {
-        canCreateBookings: true,
-        canManageOwnSchedule: true,
-        canSetRates: true,
-        canAcceptBookings: true,
-        canCommunicateWithClients: true,
-      },
+      permissions: buildPermissionMap('FREELANCER'),
       sortOrder: 7,
     },
     {
@@ -213,13 +169,7 @@ async function main() {
       name: 'Parent',
       description: 'Guardian/parent account with access to their children\'s activities, progress, and communication with coaches',
       scope: 'USER',
-      permissions: {
-        canViewChildrenData: true,
-        canCommunicateWithCoaches: true,
-        canMakePayments: true,
-        canBookSessions: true,
-        canViewProgress: true,
-      },
+      permissions: buildPermissionMap('PARENT'),
       sortOrder: 8,
     },
     {
@@ -227,15 +177,7 @@ async function main() {
       name: 'Facility Manager',
       description: 'Overall management of a sports facility including all venues, grounds, staff, and operations',
       scope: 'FACILITY',
-      permissions: {
-        canManageFacility: true,
-        canManageVenues: true,
-        canManageGrounds: true,
-        canManageStaff: true,
-        canViewBookings: true,
-        canManageMaintenance: true,
-        canManageEquipment: true,
-      },
+      permissions: buildPermissionMap('FACILITY_MANAGER'),
       sortOrder: 9,
     },
     {
@@ -243,13 +185,7 @@ async function main() {
       name: 'Bookings Coordinator',
       description: 'Manages all venue and ground bookings, scheduling, and coordination with clients',
       scope: 'FACILITY',
-      permissions: {
-        canManageBookings: true,
-        canViewSchedules: true,
-        canCommunicateWithClients: true,
-        canConfirmBookings: true,
-        canCancelBookings: true,
-      },
+      permissions: buildPermissionMap('BOOKINGS_COORDINATOR'),
       sortOrder: 10,
     },
     {
@@ -257,12 +193,7 @@ async function main() {
       name: 'Venue Manager',
       description: 'Manages a specific venue within a facility (e.g., indoor hall, court)',
       scope: 'VENUE',
-      permissions: {
-        canManageVenue: true,
-        canViewVenueBookings: true,
-        canManageVenueSchedule: true,
-        canReportIssues: true,
-      },
+      permissions: buildPermissionMap('VENUE_MANAGER'),
       sortOrder: 11,
     },
     {
@@ -270,13 +201,7 @@ async function main() {
       name: 'Ground Manager',
       description: 'Manages a specific ground/field within a facility',
       scope: 'GROUND',
-      permissions: {
-        canManageGround: true,
-        canViewGroundBookings: true,
-        canManageGroundSchedule: true,
-        canReportIssues: true,
-        canRequestMaintenance: true,
-      },
+      permissions: buildPermissionMap('GROUND_MANAGER'),
       sortOrder: 12,
     },
     {
@@ -284,11 +209,7 @@ async function main() {
       name: 'Groundskeeper',
       description: 'Maintains grounds and fields, responsible for turf care, marking, and field preparation',
       scope: 'GROUND',
-      permissions: {
-        canReportConditions: true,
-        canViewMaintenanceSchedule: true,
-        canUpdateFieldStatus: true,
-      },
+      permissions: buildPermissionMap('GROUNDSKEEPER'),
       sortOrder: 13,
     },
     {
@@ -296,11 +217,7 @@ async function main() {
       name: 'Maintenance Technician',
       description: 'Handles facility maintenance, repairs, and equipment servicing',
       scope: 'FACILITY',
-      permissions: {
-        canViewMaintenanceRequests: true,
-        canUpdateWorkOrders: true,
-        canReportIssues: true,
-      },
+      permissions: buildPermissionMap('MAINTENANCE_TECH'),
       sortOrder: 14,
     },
     {
@@ -308,12 +225,7 @@ async function main() {
       name: 'Equipment Manager',
       description: 'Manages sports equipment inventory, distribution, and maintenance',
       scope: 'FACILITY',
-      permissions: {
-        canManageInventory: true,
-        canDistributeEquipment: true,
-        canTrackEquipment: true,
-        canOrderSupplies: true,
-      },
+      permissions: buildPermissionMap('EQUIPMENT_MANAGER'),
       sortOrder: 15,
     },
     {
@@ -321,11 +233,7 @@ async function main() {
       name: 'Security Staff',
       description: 'Facility security personnel with access control and incident reporting',
       scope: 'FACILITY',
-      permissions: {
-        canViewSchedules: true,
-        canReportIncidents: true,
-        canAccessSecurityLogs: true,
-      },
+      permissions: buildPermissionMap('SECURITY_STAFF'),
       sortOrder: 16,
     },
     {
@@ -333,11 +241,7 @@ async function main() {
       name: 'Cleaning Staff',
       description: 'Facility cleaning and housekeeping personnel',
       scope: 'FACILITY',
-      permissions: {
-        canViewCleaningSchedule: true,
-        canReportIssues: true,
-        canUpdateCleaningStatus: true,
-      },
+      permissions: buildPermissionMap('CLEANING_STAFF'),
       sortOrder: 17,
     },
     {
@@ -345,13 +249,7 @@ async function main() {
       name: 'Accountant',
       description: 'Financial management including payments, billing, and financial reporting for the club',
       scope: 'CLUB',
-      permissions: {
-        canViewFinancials: true,
-        canManagePayments: true,
-        canGenerateReports: true,
-        canManageBilling: true,
-        canViewTransactions: true,
-      },
+      permissions: buildPermissionMap('ACCOUNTANT'),
       sortOrder: 18,
     },
     {
@@ -359,12 +257,7 @@ async function main() {
       name: 'Front Desk / Receptionist',
       description: 'Front desk personnel handling check-ins, inquiries, and basic administrative tasks',
       scope: 'CLUB',
-      permissions: {
-        canCheckInUsers: true,
-        canViewSchedules: true,
-        canAnswerInquiries: true,
-        canMakeBasicBookings: true,
-      },
+      permissions: buildPermissionMap('FRONT_DESK'),
       sortOrder: 19,
     },
     {
@@ -372,12 +265,7 @@ async function main() {
       name: 'Content Manager',
       description: 'Manages digital content, announcements, and communications for the club',
       scope: 'CLUB',
-      permissions: {
-        canCreateContent: true,
-        canPublishAnnouncements: true,
-        canManageMedia: true,
-        canModerateContent: true,
-      },
+      permissions: buildPermissionMap('CONTENT_MANAGER'),
       sortOrder: 20,
     },
     {
@@ -385,12 +273,7 @@ async function main() {
       name: 'Medical Staff',
       description: 'Medical personnel including physiotherapists, doctors, and first aid providers',
       scope: 'CLUB',
-      permissions: {
-        canViewHealthRecords: true,
-        canReportInjuries: true,
-        canProvideFirstAid: true,
-        canAccessMedicalData: true,
-      },
+      permissions: buildPermissionMap('MEDICAL_STAFF'),
       sortOrder: 21,
     },
     {
@@ -398,12 +281,7 @@ async function main() {
       name: 'Student',
       description: 'Student/athlete account with access to their own schedules, progress, and training materials',
       scope: 'USER',
-      permissions: {
-        canViewOwnSchedule: true,
-        canViewOwnProgress: true,
-        canViewOwnEvaluations: true,
-        canCommunicateWithCoaches: true,
-      },
+      permissions: buildPermissionMap('STUDENT'),
       sortOrder: 22,
     },
   ];
