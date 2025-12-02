@@ -115,6 +115,11 @@ router.post('/register', async (req, res) => {
     const { email, password, name, role, display_name, clubId } = req.body;
     if (!email || !password || !name || !role) return res.status(400).json({ message: 'Email, password, name, and role are required' });
 
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ message: 'Invalid email format' });
+    }
+
     const hashed = await bcrypt.hash(password, 10);
 
     // Get role ID from database

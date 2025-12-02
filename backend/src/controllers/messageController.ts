@@ -137,6 +137,31 @@ router.get('/', async (req: AuthRequest, res) => {
 });
 
 // Get specific message
+router.get('/unread-count', async (req: AuthRequest, res) => {
+  try {
+    const userId = req.user!.id;
+
+    const count = await prisma.message.count({
+      where: {
+        toUserId: userId,
+        isRead: false,
+        deletedAt: null,
+      },
+    });
+
+    res.json({
+      success: true,
+      data: { unreadCount: count },
+    });
+  } catch (error) {
+    console.error('Error getting unread count:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error',
+    });
+  }
+});
+
 router.get('/:id', async (req: AuthRequest, res) => {
   try {
     const { id } = req.params;
@@ -322,29 +347,4 @@ router.post('/:id/restore', async (req: AuthRequest, res) => {
 });
 
 // Get unread message count
-router.get('/unread-count', async (req: AuthRequest, res) => {
-  try {
-    const userId = req.user!.id;
-
-    const count = await prisma.message.count({
-      where: {
-        toUserId: userId,
-        isRead: false,
-        deletedAt: null,
-      },
-    });
-
-    res.json({
-      success: true,
-      data: { unreadCount: count },
-    });
-  } catch (error) {
-    console.error('Error getting unread count:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Internal server error',
-    });
-  }
-});
-
 export default router;

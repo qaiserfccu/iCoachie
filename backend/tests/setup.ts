@@ -1,9 +1,10 @@
 import { PrismaClient } from '@prisma/client';
 import dotenv from 'dotenv';
 import { buildPermissionMap } from '../prisma/data/permissions';
+import { clearLookupCaches } from '../src/utils/lookups';
 
 // Load test environment variables
-dotenv.config({ path: '.env.test' });
+dotenv.config({ path: '.env.test', override: true });
 
 const ROLE_DEFAULT_SCOPES: Record<string, string> = {
   SUPER_ADMIN: 'GLOBAL',
@@ -70,6 +71,8 @@ const truncateAllTables = async () => {
   await prisma.$executeRaw`TRUNCATE TABLE "profiles" CASCADE`;
   await prisma.$executeRaw`TRUNCATE TABLE "clubs" CASCADE`;
   await prisma.$executeRaw`TRUNCATE TABLE "users" CASCADE`;
+
+  clearLookupCaches();
 };
 
 // Global test setup

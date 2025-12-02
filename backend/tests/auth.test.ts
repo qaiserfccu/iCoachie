@@ -2,7 +2,16 @@ import request from 'supertest';
 import express from 'express';
 import { prisma, createTestUser, createTestClub } from './setup';
 import authRoutes from '../src/controllers/authController';
-import { UserRole } from '@prisma/client';
+
+const app = express();
+app.use(express.json());
+app.use('/api/auth', authRoutes);
+
+import request from 'supertest';
+import express from 'express';
+import bcrypt from 'bcrypt';
+import { prisma, createTestUser, createTestClub } from './setup';
+import authRoutes from '../src/controllers/authController';
 
 const app = express();
 app.use(express.json());
@@ -95,7 +104,6 @@ describe('Authentication API', () => {
   describe('POST /api/auth/login', () => {
     it('should login user with correct credentials', async () => {
       // Create a test user with known password hash
-      const bcrypt = require('bcrypt');
       const hashedPassword = await bcrypt.hash('password123', 10);
       
       const testUser = await createTestUser({
@@ -117,7 +125,6 @@ describe('Authentication API', () => {
     });
 
     it('should reject login with wrong password', async () => {
-      const bcrypt = require('bcrypt');
       const hashedPassword = await bcrypt.hash('correctpassword', 10);
       
       await createTestUser({ 

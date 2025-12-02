@@ -178,6 +178,29 @@ router.get('/', requireAuth, requireRole(['SUPER_ADMIN']), async (req: AuthReque
  */
 
 // Get club by ID (accessible to club members or SuperAdmin)
+router.get('/my', requireAuth, async (req: AuthRequest, res) => {
+  try {
+    const clubId = req.user!.clubId;
+    if (!clubId) return res.status(404).json({ message: 'No club associated' });
+
+    const club = await prisma.club.findUnique({
+      where: { id: clubId },
+      select: {
+        ...clubSelect,
+        _count: {
+          select: { users: true, students: true, coaches: true, facilities: true }
+        }
+      }
+    });
+
+    if (!club) return res.status(404).json({ message: 'Club not found' });
+    res.json(mapClubResponse(club));
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Internal error' });
+  }
+});
+
 router.get('/:id', requireAuth, async (req: AuthRequest, res) => {
   try {
     const clubId = parseInt(req.params.id);
@@ -254,30 +277,6 @@ router.get('/:id', requireAuth, async (req: AuthRequest, res) => {
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-
-// Get current user's club
-router.get('/my', requireAuth, async (req: AuthRequest, res) => {
-  try {
-    const clubId = req.user!.clubId;
-    if (!clubId) return res.status(404).json({ message: 'No club associated' });
-
-    const club = await prisma.club.findUnique({
-      where: { id: clubId },
-      select: {
-        ...clubSelect,
-        _count: {
-          select: { users: true, students: true, coaches: true, facilities: true }
-        }
-      }
-    });
-
-    if (!club) return res.status(404).json({ message: 'Club not found' });
-    res.json(mapClubResponse(club));
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Internal error' });
-  }
-});
 
 /**
  * @swagger
