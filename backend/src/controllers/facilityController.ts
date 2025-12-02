@@ -935,12 +935,29 @@ const scheduleSelect = {
   deletedAt: true
 };
 
+// =============================================================================
+// Shared Validation Utilities
+// =============================================================================
+
 // Validate time format HH:mm
 function isValidTimeFormat(time: string): boolean {
   return /^([01]\d|2[0-3]):([0-5]\d)$/.test(time);
 }
 
-// Check for schedule conflicts
+// Convert HH:mm time string to minutes since midnight for comparison
+function timeToMinutes(time: string): number {
+  const [hours, minutes] = time.split(':').map(Number);
+  return hours * 60 + minutes;
+}
+
+// Validate date string and return Date object or null
+function parseDate(dateStr: string | undefined | null): Date | null {
+  if (!dateStr) return null;
+  const date = new Date(dateStr);
+  return isNaN(date.getTime()) ? null : date;
+}
+
+// Check for schedule conflicts using minutes comparison
 async function checkVenueScheduleConflict(
   venueId: number, 
   dayOfWeek: number | null, 
@@ -963,9 +980,14 @@ async function checkVenueScheduleConflict(
     }
   });
 
+  const newStart = timeToMinutes(startTime);
+  const newEnd = timeToMinutes(endTime);
+
   for (const existing of existingSchedules) {
-    // Simple overlap check: if new slot overlaps with existing
-    if (startTime < existing.endTime && endTime > existing.startTime) {
+    const existStart = timeToMinutes(existing.startTime);
+    const existEnd = timeToMinutes(existing.endTime);
+    // Overlap check using minutes
+    if (newStart < existEnd && newEnd > existStart) {
       return true; // Conflict found
     }
   }
@@ -992,18 +1014,30 @@ router.post('/venues/:id/schedule', requireAuth, requirePermission('venue.schedu
     if (!isValidTimeFormat(startTime) || !isValidTimeFormat(endTime)) {
       return res.status(400).json({ message: 'Time must be in HH:mm format' });
     }
-    if (startTime >= endTime) return res.status(400).json({ message: 'endTime must be after startTime' });
+    if (timeToMinutes(startTime) >= timeToMinutes(endTime)) {
+      return res.status(400).json({ message: 'endTime must be after startTime' });
+    }
     
-    // Either dayOfWeek (for recurring) or specificDate (for one-off) must be provided
-    if (dayOfWeek === undefined && !specificDate) {
-      return res.status(400).json({ message: 'dayOfWeek or specificDate required' });
+    // Validate that exactly one of dayOfWeek or specificDate is provided (not both)
+    const hasDayOfWeek = dayOfWeek !== undefined && dayOfWeek !== null;
+    const parsedDate = parseDate(specificDate);
+    const hasSpecificDate = specificDate !== undefined && parsedDate !== null;
+    
+    if (!hasDayOfWeek && !hasSpecificDate) {
+      return res.status(400).json({ message: 'Either dayOfWeek or specificDate is required' });
+    }
+    if (hasDayOfWeek && hasSpecificDate) {
+      return res.status(400).json({ message: 'Cannot specify both dayOfWeek and specificDate' });
+    }
+    if (specificDate && !parsedDate) {
+      return res.status(400).json({ message: 'Invalid date format for specificDate' });
     }
     
     // Check for conflicts
     const hasConflict = await checkVenueScheduleConflict(
       venueId,
-      dayOfWeek ?? null,
-      specificDate ? new Date(specificDate) : null,
+      hasDayOfWeek ? dayOfWeek : null,
+      parsedDate,
       startTime,
       endTime
     );
@@ -1012,11 +1046,11 @@ router.post('/venues/:id/schedule', requireAuth, requirePermission('venue.schedu
     const schedule = await prisma.venueSchedule.create({
       data: {
         venueId,
-        dayOfWeek: dayOfWeek ?? null,
-        specificDate: specificDate ? new Date(specificDate) : null,
+        dayOfWeek: hasDayOfWeek ? dayOfWeek : null,
+        specificDate: parsedDate,
         startTime,
         endTime,
-        isRecurring: isRecurring !== false,
+        isRecurring: isRecurring === true, // Explicit boolean - defaults to false
         isBlackout: isBlackout === true,
         notes: notes || null,
         createdBy: req.user!.id
@@ -1145,7 +1179,7 @@ router.delete('/venues/:venueId/schedule/:scheduleId', requireAuth, requirePermi
 // Card 21 - Ground Schedule & Availability APIs
 // =============================================================================
 
-// Check for ground schedule conflicts
+// Check for ground schedule conflicts using minutes comparison
 async function checkGroundScheduleConflict(
   groundId: number, 
   dayOfWeek: number | null, 
@@ -1166,8 +1200,13 @@ async function checkGroundScheduleConflict(
     }
   });
 
+  const newStart = timeToMinutes(startTime);
+  const newEnd = timeToMinutes(endTime);
+
   for (const existing of existingSchedules) {
-    if (startTime < existing.endTime && endTime > existing.startTime) {
+    const existStart = timeToMinutes(existing.startTime);
+    const existEnd = timeToMinutes(existing.endTime);
+    if (newStart < existEnd && newEnd > existStart) {
       return true;
     }
   }
@@ -1192,16 +1231,29 @@ router.post('/grounds/:id/schedule', requireAuth, requirePermission('ground.sche
     if (!isValidTimeFormat(startTime) || !isValidTimeFormat(endTime)) {
       return res.status(400).json({ message: 'Time must be in HH:mm format' });
     }
-    if (startTime >= endTime) return res.status(400).json({ message: 'endTime must be after startTime' });
+    if (timeToMinutes(startTime) >= timeToMinutes(endTime)) {
+      return res.status(400).json({ message: 'endTime must be after startTime' });
+    }
     
-    if (dayOfWeek === undefined && !specificDate) {
-      return res.status(400).json({ message: 'dayOfWeek or specificDate required' });
+    // Validate that exactly one of dayOfWeek or specificDate is provided (not both)
+    const hasDayOfWeek = dayOfWeek !== undefined && dayOfWeek !== null;
+    const parsedDate = parseDate(specificDate);
+    const hasSpecificDate = specificDate !== undefined && parsedDate !== null;
+    
+    if (!hasDayOfWeek && !hasSpecificDate) {
+      return res.status(400).json({ message: 'Either dayOfWeek or specificDate is required' });
+    }
+    if (hasDayOfWeek && hasSpecificDate) {
+      return res.status(400).json({ message: 'Cannot specify both dayOfWeek and specificDate' });
+    }
+    if (specificDate && !parsedDate) {
+      return res.status(400).json({ message: 'Invalid date format for specificDate' });
     }
     
     const hasConflict = await checkGroundScheduleConflict(
       groundId,
-      dayOfWeek ?? null,
-      specificDate ? new Date(specificDate) : null,
+      hasDayOfWeek ? dayOfWeek : null,
+      parsedDate,
       startTime,
       endTime
     );
@@ -1210,11 +1262,11 @@ router.post('/grounds/:id/schedule', requireAuth, requirePermission('ground.sche
     const schedule = await prisma.groundSchedule.create({
       data: {
         groundId,
-        dayOfWeek: dayOfWeek ?? null,
-        specificDate: specificDate ? new Date(specificDate) : null,
+        dayOfWeek: hasDayOfWeek ? dayOfWeek : null,
+        specificDate: parsedDate,
         startTime,
         endTime,
-        isRecurring: isRecurring !== false,
+        isRecurring: isRecurring === true, // Explicit boolean - defaults to false
         isBlackout: isBlackout === true,
         notes: notes || null,
         createdBy: req.user!.id
