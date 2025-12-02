@@ -5,7 +5,7 @@
 module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'node',
-  roots: ['<rootDir>/tests/utils', '<rootDir>/tests/middleware'],
+  roots: ['<rootDir>/tests/utils', '<rootDir>/tests/middleware', '<rootDir>/tests/services'],
   testMatch: ['**/*.test.ts'],
   transform: {
     '^.+\\.ts$': 'ts-jest',
@@ -13,6 +13,7 @@ module.exports = {
   collectCoverageFrom: [
     'src/utils/**/*.ts',
     'src/middleware/**/*.ts',
+    'src/services/**/*.ts',
     '!src/**/*.d.ts',
   ],
   coverageDirectory: 'coverage/unit',
