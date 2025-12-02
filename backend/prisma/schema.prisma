@@ -479,6 +479,7 @@ model Venue {
   facility    Facility @relation(fields: [facilityId], references: [id])
   manager     User?    @relation("VenueManager", fields: [managerId], references: [id])
   bookings    Booking[]
+  schedules   VenueSchedule[]
   
   @@map("venues")
 }
@@ -499,8 +500,53 @@ model Ground {
   
   facility    Facility @relation(fields: [facilityId], references: [id])
   manager     User?    @relation("GroundManager", fields: [managerId], references: [id])
+  schedules   GroundSchedule[]
   
   @@map("grounds")
+}
+
+// =============================================================================
+// Card 21 - Venue Schedule & Ground Availability Models
+// =============================================================================
+
+model VenueSchedule {
+  id          Int      @id @default(autoincrement())
+  venueId     Int
+  dayOfWeek   Int?     // 0-6 for recurring schedules (0=Sunday)
+  specificDate DateTime? // For one-off availability
+  startTime   String   // HH:mm format
+  endTime     String   // HH:mm format
+  isRecurring Boolean  @default(true)
+  isBlackout  Boolean  @default(false) // true = unavailable window
+  notes       String?
+  createdBy   Int?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  deletedAt   DateTime?
+  
+  venue       Venue    @relation(fields: [venueId], references: [id])
+  
+  @@map("venue_schedules")
+}
+
+model GroundSchedule {
+  id          Int      @id @default(autoincrement())
+  groundId    Int
+  dayOfWeek   Int?     // 0-6 for recurring schedules (0=Sunday)
+  specificDate DateTime? // For one-off availability
+  startTime   String   // HH:mm format
+  endTime     String   // HH:mm format
+  isRecurring Boolean  @default(true)
+  isBlackout  Boolean  @default(false) // true = unavailable window
+  notes       String?
+  createdBy   Int?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  deletedAt   DateTime?
+  
+  ground      Ground   @relation(fields: [groundId], references: [id])
+  
+  @@map("ground_schedules")
 }
 
 model File {
