@@ -1,129 +1,36 @@
 # Copilot Instructions for iCoachie
-
-## Project Overview
-
-iCoachie is a sports coaching management platform built for clubs, academies, students, coaches, freelancers, and parents. It enables scheduling of courses, student registration by coaches, attendance tracking, performance evaluations, and sports club management. An all-in-one solution.
-
-## Technical Stack
-
-### Backend
-- **Runtime**: Node.js with TypeScript
-- **Framework**: Express.js
-- **Database**: PostgreSQL with Prisma ORM
-- **Authentication**: JWT tokens with bcrypt password hashing
-- **Validation**: Zod schemas
-
-### Frontend
-- **Framework**: Next.js 15+ with TypeScript
-- **UI Components**: React 19, shadcn/ui, Radix UI
-- **Styling**: Tailwind CSS with glassmorphism design
-- **Icons**: Lucide React
-
-## Architecture Patterns
-
-### Layered Architecture
-- **Controllers**: Handle HTTP requests/responses, input validation, error handling
-- **Services**: Business logic, data transformation, complex operations
-- **Models**: Database schemas and relationships (Prisma ORM)
-- **Middleware**: Authentication, authorization, tenant isolation, validation
-
-### Multi-Tenancy
-- All business tables include `clubId` field for tenant isolation
-- JWT tokens contain `clubId` for request scoping
-- Middleware automatically filters queries by club context
-
-### Soft Delete Pattern
-- All models include `deletedAt` field (nullable DateTime)
-- Delete operations set `deletedAt` instead of removing records
-- Queries automatically filter out soft-deleted records
-
-## Coding Conventions
-
-### Backend Controllers
-- Controllers are Express routers that export default router instances
-- All routes require authentication via `requireAuth` middleware
-- Use `AuthRequest` interface for accessing `req.user.id` and `req.user.clubId`
-- Input validation using Zod schemas with detailed error responses
-
-### Tenant-Aware Queries
-```typescript
-// Always scope queries by clubId from JWT
-const records = await prisma.model.findMany({
-  where: { clubId: req.user.clubId, deletedAt: null }
-});
-```
-
-### Error Handling
-```typescript
-// Consistent error response format
-res.status(400).json({
-  success: false,
-  error: 'Validation failed',
-  details: validationErrors
-});
-```
-
-### Frontend Components
-- Use shadcn/ui components from the `components/ui` directory
-- Follow the existing glassmorphism design patterns
-- Components should support role-based access across all 22 user roles
-
-## Build and Test Commands
-
-### Backend
-```bash
-cd backend
-npm install
-npm run dev          # Start development server
-npm run build        # Build TypeScript
-npm run test         # Run Jest tests
-npm run test:watch   # Run tests in watch mode
-```
-
-### Frontend
-```bash
-cd frontend
-npm install
-npm run dev          # Start Next.js development server
-npm run build        # Build for production
-npm run lint         # Run ESLint
-npm run test:e2e     # Run Playwright E2E tests
-```
-
-## User Roles
-
-### Global Scope Roles (Platform-Wide)
-- **SUPER_ADMIN**: Platform-wide administrative access with full control over all organizations, users, and system settings
-- **SYSTEM_SUPPORT**: Technical support team with read access and limited troubleshooting capabilities across the platform
-
-### Club Scope Roles (Organization-Level)
-- **CLUB_ADMIN**: Full administrative control over a specific club/organization including user management, settings, and billing
-- **CLUB_MANAGER**: Operational management of club activities, scheduling, and day-to-day operations without billing access
-- **HEAD_COACH**: Lead coaching role with ability to manage other coaches, create training programs, and oversee all coaching activities
-- **COACH**: Individual coach who can manage their own sessions, evaluate students, and track attendance
-- **ACCOUNTANT**: Financial management including payments, billing, and financial reporting for the club
-- **FRONT_DESK**: Front desk personnel handling check-ins, inquiries, and basic administrative tasks
-- **CONTENT_MANAGER**: Manages digital content, announcements, and communications for the club
-- **MEDICAL_STAFF**: Medical personnel including physiotherapists, doctors, and first aid providers
-
-### Facility Scope Roles (Facility-Wide)
-- **FACILITY_MANAGER**: Overall management of a sports facility including all venues, grounds, staff, and operations
-- **BOOKINGS_COORDINATOR**: Manages all venue and ground bookings, scheduling, and coordination with clients
-- **MAINTENANCE_TECH**: Handles facility maintenance, repairs, and equipment servicing
-- **EQUIPMENT_MANAGER**: Manages sports equipment inventory, distribution, and maintenance
-- **SECURITY_STAFF**: Facility security personnel with access control and incident reporting
-- **CLEANING_STAFF**: Facility cleaning and housekeeping personnel
-
-### Venue Scope Roles (Venue-Specific)
-- **VENUE_MANAGER**: Manages a specific venue within a facility (e.g., indoor hall, court)
-
-### Ground Scope Roles (Ground-Specific)
-- **GROUND_MANAGER**: Manages a specific ground/field within a facility
-- **GROUNDSKEEPER**: Maintains grounds and fields, responsible for turf care, marking, and field preparation
-
-### Independent Scope Roles (Self-Managed)
-- **FREELANCER**: Independent coach not tied to a specific club, can create bookings and manage their own schedule
-
-### User Scope Roles (Personal)
-- **PARENT**: Guardian/parent account with access to their children's activities, progress, and communication with coaches
-- **STUDENT**: Student/athlete account with access to their own schedules, progress, and training materials
+## Platform Snapshot
+- Multi-tenant sports coaching suite; Node/Express backend with Prisma/Postgres and Next.js 15 App Router frontend (React 19 + shadcn).
+- Core specs live in `docs/backend/global-endpoint-matrix.md`, `docs/facilities/endpoint-matrix.md`, and DTO notes under `docs/backend/dto`; refer to them before inventing new payloads.
+- Role/permission catalog is maintained in `docs/rbac/permissions.md` with the source of truth in `backend/prisma/data/permissions.ts`.
+## Backend Essentials
+- Entry point `backend/src/server.ts` wires every controller under `/api/*`, configures CORS lists via `ALLOWEDORIGINS`, mounts Swagger at `/api-docs`, and exposes the raw Stripe webhook (`/api/payments/webhook`).
+- Real-time events (`attendance-updated`, `booking-updated`, etc.) run through `services/socketService.ts`; socket authentication reuses JWT and joins `club-*`/`user-*` rooms.
+- Controllers (e.g., `controllers/studentController.ts`) follow: `requireAuth` ➜ optional RBAC middleware ➜ Prisma query with `{ clubId: req.user!.clubId, deletedAt: null }` ➜ DTO mapper. Reuse `utils/pagination.ts` helpers and return `{ data, pageInfo, filtersApplied }`.
+- File flows are centralized in `routes/fileRoutes.ts` + `controllers/fileController.ts`, storing blobs under `backend/uploads/<clubId>/`; public links must go through token endpoints instead of exposing disk paths.
+- Environment config lives in `backend/.env.example` (DB, JWT, Stripe, CORS). Jest reads `.env.test` and `tests/setup.ts` truncates every table, seeds roles/status, and sets `JWT_SECRET`.
+## Data & RBAC
+- Prisma schema (`prisma/schema.prisma`) puts `clubId` and `deletedAt` on nearly every table; soft deletes set `deletedAt` and restores live at `/:id/restore` like the club/student controllers.
+- RBAC middleware (`middleware/rbac.ts`) loads roles + scopes from DB, supports `requireRole`, `requirePermission`, and `requireScope`. Keep permissions JSONs synchronized with `prisma/data/permissions.ts` and re-run `npx prisma db seed` afterward.
+- Seed helpers live in `prisma/data/*` and `prisma/scripts/createSuperAdmin.ts`; use them instead of ad-hoc SQL when bootstrapping tenants or admin accounts.
+## Backend Workflows
+- Install/build/run via `cd backend && npm install && npm run build|dev`; migrations execute as compiled JS: `npm run migrate` (runs `dist/migrations/run.js`).
+- Jest + Supertest specs in `backend/tests/*.test.ts` rely on helpers from `tests/setup.ts` plus fixture factories in `tests/fixtures`; never hardcode IDs because the DB truncates between tests.
+- Payments integrate with Stripe (`paymentsController`) and expect `STRIPE_SECRET_KEY` + `STRIPE_WEBHOOK_SECRET`; keep webhook validation in sync with the env file.
+- Swagger definitions in `src/swagger.ts` mirror controller decorators; update both when changing request/response shapes.
+## Frontend Essentials
+- Next App Router lives under `frontend/app`; role-focused dashboards sit in grouped folders like `app/(dashboard)/coach`, `admin`, `parent`, etc. Shared shells/layouts stay in `app/(dashboard)/layout.tsx` and `components/ui/*` (shadcn/Radix wrappers).
+- All HTTP requests flow through `frontend/lib/api.ts` (axios singleton) and `frontend/lib/auth.ts` (localStorage token + `/users/me` fetch). Extend these helpers when adding endpoints so interceptors keep auth/logout logic consistent.
+- Styling + theming: Tailwind setup (`app/globals.css`, `tailwind.config.ts`) implements the glassmorphism look; reuse design tokens instead of inline styles. Context/stateful utilities live in `frontend/contexts` and `hooks`.
+- Frontend env config (`frontend/.env.example`) exposes `NEXT_PUBLIC_API_URL` and Stripe publishable keys; ensure values match backend ports and Stripe secrets anytime environments shift.
+## Cross-Cutting Practices
+- Keep UX requirements aligned with `docs/frontend/role-screen-inventory.md` so each of the 22 roles sees the right navigation/cards; backend RBAC changes often require matching UI updates.
+- Socket-driven widgets should listen for the same events emitted by `SocketService` (attendance updates, booking status, dashboard stats) instead of polling.
+- Uploaded assets and signed file tokens (`/api/files/:id/token`) are the only sanctioned way to expose media—never send raw `uploads/*` paths to clients.
+- Standard response envelope is `{ success?: boolean, message?: string, ...data }`; controllers currently log errors to console and reply with `{ message: 'Internal error' }`—follow that pattern for consistency.
+## Quick Commands
+- Backend: `npm run dev`, `npm run test`, `npm run migrate`
+- Frontend: `cd frontend && npm run dev`, `npm run build`, `npm run test:e2e`
+- Prisma: `npx prisma migrate dev` then `npx prisma db seed`
+- Playwright: results land in `frontend/playwright-report`; `npm run test:e2e:ui` launches the inspector.
+- Feedback welcome—flag unclear sections so we can tighten these instructions.
