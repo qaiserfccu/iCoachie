@@ -9,17 +9,73 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Eye, EyeOff, Mail, Lock } from "lucide-react"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Eye, EyeOff, Mail, Lock, Users } from "lucide-react"
+import { authService, mockUserCredentials, type MockUserCredentials } from "@/lib/services/api/auth"
+import type { UserRole } from "@/lib/services/api/types"
+
+// Role display names for dropdown
+const roleOptions: { value: UserRole; label: string }[] = [
+  { value: 'admin', label: 'Administrator' },
+  { value: 'coach', label: 'Coach' },
+  { value: 'head-coach', label: 'Head Coach' },
+  { value: 'parent', label: 'Parent' },
+  { value: 'guardian', label: 'Guardian' },
+  { value: 'student', label: 'Student/Athlete' },
+  { value: 'accountant', label: 'Accountant' },
+  { value: 'front-desk', label: 'Front Desk' },
+  { value: 'content-manager', label: 'Content Manager' },
+  { value: 'medical', label: 'Medical Staff' },
+  { value: 'facility', label: 'Facility Manager' },
+  { value: 'system-support', label: 'System Support' },
+  { value: 'bookings-coordinator', label: 'Bookings Coordinator' },
+  { value: 'maintenance', label: 'Maintenance' },
+  { value: 'equipment', label: 'Equipment Manager' },
+  { value: 'security', label: 'Security' },
+  { value: 'cleaning', label: 'Cleaning Staff' },
+  { value: 'venue', label: 'Venue Manager' },
+  { value: 'ground', label: 'Ground Staff' },
+  { value: 'groundskeeper', label: 'Groundskeeper' },
+  { value: 'academy-owner', label: 'Academy Owner' },
+  { value: 'club', label: 'Club Admin' },
+  { value: 'freelancer', label: 'Freelancer' },
+]
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [selectedRole, setSelectedRole] = useState<UserRole | "">("")
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState("")
   const router = useRouter()
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Handle role selection - auto-fill credentials
+  const handleRoleSelect = (role: UserRole) => {
+    setSelectedRole(role)
+    const credentials = mockUserCredentials[role]
+    if (credentials) {
+      setEmail(credentials.email)
+      setPassword(credentials.password)
+      setError("")
+    }
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    router.push("/dashboard")
+    setIsLoading(true)
+    setError("")
+
+    try {
+      const { user } = await authService.login(email, password)
+      // Redirect to the appropriate dashboard based on user role
+      const dashboardPath = authService.getDashboardPath(user.role)
+      router.push(dashboardPath)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Login failed")
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -43,6 +99,35 @@ export default function LoginPage() {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Role selector for testing */}
+            <div className="p-4 rounded-xl glass-subtle border border-primary/20 mb-4">
+              <Label className="text-foreground flex items-center gap-2 mb-2">
+                <Users className="w-4 h-4" />
+                Quick Login (Testing)
+              </Label>
+              <Select value={selectedRole} onValueChange={(value) => handleRoleSelect(value as UserRole)}>
+                <SelectTrigger className="h-12 glass-input border-white/30">
+                  <SelectValue placeholder="Select a role to auto-fill credentials" />
+                </SelectTrigger>
+                <SelectContent className="max-h-[300px]">
+                  {roleOptions.map((role) => (
+                    <SelectItem key={role.value} value={role.value}>
+                      {role.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground mt-2">
+                Select a role to auto-fill email and password for testing
+              </p>
+            </div>
+
+            {error && (
+              <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-sm">
+                {error}
+              </div>
+            )}
+
             <div className="space-y-2">
               <Label htmlFor="email" className="text-foreground">
                 Email address
@@ -100,9 +185,10 @@ export default function LoginPage() {
 
             <Button
               type="submit"
+              disabled={isLoading}
               className="w-full h-12 gradient-primary text-white hover:opacity-90 text-base font-semibold shadow-lg shadow-primary/25"
             >
-              Sign In
+              {isLoading ? "Signing In..." : "Sign In"}
             </Button>
           </form>
 
