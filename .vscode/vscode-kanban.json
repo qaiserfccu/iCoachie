@@ -7,37 +7,141 @@
       "category": "backend",
       "creation_time": "2025-12-02T00:00:00.000Z",
       "description": {
-        "content": "Audit, wire, and document every REST endpoint required for Facility, Venue, Ground, and any other newly introduced tables so that frontend integration has complete coverage.",
+        "content": "Implement the fine-grained permission model (facility/venue/ground/manage + staff assignment, scheduling, reporting) identified by Card 11 and enforce it across all relevant controllers.",
         "mime": "text/markdown"
       },
       "details": {
-        "content": "# Task 1 - Facility/Venue/Ground Endpoint Coverage (Priority 4)\n\n## Objectives\n- Inventory all CRUD and lookup endpoints required by the new facility-related tables.\n- Verify current implementations for correctness (HTTP verbs, RBAC, club scoping, payloads).\n- Identify any missing endpoints or response fields needed by the frontend.\n- Produce an implementation plan for any missing routes (controllers, Prisma operations, validation).\n\n## Acceptance Criteria\n1. Comprehensive endpoint matrix covering Facility, Venue, Ground, Facility Staff, Venue schedule, and Ground availability tables (where applicable).\n2. GitHub issues or sub-cards opened for any missing endpoints, each with owner, scope, and ETA.\n3. Confirmed RBAC requirements documented per endpoint (role, scope, permission).\n4. Shared reference document (Markdown) for frontend devs enumerating URL, method, request body, query params, success/error responses.\n5. Pull requests created or planned for missing endpoints with checklist: controller, route registration, validation, tests.",
+        "content": "# 24 - Permission-based RBAC for Facility Stack (Global follow-up 11F)\n\n## Context\n- Card 11 cataloged every controller + workflow that still relies on coarse role/scope checks.\n- Need granular permission codes covering creation, editing, assignment, scheduling, reporting, and destructive actions to unblock frontend role matrix + audits.\n\n## Tasks\n1. Extend permission catalogue/seed with all codes referenced in `docs/backend/global-endpoint-matrix.md` (facility.manage, venue.manage, ground.manage, staff.assign, schedule.edit, booking.override, report.view, etc.).\n2. Map permissions to roles (SUPER_ADMIN, SYSTEM_SUPPORT, FACILITY_MANAGER, VENUE_MANAGER, GROUND_MANAGER, Maintenance roles, Booking Coordinator, etc.) using the shared permission catalogue + `docs/rbac/permissions.md`.\n3. Update controllers/middleware across modules flagged in the global matrix to require the new permissions alongside scopes/roles.\n4. Provide automated/cli smoke tests proving positive + negative authorization paths per endpoint family.\n5. Document results in Card 11 progress log and update RBAC docs/Postman tests.\n\n## Acceptance\n- Permissions seeded + documented with ownership, description, and associated roles.\n- Controllers reflect new `requirePermission` hooks (searchable) and pass lint/tests.\n- Tests/manual runs capture unauthorized vs authorized behavior.\n- Alignment confirmed with Card 11 + docs matrix.\n\n## Dependencies\n- Card 11 global audit outputs\n- `docs/backend/global-endpoint-matrix.md` (RBAC summary + gaps)\n- `docs/facilities/endpoint-matrix.md` + `docs/rbac/permissions.md` for baseline context.",
         "mime": "text/markdown"
       },
-      "id": "11",
-      "prio": 4,
-      "references": [],
-      "title": "11 - Facility/Venue/Ground endpoint verification",
+      "id": "24",
+      "prio": 17,
+      "references": [
+        "11",
+        "docs/backend/global-endpoint-matrix.md",
+        "docs/facilities/endpoint-matrix.md"
+      ],
+      "title": "24 - Permission-based RBAC for facility stack",
       "type": "note"
     },
     {
       "assignedTo": {
         "name": "Copilot Agent"
       },
-      "category": "documentation",
+      "category": "backend",
       "creation_time": "2025-12-02T00:00:00.000Z",
       "description": {
-        "content": "Update Swagger, OpenAPI, and Postman artifacts so every request/response structure reflects the latest backend contract.",
+        "content": "Standardize pagination/filter/search contracts for facility stack listings so every consumer highlighted in Card 11 (dashboards, bookings, reports, admin) uses the same response envelope.",
         "mime": "text/markdown"
       },
       "details": {
-        "content": "# Task 2 - API Contract Sync (Priority 5)\n\n## Scope\n- Swagger YAML/JSON hosted in repo\n- OpenAPI spec consumed by tooling\n- Postman collection shared with frontend QA\n\n## Deliverables\n1. Regenerated or manually updated Swagger/OpenAPI spec capturing all new endpoints, parameters, enums, and response schemas.\n2. Postman collection with folders per domain (Auth, Facilities, Venues, Grounds, RBAC) including sample environments and tests.\n3. Change log summarizing contract updates and any deprecations sent to frontend + QA.\n4. Validation step using `swagger-cli validate` or equivalent to ensure specs compile.\n5. Commit/PR referencing updated artifacts and linking to acceptance review from frontend lead.\n\n## Steps\n- Diff current controllers vs spec to spot mismatches.\n- Add missing schema components (FacilityResponse, VenuePayload, etc.).\n- Document auth headers, pagination/query params, error envelopes.\n- Export validated Postman JSON and place under `/docs/postman`.\n- Update README with instructions for importing the refreshed collection.",
+        "content": "# 23 - Facility Stack Pagination & Filtering (Global follow-up 11E)\n\n## Context\n- Card 11 exposed inconsistent pagination/search envelopes across facilities, venues, grounds, bookings, and admin dashboards.\n- This card creates a canonical contract reused by every listing endpoint mentioned in the global matrix.\n\n## Deliverables\n1. Shared helpers (service + middleware) for pagination, sorting, filtering, total counts, cursor support (if needed), and metadata.\n2. Query params standardized (`page`, `pageSize`, optional `cursor`, `search`, `type`, `availability`, `clubId`, etc.) with validation + defaults.\n3. Response envelope `{ data, pageInfo: { page, pageSize, total, hasNext }, filtersApplied }` aligned with Card 11 contract.\n4. Documentation/SDK updates (global matrix + Postman/Swagger) plus frontend integration notes referencing the shared format.\n5. Performance validation (seeded large dataset) to ensure queries scale.\n\n## Acceptance\n- All facility stack list endpoints adopt the shared helper + envelope.\n- Downstream modules (bookings, reports) confirm compatibility.\n- Tests/manual verification cover pagination boundaries, filter combos, and RBAC scoping.\n- Card 11 progress updated once contract is live.\n\n## Dependencies\n- Card 11 global audit\n- `docs/backend/global-endpoint-matrix.md` (Pagination contract section)\n- `docs/facilities/endpoint-matrix.md` for legacy reference.",
         "mime": "text/markdown"
       },
-      "id": "12",
-      "prio": 5,
-      "references": [],
-      "title": "12 - Refresh API docs (Swagger/Postman/OpenAPI)",
+      "id": "23",
+      "prio": 16,
+      "references": [
+        "11",
+        "docs/backend/global-endpoint-matrix.md",
+        "docs/facilities/endpoint-matrix.md"
+      ],
+      "title": "23 - Facility stack pagination & filters",
+      "type": "note"
+    },
+    {
+      "assignedTo": {
+        "name": "Copilot Agent"
+      },
+      "category": "backend",
+      "creation_time": "2025-12-02T00:00:00.000Z",
+      "description": {
+        "content": "Implement global soft-delete + restore workflows for facility stack resources so cross-module contracts (Card 11) never lose referential integrity.",
+        "mime": "text/markdown"
+      },
+      "details": {
+        "content": "# 22 - Soft Delete + Audit Trail (Global follow-up 11D)\n\n## Context\n- Card 11 revealed that hard deletes break bookings, schedules, invoices, and analytics tied to facilities/venues/grounds.\n- Need standardized soft-delete + restore semantics shared across all modules.\n\n## Tasks\n1. Replace destructive deletes with `deletedAt`/`deletedBy` updates across controllers + services noted in the global matrix.\n2. Introduce filters/params to list endpoints (default hide deleted, opt-in include) plus dedicated restore endpoints.\n3. Ensure downstream modules query with `deletedAt = null` by default and optionally surface deleted metadata when required (audits, reporting).\n4. Update audit/event logging so delete + restore actions are traceable with actor + timestamp.\n\n## Acceptance\n- No facility stack resource is permanently deleted; restore endpoints proven for SUPER_ADMIN/System Support.\n- Downstream controllers (bookings, schedules, reporting) respect soft-delete filters.\n- Tests/manual verification executed for delete + restore + list filters.\n- Documentation updates applied to `docs/backend/global-endpoint-matrix.md` + appendices, and Card 11 log updated upon completion.\n\n## Dependencies\n- Card 11 (global scope)\n- `docs/backend/global-endpoint-matrix.md` (Gaps table ref 22)\n- `docs/facilities/endpoint-matrix.md` for legacy payload expectations.",
+        "mime": "text/markdown"
+      },
+      "id": "22",
+      "prio": 15,
+      "references": [
+        "11",
+        "docs/backend/global-endpoint-matrix.md",
+        "docs/facilities/endpoint-matrix.md"
+      ],
+      "title": "22 - Facility stack soft delete & restore",
+      "type": "note"
+    },
+    {
+      "assignedTo": {
+        "name": "Copilot Agent"
+      },
+      "category": "backend",
+      "creation_time": "2025-12-02T00:00:00.000Z",
+      "description": {
+        "content": "Design/implement venue schedule and ground availability APIs that satisfy every downstream workflow cataloged in Card 11’s global audit (bookings, sessions, maintenance, analytics).",
+        "mime": "text/markdown"
+      },
+      "details": {
+        "content": "# 21 - Venue Schedule & Ground Availability APIs (Global follow-up 11C)\n\n## Context\n- Card 11 exposed scheduling/availability gaps for venues, grounds, bookings, recurring sessions, maintenance windows, and analytics exports.\n- We need unified data models + endpoints so every module consumes the same schedule semantics.\n\n## Scope\n- Prisma models + migrations for recurring templates, exceptions, blackout windows, and ad-hoc slots.\n- CRUD + bulk endpoints for admins/managers with tenant-aware RBAC from the global matrix.\n- Read APIs powering bookings, calendar UI, reporting, and availability search across clubs.\n- Conflict detection + validation flows documented and enforced.\n\n## Acceptance\n1. Architectural RFC aligned with `docs/backend/global-endpoint-matrix.md` accepted.\n2. Migrations + seed data checked in with sample datasets for test automation.\n3. Controllers/routes + service logic implemented with RBAC + scope checks defined by Card 11.\n4. Automated or manual tests proving overlapping slot handling, timezone safety, and pagination.\n5. Documentation updates (global matrix + facilities appendix + API docs).\n\n## Dependencies\n- Card 11 (global audit, scheduling gap notes)\n- `docs/backend/global-endpoint-matrix.md` (Scheduling/Ground Availability section)\n- `docs/facilities/endpoint-matrix.md` (legacy reference)",
+        "mime": "text/markdown"
+      },
+      "id": "21",
+      "prio": 14,
+      "references": [
+        "11",
+        "docs/backend/global-endpoint-matrix.md",
+        "docs/facilities/endpoint-matrix.md"
+      ],
+      "title": "21 - Venue schedule & ground availability APIs",
+      "type": "note"
+    },
+    {
+      "assignedTo": {
+        "name": "Copilot Agent"
+      },
+      "category": "backend",
+      "creation_time": "2025-12-02T00:00:00.000Z",
+      "description": {
+        "content": "Globalize manager/staff assignment endpoints so every module (facility ops, bookings, maintenance, reporting) honors the relationships flagged by Card 11’s endpoint audit.",
+        "mime": "text/markdown"
+      },
+      "details": {
+        "content": "# 20 - Manager & Staff Assignment APIs (Global follow-up 11B)\n\n## Context\n- Card 11 identified inconsistent manager/staff assignment flows across facilities, venues, grounds, bookings, sessions, and maintenance modules.\n- We need a single contract for assigning/removing staff regardless of module to unblock integration, RBAC, and reporting.\n\n## Deliverables\n1. CRUD endpoints (assign/replace/remove/list) for managers and staff that support all scopes highlighted in the global matrix (club, facility, venue, ground).\n2. Shared service helpers ensuring assignments propagate to dependent modules (scheduling, bookings, resource calendars).\n3. RBAC middleware alignment (role + permission checks) referencing `docs/backend/global-endpoint-matrix.md` + Card 11 decisions.\n4. Documentation updates (global matrix + facilities appendix + API docs) with canonical payloads and examples.\n\n## Acceptance Criteria\n- All assignment routes wired in router with tenant-aware filters.\n- Prisma relations + join tables updated with necessary include/select helpers for reuse.\n- Tests/manual scripts verifying assignments reflect in dependent read endpoints (e.g., bookings include assigned manager metadata).\n- References to Card 11 progress log updated once complete.\n\n## Dependencies\n- Card 11 global audit outputs\n- `docs/backend/global-endpoint-matrix.md` (RBAC + gaps table)\n- `docs/facilities/endpoint-matrix.md` for current payload examples.",
+        "mime": "text/markdown"
+      },
+      "id": "20",
+      "prio": 13,
+      "references": [
+        "11",
+        "docs/backend/global-endpoint-matrix.md",
+        "docs/facilities/endpoint-matrix.md"
+      ],
+      "title": "20 - Manager/staff assignment endpoints",
+      "type": "note"
+    },
+    {
+      "assignedTo": {
+        "name": "Copilot Agent"
+      },
+      "category": "backend",
+      "creation_time": "2025-12-02T00:00:00.000Z",
+      "description": {
+        "content": "Global DTO coverage for facility/venue/ground resources so every module that consumes them (bookings, scheduling, assignments, reporting) matches the fields enumerated in the global endpoint matrix (Card 11).",
+        "mime": "text/markdown"
+      },
+      "details": {
+        "content": "# 19 - Facility/Venue/Ground Metadata DTO Expansion (Global follow-up 11A)\n\n## Context\n- Card 11 surfaced payload gaps impacting facilities, bookings, scheduling, reporting, and staff assignment flows.\n- This subcard lifts DTO coverage so every downstream module can rely on the canonical shapes defined in `docs/backend/global-endpoint-matrix.md`.\n\n## Objectives\n1. Update validation + controller logic for facility/venue/ground POST/PUT routes so every schema field (geo/address, amenities, staffing, capacity, pricing, metadata, status, tags) is accepted, persisted, and returned.\n2. Ensure related modules (bookingController, schedule APIs, reporting endpoints) reuse the same mapper/select helpers to avoid diverging payloads.\n3. Normalize DTO interfaces in shared types so Card 12 (API docs) and frontend services import a single source of truth.\n\n## Deliverables\n- Refreshed DTO/type definitions covering all schema fields with required vs optional annotations.\n- Controller/service updates with null-safe persistence and consistent select helpers for responses.\n- Tests or manual verification proving new fields round-trip across write/read flows.\n- Matrix + Swagger/Postman updates referencing the canonical DTOs.\n\n## Dependencies\n- `docs/backend/global-endpoint-matrix.md` (section: Facilities + Shared Entities)\n- `docs/facilities/endpoint-matrix.md` for appendix-level samples\n- Links back to Card 11 for additional payload discoveries.",
+        "mime": "text/markdown"
+      },
+      "id": "19",
+      "prio": 12,
+      "references": [
+        "11",
+        "docs/backend/global-endpoint-matrix.md",
+        "docs/facilities/endpoint-matrix.md"
+      ],
+      "title": "19 - Facility/Venue/Ground metadata DTO expansion",
       "type": "note"
     },
     {
@@ -47,17 +151,77 @@
       "category": "testing",
       "creation_time": "2025-12-02T00:00:00.000Z",
       "description": {
-        "content": "Design and execute a backend smoke-test suite that runs quickly and validates mission-critical flows end-to-end.",
+        "content": "Author an end-to-end testing program with 22 child cards (one per role) covering full app journeys.",
         "mime": "text/markdown"
       },
       "details": {
-        "content": "# Task 3 - Backend Smoke Test Suite (Priority 6)\n\n## Requirements\n- Cover auth/login, RBAC gates, CRUD of each major module (Club, Facility, Venue, Ground, Sessions).\n- Run in <5 minutes on CI.\n- Provide human-readable report with pass/fail summary.\n\n## Action Plan\n1. Define smoke criteria per module.\n2. Implement Jest/Supertest specs (or Playwright API) hitting live server with seeded data.\n3. Add npm script `test:smoke`.\n4. Integrate into CI pipeline with badge/report.\n5. Document runbook + data reset strategy.\n\n## Acceptance\n- Green test run attached to PR.\n- Instructions added to CONTRIBUTING.md.",
+        "content": "# Task 8 - End-to-End Test Matrix (Priority 11)\n\n## Parent Card\n- Title: E2E Testing Program\n- Scope: Full-stack user journeys from login to core workflows.\n\n## Child Cards (22)\n- One per role (SUPER_ADMIN, SYSTEM_SUPPORT, ... STUDENT).\n- Each child card must list: required test data, primary flows, alternate/negative flows, tooling (Playwright/Cypress), and pass/fail criteria.\n\n## Deliverables\n1. E2E test plan document mapping roles to flows and endpoints.\n2. Automated test scripts per role seeded with fixtures.\n3. CI pipeline stage executing role-based suites in parallel.\n4. Reporting dashboard capturing run history and flaky tests.\n5. Handoff notes for QA including how to add new roles/tests.\n\n## Acceptance Criteria\n- All 22 child cards created with actionable details.\n- At least baseline script scaffolding committed for each role.\n- Documentation stored under `docs/testing/e2e`.\n- Sign-off from QA lead.",
         "mime": "text/markdown"
       },
-      "id": "13",
-      "prio": 6,
+      "id": "18",
+      "prio": 11,
       "references": [],
-      "title": "13 - Backend smoke testing",
+      "title": "18 - E2E testing program",
+      "type": "epic"
+    },
+    {
+      "assignedTo": {
+        "name": "Copilot Agent"
+      },
+      "category": "planning",
+      "creation_time": "2025-12-02T00:00:00.000Z",
+      "description": {
+        "content": "Create master card 'Backend integration (phase-2)' and break it into role-specific backend integration subtasks referencing OpenAPI/Postman assets.",
+        "mime": "text/markdown"
+      },
+      "details": {
+        "content": "# Task 7 - Backend Integration (Phase 2) Planning (Priority 10)\n\n## Deliverables\n1. Parent Kanban card titled \"Backend integration (phase-2)\" with summary, scope, timeline.\n2. 22 sub-cards (one per role or logical grouping) describing backend integration tasks, dependencies, APIs to consume, validation rules, and acceptance tests.\n3. Linking each sub-card to relevant OpenAPI sections, Postman requests, and Swagger docs for parameter alignment.\n4. Checklist covering request/response payload sync, error handling, and logging requirements.\n5. Communication plan with frontend owners for each role-based feature.\n\n## Notes\n- Include risk assessment + mitigation per role.\n- Highlight data migration or seeding needs for integration.\n- Outline testing strategy (unit, integration, UAT) for each subtask.",
+        "mime": "text/markdown"
+      },
+      "id": "17",
+      "prio": 10,
+      "references": [],
+      "title": "17 - Backend integration (phase-2) plan",
+      "type": "epic"
+    },
+    {
+      "assignedTo": {
+        "name": "Copilot Agent"
+      },
+      "category": "integration",
+      "creation_time": "2025-12-02T00:00:00.000Z",
+      "description": {
+        "content": "Ensure frontend has all necessary backend endpoints and author integration tests covering the full stack.",
+        "mime": "text/markdown"
+      },
+      "details": {
+        "content": "# Task 6 - Frontend ↔ Backend Gap Analysis & Integration Tests (Priority 9)\n\n## Steps\n1. Review frontend API calls/services to list required endpoints.\n2. Compare against backend routes to identify gaps/mismatches.\n3. Implement missing backend routes or adjust payloads.\n4. Create integration tests (Playwright, Cypress, or Pact) validating frontend modules against backend API with seeded data.\n5. Document API usage contract per screen.\n\n## Acceptance\n- Gap matrix signed off by frontend + backend leads.\n- All blocking backend endpoints implemented or scheduled.\n- Integration test suite added to CI with environment bootstrap instructions.",
+        "mime": "text/markdown"
+      },
+      "id": "16",
+      "prio": 9,
+      "references": [],
+      "title": "16 - Frontend/backend integration readiness",
+      "type": "note"
+    },
+    {
+      "assignedTo": {
+        "name": "Frontend Team"
+      },
+      "category": "frontend",
+      "creation_time": "2025-12-02T00:00:00.000Z",
+      "description": {
+        "content": "Implement any missing frontend screens per role/permission matrix, focusing on UI only (no integration).",
+        "mime": "text/markdown"
+      },
+      "details": {
+        "content": "# Task 5 - Build Remaining Frontend Screens (Priority 8)\n\n## Scope\n- Audit existing React/Next screens vs UX flows.\n- For each role (22 total), list mandatory screens/components (dashboards, management views, forms).\n- Implement missing UI following established folder/file conventions and design system.\n- Use mock data/services to decouple from backend.\n\n## Acceptance Criteria\n1. Inventory document mapping role -> required screens/components.\n2. New screens committed with Storybook stories (if applicable).\n3. Feature flag or routing guard ensures only relevant roles can access their screens.\n4. UI adheres to design tokens and responsive guidelines.\n5. QA review sign-off for visual parity with design mocks.",
+        "mime": "text/markdown"
+      },
+      "id": "15",
+      "prio": 8,
+      "references": [],
+      "title": "15 - Frontend screen completion",
       "type": "note"
     },
     {
@@ -84,84 +248,73 @@
       "assignedTo": {
         "name": "Copilot Agent"
       },
-      "category": "frontend",
-      "creation_time": "2025-12-02T00:00:00.000Z",
-      "description": {
-        "content": "Implement any missing frontend screens per role/permission matrix, focusing on UI only (no integration).",
-        "mime": "text/markdown"
-      },
-      "details": {
-        "content": "# Task 5 - Build Remaining Frontend Screens (Priority 8)\n\n## Scope\n- Audit existing React/Next screens vs UX flows.\n- For each role (22 total), list mandatory screens/components (dashboards, management views, forms).\n- Implement missing UI following established folder/file conventions and design system.\n- Use mock data/services to decouple from backend.\n\n## Acceptance Criteria\n1. Inventory document mapping role -> required screens/components.\n2. New screens committed with Storybook stories (if applicable).\n3. Feature flag or routing guard ensures only relevant roles can access their screens.\n4. UI adheres to design tokens and responsive guidelines.\n5. QA review sign-off for visual parity with design mocks.",
-        "mime": "text/markdown"
-      },
-      "id": "15",
-      "prio": 8,
-      "references": [],
-      "title": "15 - Frontend screen completion",
-      "type": "note"
-    },
-    {
-      "assignedTo": {
-        "name": "Copilot Agent"
-      },
-      "category": "integration",
-      "creation_time": "2025-12-02T00:00:00.000Z",
-      "description": {
-        "content": "Ensure frontend has all necessary backend endpoints and author integration tests covering the full stack.",
-        "mime": "text/markdown"
-      },
-      "details": {
-        "content": "# Task 6 - Frontend ↔ Backend Gap Analysis & Integration Tests (Priority 9)\n\n## Steps\n1. Review frontend API calls/services to list required endpoints.\n2. Compare against backend routes to identify gaps/mismatches.\n3. Implement missing backend routes or adjust payloads.\n4. Create integration tests (Playwright, Cypress, or Pact) validating frontend modules against backend API with seeded data.\n5. Document API usage contract per screen.\n\n## Acceptance\n- Gap matrix signed off by frontend + backend leads.\n- All blocking backend endpoints implemented or scheduled.\n- Integration test suite added to CI with environment bootstrap instructions.",
-        "mime": "text/markdown"
-      },
-      "id": "16",
-      "prio": 9,
-      "references": [],
-      "title": "16 - Frontend/backend integration readiness",
-      "type": "note"
-    },
-    {
-      "assignedTo": {
-        "name": "Copilot Agent"
-      },
-      "category": "planning",
-      "creation_time": "2025-12-02T00:00:00.000Z",
-      "description": {
-        "content": "Create master card 'Backend integration (phase-2)' and break it into role-specific backend integration subtasks referencing OpenAPI/Postman assets.",
-        "mime": "text/markdown"
-      },
-      "details": {
-        "content": "# Task 7 - Backend Integration (Phase 2) Planning (Priority 10)\n\n## Deliverables\n1. Parent Kanban card titled \"Backend integration (phase-2)\" with summary, scope, timeline.\n2. 22 sub-cards (one per role or logical grouping) describing backend integration tasks, dependencies, APIs to consume, validation rules, and acceptance tests.\n3. Linking each sub-card to relevant OpenAPI sections, Postman requests, and Swagger docs for parameter alignment.\n4. Checklist covering request/response payload sync, error handling, and logging requirements.\n5. Communication plan with frontend owners for each role-based feature.\n\n## Notes\n- Include risk assessment + mitigation per role.\n- Highlight data migration or seeding needs for integration.\n- Outline testing strategy (unit, integration, UAT) for each subtask.",
-        "mime": "text/markdown"
-      },
-      "id": "17",
-      "prio": 10,
-      "references": [],
-      "title": "17 - Backend integration (phase-2) plan",
-      "type": "epic"
-    },
-    {
-      "assignedTo": {
-        "name": "Copilot Agent"
-      },
       "category": "testing",
       "creation_time": "2025-12-02T00:00:00.000Z",
       "description": {
-        "content": "Author an end-to-end testing program with 22 child cards (one per role) covering full app journeys.",
+        "content": "Design and execute a backend smoke-test suite that runs quickly and validates mission-critical flows end-to-end.",
         "mime": "text/markdown"
       },
       "details": {
-        "content": "# Task 8 - End-to-End Test Matrix (Priority 11)\n\n## Parent Card\n- Title: E2E Testing Program\n- Scope: Full-stack user journeys from login to core workflows.\n\n## Child Cards (22)\n- One per role (SUPER_ADMIN, SYSTEM_SUPPORT, ... STUDENT).\n- Each child card must list: required test data, primary flows, alternate/negative flows, tooling (Playwright/Cypress), and pass/fail criteria.\n\n## Deliverables\n1. E2E test plan document mapping roles to flows and endpoints.\n2. Automated test scripts per role seeded with fixtures.\n3. CI pipeline stage executing role-based suites in parallel.\n4. Reporting dashboard capturing run history and flaky tests.\n5. Handoff notes for QA including how to add new roles/tests.\n\n## Acceptance Criteria\n- All 22 child cards created with actionable details.\n- At least baseline script scaffolding committed for each role.\n- Documentation stored under `docs/testing/e2e`.\n- Sign-off from QA lead.",
+        "content": "# Task 3 - Backend Smoke Test Suite (Priority 6)\n\n## Requirements\n- Cover auth/login, RBAC gates, CRUD of each major module (Club, Facility, Venue, Ground, Sessions).\n- Run in <5 minutes on CI.\n- Provide human-readable report with pass/fail summary.\n\n## Action Plan\n1. Define smoke criteria per module.\n2. Implement Jest/Supertest specs (or Playwright API) hitting live server with seeded data.\n3. Add npm script `test:smoke`.\n4. Integrate into CI pipeline with badge/report.\n5. Document runbook + data reset strategy.\n\n## Acceptance\n- Green test run attached to PR.\n- Instructions added to CONTRIBUTING.md.",
         "mime": "text/markdown"
       },
-      "id": "18",
-      "prio": 11,
+      "id": "13",
+      "prio": 6,
       "references": [],
-      "title": "18 - E2E testing program",
-      "type": "epic"
+      "title": "13 - Backend smoke testing",
+      "type": "note"
+    },
+    {
+      "assignedTo": {
+        "name": "Copilot Agent"
+      },
+      "category": "documentation",
+      "creation_time": "2025-12-02T00:00:00.000Z",
+      "description": {
+        "content": "Update Swagger, OpenAPI, and Postman artifacts so every request/response structure reflects the latest backend contract.",
+        "mime": "text/markdown"
+      },
+      "details": {
+        "content": "# Task 2 - API Contract Sync (Priority 5)\n\n## Scope\n- Swagger YAML/JSON hosted in repo\n- OpenAPI spec consumed by tooling\n- Postman collection shared with frontend QA\n\n## Deliverables\n1. Regenerated or manually updated Swagger/OpenAPI spec capturing all new endpoints, parameters, enums, and response schemas.\n2. Postman collection with folders per domain (Auth, Facilities, Venues, Grounds, RBAC) including sample environments and tests.\n3. Change log summarizing contract updates and any deprecations sent to frontend + QA.\n4. Validation step using `swagger-cli validate` or equivalent to ensure specs compile.\n5. Commit/PR referencing updated artifacts and linking to acceptance review from frontend lead.\n\n## Steps\n- Diff current controllers vs spec to spot mismatches.\n- Add missing schema components (FacilityResponse, VenuePayload, etc.).\n- Document auth headers, pagination/query params, error envelopes.\n- Export validated Postman JSON and place under `/docs/postman`.\n- Update README with instructions for importing the refreshed collection.",
+        "mime": "text/markdown"
+      },
+      "id": "12",
+      "prio": 5,
+      "references": [],
+      "title": "12 - Refresh API docs (Swagger/Postman/OpenAPI)",
+      "type": "note"
     }
   ],
-  "in-progress": [],
+  "in-progress": [
+    {
+      "assignedTo": {
+        "name": "Copilot Agent"
+      },
+      "category": "backend",
+      "creation_time": "2025-12-02T00:00:00.000Z",
+      "description": {
+        "content": "Global endpoint audit – inventory, validate, and document every REST endpoint across all backend modules so frontend contract coverage is complete.",
+        "mime": "text/markdown"
+      },
+      "details": {
+        "content": "## NOTE\n- Task scope is GLOBAL. Update every referenced sub-card (IDs 19-24) so their descriptions/details reflect global follow-ups and include this card in their references list.\n- Work only inside this card’s scope (global endpoint verification) and report progress back.\n\n## Task 1 – Full Backend Endpoint Coverage Across All Modules (Priority 1)\n\n### Objectives\n1. Produce a complete inventory of every CRUD, lookup, workflow, and auxiliary endpoint across all backend domains (clubs, users, roles, permissions, memberships, bookings, payments, notifications, facilities/venues/grounds, scheduling, reports, etc.).\n2. Validate each endpoint for HTTP verb usage, RBAC enforcement, tenant scoping, and payload consistency with the system-wide contract.\n3. Identify/document missing endpoints, incomplete responses, or contract gaps required by frontend teams.\n4. Prepare implementation plans (controller/service/validation/test/RBAC scope) for each gap.\n\n### Acceptance Criteria\n- **Backend Endpoint Matrix (Global)**: Living reference that covers every module listed above with base path, controller, representative routes, RBAC summary, and gap notes.\n- **Gap Analysis & Issue Creation**: Follow-up cards or GitHub issues created for every gap, each with owner/scope/estimate/priority.\n- **RBAC Documentation**: Role/scope/permission requirements attached to every endpoint so frontend flows can map dependencies.\n- **Frontend Contract Reference**: Markdown source enumerating URL, method, request/response payloads, pagination, permissions, and canonical error envelopes for each module.\n- **PR Implementation Plan**: Each missing endpoint or fix has a mini-checklist covering controller wiring, route registration, validation, Prisma/service updates, RBAC middleware, tests, and API doc refresh triggers.\n\n### Progress Log (2025-12-02)\n- ✅ Authored `docs/backend/global-endpoint-matrix.md` with module-level coverage for every controller mounted in `server.ts`, including RBAC/scoping summaries and gap mapping.\n- ✅ Linked the legacy facility-only appendix (`docs/facilities/endpoint-matrix.md`) as a deep-dive reference for the Facilities module.\n- ✅ Updated sub-cards (19-24) to inherit the new global scope, refreshed their descriptions/details, and added this card to their references as required by the NOTE.\n- ⏳ Next steps: extend the global matrix with per-module payload excerpts, attach RBAC permission tables, and coordinate with Card 12 for Swagger/Postman alignment.\n\n### Reference Artifacts\n- `docs/backend/global-endpoint-matrix.md` (global matrix)\n- `docs/facilities/endpoint-matrix.md` (facility appendix)\n- Kanban Cards 19–24 (global gap execution backlog)",
+        "mime": "text/markdown"
+      },
+      "id": "11",
+      "prio": 1,
+      "references": [
+        "docs/backend/global-endpoint-matrix.md",
+        "docs/facilities/endpoint-matrix.md",
+        "19",
+        "20",
+        "21",
+        "22",
+        "23",
+        "24"
+      ],
+      "title": "11 - Global backend endpoint verification"
+    }
+  ],
   "testing": [],
   "done": [
     {
@@ -182,6 +335,26 @@
       "prio": 7,
       "references": [],
       "title": "10 - Build permission catalogue and assignments",
+      "type": "note"
+    },
+    {
+      "assignedTo": {
+        "name": "Copilot Agent"
+      },
+      "category": "testing",
+      "creation_time": "2025-12-02T00:00:00.000Z",
+      "description": {
+        "content": "Run backend tests or manual curl smoke tests to verify all RBAC paths are working correctly with proper authorization.",
+        "mime": "text/markdown"
+      },
+      "details": {
+        "content": "# 9 - Backend RBAC Smoke Tests\n\n## Objectives\n- Verify RBAC middleware is protecting routes correctly\n- Confirm role-based authorization returns proper status codes (200 for authorized, 403 for unauthorized)\n- Test scope-based and permission-based access control\n- Validate both positive and negative test cases\n\n## Test Targets\n\n### RBAC Test Endpoints\n- GET /api/rbac/test/role (requires SUPER_ADMIN)\n- GET /api/rbac/test/scope (requires CLUB scope)\n- GET /api/rbac/test/permission (requires venue.manage permission)\n\n### Admin-Only Delete Endpoints\n- DELETE /api/sessions/:id (requires SUPER_ADMIN)\n- DELETE /api/attendance/:id (requires SUPER_ADMIN)\n- DELETE /api/payments/:id (requires SUPER_ADMIN)\n- DELETE /api/evaluations/:id (requires SUPER_ADMIN)\n- DELETE /api/students/:id (requires SUPER_ADMIN)\n- DELETE /api/coaches/:id (requires SUPER_ADMIN)\n- DELETE /api/clubs/:id (requires SUPER_ADMIN)\n\n### Facility Management Endpoints\n- POST /api/facilities (requires SUPER_ADMIN or SYSTEM_SUPPORT)\n- PUT /api/facilities/:id (requires FACILITY scope)\n- DELETE /api/facilities/:id (requires SUPER_ADMIN)\n- POST /api/facilities/:facilityId/venues (requires VENUE scope)\n- POST /api/facilities/:facilityId/grounds (requires GROUND scope)\n\n## Test Strategy\n\n### JWT Tokens Needed\n1. SUPER_ADMIN token (full access)\n2. CLUB_ADMIN token (club scope, no super admin)\n3. COACH token (limited scope)\n4. Invalid/expired token\n\n### Test Cases per Endpoint\n1. **Positive Test**: Authorized user → expect 200/201\n2. **Negative Test**: Unauthorized user → expect 403\n3. **No Auth Test**: Missing JWT → expect 401\n4. **Cross-Club Test**: Valid JWT but wrong clubId → expect 404 or 403\n\n## Execution Plan\n\n### Step 1: Generate Test JWTs\n- Create or use existing users with SUPER_ADMIN, CLUB_ADMIN, COACH roles\n- Capture JWT tokens from login responses\n- Document tokens in temp file for curl commands\n\n### Step 2: Run Curl Commands\n- Test each endpoint with appropriate tokens\n- Capture response status codes and bodies\n- Log any unexpected behaviors\n\n### Step 3: Document Results\n- Create test results summary with pass/fail for each endpoint\n- Note any authorization inconsistencies\n- Flag endpoints needing additional middleware\n\n### Step 4: Run Automated Tests (if available)\n- Execute Jest/Mocha backend tests: `npm test`\n- Review test coverage for RBAC middleware\n- Fix any failing tests\n\n## Acceptance Criteria\n- All RBAC test endpoints return expected status codes\n- Admin-only deletes properly reject non-admin users (403)\n- Facility endpoints respect scope-based authorization\n- No unauthorized access to protected resources\n- Test results documented with sample curl commands\n\n## Sample Curl Commands\n\n```bash\n# Test SUPER_ADMIN role endpoint\ncurl -H \"Authorization: Bearer $SUPER_ADMIN_TOKEN\" http://localhost:4000/api/rbac/test/role\ncurl -H \"Authorization: Bearer $COACH_TOKEN\" http://localhost:4000/api/rbac/test/role  # expect 403\n\n# Test delete endpoints\ncurl -X DELETE -H \"Authorization: Bearer $SUPER_ADMIN_TOKEN\" http://localhost:4000/api/sessions/1\ncurl -X DELETE -H \"Authorization: Bearer $COACH_TOKEN\" http://localhost:4000/api/sessions/1  # expect 403\n\n# Test facility creation\ncurl -X POST -H \"Authorization: Bearer $SUPER_ADMIN_TOKEN\" -H \"Content-Type: application/json\" \\\n  -d '{\"name\":\"Test Facility\",\"address\":\"123 Test St\"}' \\\n  http://localhost:4000/api/facilities\n```\n\n## Deliverables\n- Test results document with all endpoint responses\n- List of any authorization gaps or inconsistencies\n- Updated curl command reference for future testing\n- Recommendations for additional RBAC improvements",
+        "mime": "text/markdown"
+      },
+      "id": "9",
+      "prio": 6,
+      "references": [],
+      "title": "9 - Backend RBAC Smoke Tests",
       "type": "note"
     },
     {
@@ -327,26 +500,6 @@
       "references": [],
       "title": "Migrate Prisma schema to database-driven roles and statuses",
       "type": "bug"
-    },
-    {
-      "assignedTo": {
-        "name": "Copilot Agent"
-      },
-      "category": "testing",
-      "creation_time": "2025-12-02T00:00:00.000Z",
-      "description": {
-        "content": "Run backend tests or manual curl smoke tests to verify all RBAC paths are working correctly with proper authorization.",
-        "mime": "text/markdown"
-      },
-      "details": {
-        "content": "# 9 - Backend RBAC Smoke Tests\n\n## Objectives\n- Verify RBAC middleware is protecting routes correctly\n- Confirm role-based authorization returns proper status codes (200 for authorized, 403 for unauthorized)\n- Test scope-based and permission-based access control\n- Validate both positive and negative test cases\n\n## Test Targets\n\n### RBAC Test Endpoints\n- GET /api/rbac/test/role (requires SUPER_ADMIN)\n- GET /api/rbac/test/scope (requires CLUB scope)\n- GET /api/rbac/test/permission (requires venue.manage permission)\n\n### Admin-Only Delete Endpoints\n- DELETE /api/sessions/:id (requires SUPER_ADMIN)\n- DELETE /api/attendance/:id (requires SUPER_ADMIN)\n- DELETE /api/payments/:id (requires SUPER_ADMIN)\n- DELETE /api/evaluations/:id (requires SUPER_ADMIN)\n- DELETE /api/students/:id (requires SUPER_ADMIN)\n- DELETE /api/coaches/:id (requires SUPER_ADMIN)\n- DELETE /api/clubs/:id (requires SUPER_ADMIN)\n\n### Facility Management Endpoints\n- POST /api/facilities (requires SUPER_ADMIN or SYSTEM_SUPPORT)\n- PUT /api/facilities/:id (requires FACILITY scope)\n- DELETE /api/facilities/:id (requires SUPER_ADMIN)\n- POST /api/facilities/:facilityId/venues (requires VENUE scope)\n- POST /api/facilities/:facilityId/grounds (requires GROUND scope)\n\n## Test Strategy\n\n### JWT Tokens Needed\n1. SUPER_ADMIN token (full access)\n2. CLUB_ADMIN token (club scope, no super admin)\n3. COACH token (limited scope)\n4. Invalid/expired token\n\n### Test Cases per Endpoint\n1. **Positive Test**: Authorized user → expect 200/201\n2. **Negative Test**: Unauthorized user → expect 403\n3. **No Auth Test**: Missing JWT → expect 401\n4. **Cross-Club Test**: Valid JWT but wrong clubId → expect 404 or 403\n\n## Execution Plan\n\n### Step 1: Generate Test JWTs\n- Create or use existing users with SUPER_ADMIN, CLUB_ADMIN, COACH roles\n- Capture JWT tokens from login responses\n- Document tokens in temp file for curl commands\n\n### Step 2: Run Curl Commands\n- Test each endpoint with appropriate tokens\n- Capture response status codes and bodies\n- Log any unexpected behaviors\n\n### Step 3: Document Results\n- Create test results summary with pass/fail for each endpoint\n- Note any authorization inconsistencies\n- Flag endpoints needing additional middleware\n\n### Step 4: Run Automated Tests (if available)\n- Execute Jest/Mocha backend tests: `npm test`\n- Review test coverage for RBAC middleware\n- Fix any failing tests\n\n## Acceptance Criteria\n- All RBAC test endpoints return expected status codes\n- Admin-only deletes properly reject non-admin users (403)\n- Facility endpoints respect scope-based authorization\n- No unauthorized access to protected resources\n- Test results documented with sample curl commands\n\n## Sample Curl Commands\n\n```bash\n# Test SUPER_ADMIN role endpoint\ncurl -H \"Authorization: Bearer $SUPER_ADMIN_TOKEN\" http://localhost:4000/api/rbac/test/role\ncurl -H \"Authorization: Bearer $COACH_TOKEN\" http://localhost:4000/api/rbac/test/role  # expect 403\n\n# Test delete endpoints\ncurl -X DELETE -H \"Authorization: Bearer $SUPER_ADMIN_TOKEN\" http://localhost:4000/api/sessions/1\ncurl -X DELETE -H \"Authorization: Bearer $COACH_TOKEN\" http://localhost:4000/api/sessions/1  # expect 403\n\n# Test facility creation\ncurl -X POST -H \"Authorization: Bearer $SUPER_ADMIN_TOKEN\" -H \"Content-Type: application/json\" \\\n  -d '{\"name\":\"Test Facility\",\"address\":\"123 Test St\"}' \\\n  http://localhost:4000/api/facilities\n```\n\n## Deliverables\n- Test results document with all endpoint responses\n- List of any authorization gaps or inconsistencies\n- Updated curl command reference for future testing\n- Recommendations for additional RBAC improvements",
-        "mime": "text/markdown"
-      },
-      "id": "9",
-      "prio": 6,
-      "references": [],
-      "title": "9 - Backend RBAC Smoke Tests",
-      "type": "note"
     }
   ]
 }
