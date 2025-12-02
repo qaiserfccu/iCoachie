@@ -432,16 +432,6 @@ export const adminPermissionsMatrix: PermissionMatrixItem[] = [
   { permission: "Messaging", admin: true, clubAdmin: true, coach: true, freelancer: true, parent: true, kid: false },
 ]
 
-export interface PermissionMatrix {
-  permission: string
-  systemAdmin: boolean
-  clubAdmin: boolean
-  coach: boolean
-  freelancer: boolean
-  parent: boolean
-  student: boolean
-}
-
 export const adminPermissionMatrix: PermissionMatrix[] = [
   { permission: "Manage Users", systemAdmin: true, clubAdmin: true, coach: false, freelancer: false, parent: false, student: false },
   { permission: "View Dashboard", systemAdmin: true, clubAdmin: true, coach: true, freelancer: true, parent: true, student: true },
@@ -471,11 +461,14 @@ export const coachStats: StatItem[] = [
 export interface Session {
   time: string
   name: string
-  students: number
   status: string
   duration: string
   coach?: string
+  /** Number of students in the session (use for display) */
+  students?: number
+  /** Number of enrolled students (same as students, for enrollment context) */
   enrolled?: number
+  /** Maximum capacity of the session */
   capacity?: number
 }
 
