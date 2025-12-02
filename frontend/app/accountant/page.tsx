@@ -6,65 +6,17 @@ import {
   DollarSign,
   TrendingUp,
   TrendingDown,
-  Receipt,
-  CreditCard,
   ArrowRight,
   FileText,
-  AlertTriangle,
   CheckCircle,
   Clock,
+  Receipt,
+  CreditCard,
+  AlertTriangle,
 } from "lucide-react"
+import { accountantPageStats, accountantPageRecentTransactions, accountantPagePendingInvoices } from "@/lib/services/mockDataService"
 
-const stats = [
-  {
-    title: "Monthly Revenue",
-    value: "$128,450",
-    change: "+12.5%",
-    trend: "up",
-    icon: DollarSign,
-    color: "from-emerald-500 to-green-600",
-  },
-  {
-    title: "Pending Invoices",
-    value: "$24,680",
-    change: "15 invoices",
-    trend: "neutral",
-    icon: Receipt,
-    color: "from-yellow-500 to-orange-500",
-  },
-  {
-    title: "Collected Today",
-    value: "$8,450",
-    change: "+$2,100 from avg",
-    trend: "up",
-    icon: CreditCard,
-    color: "from-blue-500 to-blue-600",
-  },
-  {
-    title: "Overdue Amount",
-    value: "$5,280",
-    change: "3 invoices",
-    trend: "down",
-    icon: AlertTriangle,
-    color: "from-red-500 to-red-600",
-  },
-]
-
-const recentTransactions = [
-  { id: "TXN-1234", member: "Champions FC", type: "membership", amount: "$1,200", status: "completed", date: "Today" },
-  { id: "TXN-1233", member: "John Smith", type: "session", amount: "$85", status: "completed", date: "Today" },
-  { id: "TXN-1232", member: "Elite Academy", type: "bulk", amount: "$3,500", status: "pending", date: "Yesterday" },
-  { id: "TXN-1231", member: "Sarah Wilson", type: "refund", amount: "-$45", status: "completed", date: "Yesterday" },
-  { id: "TXN-1230", member: "Victory Sports", type: "membership", amount: "$950", status: "completed", date: "2 days ago" },
-]
-
-const pendingInvoices = [
-  { id: "INV-2024-001", client: "Champions FC", amount: "$4,500", dueDate: "Dec 5", daysLeft: 3 },
-  { id: "INV-2024-002", client: "Elite Sports", amount: "$2,800", dueDate: "Dec 8", daysLeft: 6 },
-  { id: "INV-2024-003", client: "Victory Club", amount: "$1,950", dueDate: "Dec 10", daysLeft: 8 },
-]
-
-const statusColors = {
+const statusColors: Record<string, string> = {
   completed: "bg-green-500/20 text-green-500",
   pending: "bg-yellow-500/20 text-yellow-600",
   failed: "bg-red-500/20 text-red-500",
@@ -92,7 +44,7 @@ export default function AccountantDashboard() {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {stats.map((stat) => (
+        {accountantPageStats.map((stat) => (
           <Card key={stat.title} className="glass-card border-white/20 hover-lift">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
@@ -124,7 +76,7 @@ export default function AccountantDashboard() {
             <Button variant="ghost" size="sm" className="text-emerald-500">View All</Button>
           </CardHeader>
           <CardContent className="space-y-4">
-            {recentTransactions.map((txn) => (
+            {accountantPageRecentTransactions.map((txn) => (
               <div key={txn.id} className="flex items-center justify-between p-4 rounded-xl glass-subtle hover:bg-white/20 transition-colors">
                 <div className="flex items-center gap-4">
                   <div className={`w-10 h-10 rounded-xl ${txn.type === "refund" ? "bg-red-500/20" : "bg-emerald-500/20"} flex items-center justify-center`}>
@@ -155,10 +107,10 @@ export default function AccountantDashboard() {
         <Card className="glass-card border-white/20">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-lg font-semibold">Pending Invoices</CardTitle>
-            <Badge className="bg-yellow-500/20 text-yellow-600">{pendingInvoices.length} Due</Badge>
+            <Badge className="bg-yellow-500/20 text-yellow-600">{accountantPagePendingInvoices.length} Due</Badge>
           </CardHeader>
           <CardContent className="space-y-4">
-            {pendingInvoices.map((invoice) => (
+            {accountantPagePendingInvoices.map((invoice) => (
               <div key={invoice.id} className="p-4 rounded-xl glass-subtle">
                 <div className="flex items-center justify-between mb-2">
                   <span className="font-medium text-sm">{invoice.id}</span>

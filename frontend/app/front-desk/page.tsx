@@ -2,28 +2,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { UserCheck, Calendar, Clock, MessageSquare, Users, ArrowRight, CheckCircle } from "lucide-react"
-
-const stats = [
-  { title: "Checked In Today", value: "47", subtitle: "15 pending", icon: UserCheck, color: "from-cyan-500 to-blue-500" },
-  { title: "Today's Sessions", value: "12", subtitle: "3 in progress", icon: Calendar, color: "from-blue-500 to-blue-600" },
-  { title: "Walk-ins", value: "8", subtitle: "2 waiting", icon: Users, color: "from-teal-500 to-teal-600" },
-  { title: "Inquiries", value: "5", subtitle: "3 unread", icon: MessageSquare, color: "from-purple-500 to-purple-600" },
-]
-
-const upcomingSessions = [
-  { time: "10:00 AM", name: "Swimming - Beginners", coach: "John Smith", expected: 12, checkedIn: 8, location: "Pool A" },
-  { time: "10:30 AM", name: "Basketball Training", coach: "Mike Johnson", expected: 8, checkedIn: 5, location: "Court 2" },
-  { time: "11:00 AM", name: "Tennis - Advanced", coach: "Sarah Williams", expected: 6, checkedIn: 0, location: "Court 1" },
-  { time: "11:30 AM", name: "Soccer Practice", coach: "David Brown", expected: 15, checkedIn: 0, location: "Field B" },
-]
-
-const recentCheckins = [
-  { name: "Emma Thompson", time: "2 min ago", session: "Swimming", avatar: "ET" },
-  { name: "Jake Wilson", time: "5 min ago", session: "Basketball", avatar: "JW" },
-  { name: "Lily Chen", time: "8 min ago", session: "Swimming", avatar: "LC" },
-  { name: "Noah Davis", time: "12 min ago", session: "Tennis", avatar: "ND" },
-]
+import { UserCheck, Clock, ArrowRight, CheckCircle } from "lucide-react"
+import { frontDeskPageStats, frontDeskPageUpcomingSessions, frontDeskPageRecentCheckins } from "@/lib/services/mockDataService"
 
 export default function FrontDeskDashboard() {
   return (
@@ -42,7 +22,7 @@ export default function FrontDeskDashboard() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {stats.map((stat) => (
+        {frontDeskPageStats.map((stat) => (
           <Card key={stat.title} className="glass-card border-white/20 hover-lift">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
@@ -67,7 +47,7 @@ export default function FrontDeskDashboard() {
             <Button variant="ghost" size="sm" className="text-cyan-500">View All</Button>
           </CardHeader>
           <CardContent className="space-y-4">
-            {upcomingSessions.map((session, index) => (
+            {frontDeskPageUpcomingSessions.map((session, index) => (
               <div key={index} className="flex items-center justify-between p-4 rounded-xl glass-subtle hover:bg-white/20 transition-colors">
                 <div className="flex items-center gap-4">
                   <div className="text-center min-w-[70px]">
@@ -96,7 +76,7 @@ export default function FrontDeskDashboard() {
             <CheckCircle className="w-5 h-5 text-green-500" />
           </CardHeader>
           <CardContent className="space-y-4">
-            {recentCheckins.map((checkin, index) => (
+            {frontDeskPageRecentCheckins.map((checkin, index) => (
               <div key={index} className="flex items-center gap-4">
                 <Avatar className="h-10 w-10">
                   <AvatarImage src="" />

@@ -864,6 +864,51 @@ export const studentPageAchievements: StudentPageAchievement[] = [
 // FRONT DESK DASHBOARD DATA
 // ============================================================================
 
+export interface FrontDeskPageStat {
+  title: string
+  value: string
+  subtitle: string
+  icon: LucideIcon
+  color: string
+}
+
+export const frontDeskPageStats: FrontDeskPageStat[] = [
+  { title: "Checked In Today", value: "47", subtitle: "15 pending", icon: UserCheck, color: "from-cyan-500 to-blue-500" },
+  { title: "Today's Sessions", value: "12", subtitle: "3 in progress", icon: Calendar, color: "from-blue-500 to-blue-600" },
+  { title: "Walk-ins", value: "8", subtitle: "2 waiting", icon: Users, color: "from-teal-500 to-teal-600" },
+  { title: "Inquiries", value: "5", subtitle: "3 unread", icon: AlertTriangle, color: "from-purple-500 to-purple-600" },
+]
+
+export interface FrontDeskPageSession {
+  time: string
+  name: string
+  coach: string
+  expected: number
+  checkedIn: number
+  location: string
+}
+
+export const frontDeskPageUpcomingSessions: FrontDeskPageSession[] = [
+  { time: "10:00 AM", name: "Swimming - Beginners", coach: "John Smith", expected: 12, checkedIn: 8, location: "Pool A" },
+  { time: "10:30 AM", name: "Basketball Training", coach: "Mike Johnson", expected: 8, checkedIn: 5, location: "Court 2" },
+  { time: "11:00 AM", name: "Tennis - Advanced", coach: "Sarah Williams", expected: 6, checkedIn: 0, location: "Court 1" },
+  { time: "11:30 AM", name: "Soccer Practice", coach: "David Brown", expected: 15, checkedIn: 0, location: "Field B" },
+]
+
+export interface FrontDeskPageCheckin {
+  name: string
+  time: string
+  session: string
+  avatar: string
+}
+
+export const frontDeskPageRecentCheckins: FrontDeskPageCheckin[] = [
+  { name: "Emma Thompson", time: "2 min ago", session: "Swimming", avatar: "ET" },
+  { name: "Jake Wilson", time: "5 min ago", session: "Basketball", avatar: "JW" },
+  { name: "Lily Chen", time: "8 min ago", session: "Swimming", avatar: "LC" },
+  { name: "Noah Davis", time: "12 min ago", session: "Tennis", avatar: "ND" },
+]
+
 export const frontDeskStats: StatItem[] = [
   { title: "Check-ins Today", value: "45", change: "+12", icon: UserCheck, color: "from-blue-500 to-blue-600" },
   { title: "Active Sessions", value: "4", subtitle: "Ongoing", icon: Calendar, color: "from-green-500 to-green-600" },
@@ -940,6 +985,81 @@ export const accountantPendingInvoices: Invoice[] = [
   { id: "INV001", client: "Victory Athletics", amount: "$1,800", dueDate: "Dec 5", status: "pending" },
   { id: "INV002", client: "Premier Training", amount: "$2,100", dueDate: "Dec 7", status: "overdue" },
   { id: "INV003", client: "Rising Stars", amount: "$900", dueDate: "Dec 10", status: "pending" },
+]
+
+export interface AccountantPageStat {
+  title: string
+  value: string
+  change: string
+  trend: "up" | "down" | "neutral"
+  icon: LucideIcon
+  color: string
+}
+
+export const accountantPageStats: AccountantPageStat[] = [
+  {
+    title: "Monthly Revenue",
+    value: "$128,450",
+    change: "+12.5%",
+    trend: "up",
+    icon: DollarSign,
+    color: "from-emerald-500 to-green-600",
+  },
+  {
+    title: "Pending Invoices",
+    value: "$24,680",
+    change: "15 invoices",
+    trend: "neutral",
+    icon: ClipboardList,
+    color: "from-yellow-500 to-orange-500",
+  },
+  {
+    title: "Collected Today",
+    value: "$8,450",
+    change: "+$2,100 from avg",
+    trend: "up",
+    icon: CreditCard,
+    color: "from-blue-500 to-blue-600",
+  },
+  {
+    title: "Overdue Amount",
+    value: "$5,280",
+    change: "3 invoices",
+    trend: "down",
+    icon: AlertTriangle,
+    color: "from-red-500 to-red-600",
+  },
+]
+
+export interface AccountantPageTransaction {
+  id: string
+  member: string
+  type: string
+  amount: string
+  status: string
+  date: string
+}
+
+export const accountantPageRecentTransactions: AccountantPageTransaction[] = [
+  { id: "TXN-1234", member: "Champions FC", type: "membership", amount: "$1,200", status: "completed", date: "Today" },
+  { id: "TXN-1233", member: "John Smith", type: "session", amount: "$85", status: "completed", date: "Today" },
+  { id: "TXN-1232", member: "Elite Academy", type: "bulk", amount: "$3,500", status: "pending", date: "Yesterday" },
+  { id: "TXN-1231", member: "Sarah Wilson", type: "refund", amount: "-$45", status: "completed", date: "Yesterday" },
+  { id: "TXN-1230", member: "Victory Sports", type: "membership", amount: "$950", status: "completed", date: "2 days ago" },
+]
+
+export interface AccountantPageInvoice {
+  id: string
+  client: string
+  amount: string
+  dueDate: string
+  daysLeft: number
+}
+
+export const accountantPagePendingInvoices: AccountantPageInvoice[] = [
+  { id: "INV-2024-001", client: "Champions FC", amount: "$4,500", dueDate: "Dec 5", daysLeft: 3 },
+  { id: "INV-2024-002", client: "Elite Sports", amount: "$2,800", dueDate: "Dec 8", daysLeft: 6 },
+  { id: "INV-2024-003", client: "Victory Club", amount: "$1,950", dueDate: "Dec 10", daysLeft: 8 },
 ]
 
 // ============================================================================
