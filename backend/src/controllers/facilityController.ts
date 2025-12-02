@@ -18,7 +18,7 @@ const facilitySelect = {
 const venueSelect = {
   id: true,
   name: true,
-  type: true,
+  venueType: true,
   facilityId: true,
   createdAt: true,
   updatedAt: true
@@ -27,11 +27,22 @@ const venueSelect = {
 const groundSelect = {
   id: true,
   name: true,
-  surface: true,
+  groundType: true,
+  surfaceType: true,
   facilityId: true,
   createdAt: true,
   updatedAt: true
 };
+
+const mapVenueResponse = (venue: any) => ({
+  ...venue,
+  type: venue.type ?? venue.venueType
+});
+
+const mapGroundResponse = (ground: any) => ({
+  ...ground,
+  surface: ground.surface ?? ground.surfaceType
+});
 
 // Facilities
 router.post('/', requireAuth, requireRole(['SUPER_ADMIN', 'SYSTEM_SUPPORT']), async (req: AuthRequest, res) => {
@@ -39,6 +50,7 @@ router.post('/', requireAuth, requireRole(['SUPER_ADMIN', 'SYSTEM_SUPPORT']), as
     const { name, address } = req.body;
     const clubId = req.user!.clubId;
     if (!name || !address) return res.status(400).json({ message: 'Name and address required' });
+    if (!clubId) return res.status(400).json({ message: 'Club context required' });
     const facility = await prisma.facility.create({
       data: { name, address, clubId },
       select: facilitySelect
@@ -53,6 +65,7 @@ router.post('/', requireAuth, requireRole(['SUPER_ADMIN', 'SYSTEM_SUPPORT']), as
 router.get('/', requireAuth, async (req: AuthRequest, res) => {
   try {
     const clubId = req.user!.clubId;
+    if (!clubId) return res.status(400).json({ message: 'Club context required' });
     const facilities = await prisma.facility.findMany({
       where: { clubId },
       select: facilitySelect,
@@ -125,15 +138,16 @@ router.post('/:facilityId/venues', requireAuth, requireScope('VENUE'), async (re
   try {
     const facilityId = parseInt(req.params.facilityId);
     const clubId = req.user!.clubId;
-    const { name, type } = req.body;
-    if (!name) return res.status(400).json({ message: 'Venue name required' });
+    const { name } = req.body;
+    const venueType = req.body.venueType ?? req.body.type;
+    if (!name || !venueType) return res.status(400).json({ message: 'Venue name and type required' });
     const facility = await prisma.facility.findUnique({ where: { id: facilityId }, select: { clubId: true } });
     if (!facility || facility.clubId !== clubId) return res.status(404).json({ message: 'Facility not found' });
     const venue = await prisma.venue.create({
-      data: { name, type, facilityId },
+      data: { name, venueType, facilityId },
       select: venueSelect
     });
-    res.status(201).json(venue);
+    res.status(201).json(mapVenueResponse(venue));
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Internal error' });
@@ -151,7 +165,7 @@ router.get('/:facilityId/venues', requireAuth, async (req: AuthRequest, res) => 
       select: venueSelect,
       orderBy: { name: 'asc' }
     });
-    res.json(venues);
+    res.json(venues.map(mapVenueResponse));
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Internal error' });
@@ -163,15 +177,17 @@ router.post('/:facilityId/grounds', requireAuth, requireScope('GROUND'), async (
   try {
     const facilityId = parseInt(req.params.facilityId);
     const clubId = req.user!.clubId;
-    const { name, surface } = req.body;
-    if (!name) return res.status(400).json({ message: 'Ground name required' });
+    const { name } = req.body;
+    const surfaceType = req.body.surfaceType ?? req.body.surface;
+    const groundType = req.body.groundType ?? req.body.type;
+    if (!name || !groundType) return res.status(400).json({ message: 'Ground name and type required' });
     const facility = await prisma.facility.findUnique({ where: { id: facilityId }, select: { clubId: true } });
     if (!facility || facility.clubId !== clubId) return res.status(404).json({ message: 'Facility not found' });
     const ground = await prisma.ground.create({
-      data: { name, surface, facilityId },
+      data: { name, groundType, surfaceType, facilityId },
       select: groundSelect
     });
-    res.status(201).json(ground);
+    res.status(201).json(mapGroundResponse(ground));
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Internal error' });
@@ -189,7 +205,7 @@ router.get('/:facilityId/grounds', requireAuth, async (req: AuthRequest, res) =>
       select: groundSelect,
       orderBy: { name: 'asc' }
     });
-    res.json(grounds);
+    res.json(grounds.map(mapGroundResponse));
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Internal error' });
@@ -211,7 +227,7 @@ router.get('/venues/:id', requireAuth, async (req: AuthRequest, res) => {
       }
     });
     if (!venue || venue.facility.clubId !== clubId) return res.status(404).json({ message: 'Not found' });
-    res.json(venue);
+    res.json({ ...mapVenueResponse(venue), facility: venue.facility });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Internal error' });
@@ -222,8 +238,9 @@ router.put('/venues/:id', requireAuth, requireScope('VENUE'), async (req: AuthRe
   try {
     const id = parseInt(req.params.id);
     const clubId = req.user!.clubId;
-    const { name, type } = req.body;
-    if (!name && !type) return res.status(400).json({ message: 'At least one field required' });
+    const { name } = req.body;
+    const venueType = req.body.venueType ?? req.body.type;
+    if (!name && !venueType) return res.status(400).json({ message: 'At least one field required' });
     
     const existing = await prisma.venue.findUnique({
       where: { id },
@@ -233,10 +250,10 @@ router.put('/venues/:id', requireAuth, requireScope('VENUE'), async (req: AuthRe
     
     const updated = await prisma.venue.update({
       where: { id },
-      data: { name, type },
+      data: { name, venueType },
       select: venueSelect
     });
-    res.json(updated);
+    res.json(mapVenueResponse(updated));
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Internal error' });
@@ -277,7 +294,7 @@ router.get('/grounds/:id', requireAuth, async (req: AuthRequest, res) => {
       }
     });
     if (!ground || ground.facility.clubId !== clubId) return res.status(404).json({ message: 'Not found' });
-    res.json(ground);
+    res.json({ ...mapGroundResponse(ground), facility: ground.facility });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Internal error' });
@@ -288,8 +305,9 @@ router.put('/grounds/:id', requireAuth, requireScope('GROUND'), async (req: Auth
   try {
     const id = parseInt(req.params.id);
     const clubId = req.user!.clubId;
-    const { name, surface } = req.body;
-    if (!name && !surface) return res.status(400).json({ message: 'At least one field required' });
+    const { name } = req.body;
+    const surfaceType = req.body.surfaceType ?? req.body.surface;
+    if (!name && !surfaceType) return res.status(400).json({ message: 'At least one field required' });
     
     const existing = await prisma.ground.findUnique({
       where: { id },
@@ -299,10 +317,10 @@ router.put('/grounds/:id', requireAuth, requireScope('GROUND'), async (req: Auth
     
     const updated = await prisma.ground.update({
       where: { id },
-      data: { name, surface },
+      data: { name, surfaceType },
       select: groundSelect
     });
-    res.json(updated);
+    res.json(mapGroundResponse(updated));
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Internal error' });

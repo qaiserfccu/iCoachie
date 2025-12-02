@@ -83,6 +83,7 @@ model Club {
   students    Student[]
   coaches     Coach[]
   sessions    Session[]
+  facilities  Facility[]
 
   @@map("clubs")
 }
@@ -441,6 +442,7 @@ model MembershipType {
 // Facility management models
 model Facility {
   id          Int      @id @default(autoincrement())
+  clubId      Int
   name        String
   managerId   Int?     @unique
   location    String?
@@ -451,6 +453,7 @@ model Facility {
   updatedAt   DateTime @updatedAt
   deletedAt   DateTime?
   
+  club        Club     @relation(fields: [clubId], references: [id])
   manager     User?    @relation("FacilityManager", fields: [managerId], references: [id])
   staff       User[]   @relation("FacilityStaff")
   venues      Venue[]
