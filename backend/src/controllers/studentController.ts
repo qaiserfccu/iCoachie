@@ -2,6 +2,11 @@ import express from 'express';
 import prisma from '../db';
 import { requireAuth, AuthRequest } from '../middleware/jwtAuth';
 import { requireRole, requirePermission } from '../middleware';
+import {
+  parsePaginationParams,
+  buildPageInfo,
+  PaginatedResponse
+} from '../utils/pagination';
 
 const router = express.Router();
 
@@ -51,50 +56,6 @@ const studentSelect = {
     }
   }
 };
-
-// =============================================================================
-// Card 23 - Pagination Helper
-// =============================================================================
-
-interface PaginationParams {
-  page?: number;
-  pageSize?: number;
-  search?: string;
-}
-
-interface PageInfo {
-  page: number;
-  pageSize: number;
-  total: number;
-  totalPages: number;
-  hasNext: boolean;
-  hasPrev: boolean;
-}
-
-interface PaginatedResponse<T> {
-  data: T[];
-  pageInfo: PageInfo;
-  filtersApplied: Record<string, any>;
-}
-
-function parsePaginationParams(query: any): PaginationParams {
-  const page = Math.max(1, parseInt(query.page) || 1);
-  const pageSize = Math.min(100, Math.max(1, parseInt(query.pageSize) || 20));
-  const search = query.search?.trim() || undefined;
-  return { page, pageSize, search };
-}
-
-function buildPageInfo(total: number, page: number, pageSize: number): PageInfo {
-  const totalPages = Math.ceil(total / pageSize);
-  return {
-    page,
-    pageSize,
-    total,
-    totalPages,
-    hasNext: page < totalPages,
-    hasPrev: page > 1
-  };
-}
 
 // Response mapper for consistent DTOs
 const mapStudentResponse = (student: any) => ({
