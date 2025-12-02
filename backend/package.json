@@ -11,7 +11,9 @@
     "swagger:export": "ts-node scripts/export-swagger.ts",
     "test": "jest",
     "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage"
+    "test:coverage": "jest --coverage",
+    "test:smoke": "jest --testPathPatterns=smoke.test.ts --verbose --no-coverage",
+    "test:unit": "jest --config=jest.unit.config.js --verbose --coverage"
   },
   "prisma": {
     "seed": "ts-node prisma/seed.ts"
