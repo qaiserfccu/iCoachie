@@ -2,6 +2,23 @@
 
 ## Latest Updates (2025-12-02)
 
+### Cards 13-14 – Backend Testing Infrastructure COMPLETED ✅
+
+**Card 13 - Backend Smoke Testing**
+- Created comprehensive smoke test suite in `tests/smoke.test.ts`
+- Covers auth/login flows, RBAC gates, CRUD operations for all major modules
+- Multi-tenancy isolation tests
+- Data validation smoke tests
+- Added `npm run test:smoke` script
+- Updated README with testing documentation
+
+**Card 14 - Backend Unit Test Expansion**
+- Created `tests/utils/pagination.test.ts` (25 tests, 100% coverage)
+- Created `tests/middleware/jwtAuth.test.ts` (8 tests, 100% coverage)
+- Created `jest.unit.config.js` for isolated unit test runs
+- Added `npm run test:unit` script
+- Coverage reports in text, lcov, and html formats
+
 ### Cards 19-24 – Facility Stack Enhancements COMPLETED ✅
 
 **Card 19 - Metadata DTO Expansion**
