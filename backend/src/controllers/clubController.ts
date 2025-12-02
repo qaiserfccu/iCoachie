@@ -1,9 +1,90 @@
 import express from 'express';
 import prisma from '../db';
 import { requireAuth, AuthRequest } from '../middleware/jwtAuth';
-import { requireRole } from '../middleware/requireRole';
+import { requireRole, requirePermission } from '../middleware';
 
 const router = express.Router();
+
+// =============================================================================
+// Card 19 - Complete DTO Shapes for Club
+// =============================================================================
+
+const clubSelect = {
+  id: true,
+  name: true,
+  adminId: true,
+  location: true,
+  description: true,
+  logoUrl: true,
+  createdAt: true,
+  updatedAt: true,
+  deletedAt: true,
+  admin: {
+    select: { id: true, name: true, email: true }
+  }
+};
+
+// =============================================================================
+// Card 23 - Pagination Helper
+// =============================================================================
+
+interface PaginationParams {
+  page?: number;
+  pageSize?: number;
+  search?: string;
+}
+
+interface PageInfo {
+  page: number;
+  pageSize: number;
+  total: number;
+  totalPages: number;
+  hasNext: boolean;
+  hasPrev: boolean;
+}
+
+interface PaginatedResponse<T> {
+  data: T[];
+  pageInfo: PageInfo;
+  filtersApplied: Record<string, any>;
+}
+
+function parsePaginationParams(query: any): PaginationParams {
+  const page = Math.max(1, parseInt(query.page) || 1);
+  const pageSize = Math.min(100, Math.max(1, parseInt(query.pageSize) || 20));
+  const search = query.search?.trim() || undefined;
+  return { page, pageSize, search };
+}
+
+function buildPageInfo(total: number, page: number, pageSize: number): PageInfo {
+  const totalPages = Math.ceil(total / pageSize);
+  return {
+    page,
+    pageSize,
+    total,
+    totalPages,
+    hasNext: page < totalPages,
+    hasPrev: page > 1
+  };
+}
+
+// Response mapper for consistent DTOs
+const mapClubResponse = (club: any) => ({
+  id: club.id,
+  name: club.name,
+  adminId: club.adminId,
+  location: club.location,
+  description: club.description,
+  logoUrl: club.logoUrl,
+  admin: club.admin || null,
+  userCount: club._count?.users,
+  studentCount: club._count?.students,
+  coachCount: club._count?.coaches,
+  facilityCount: club._count?.facilities,
+  createdAt: club.createdAt,
+  updatedAt: club.updatedAt,
+  deletedAt: club.deletedAt
+});
 
 /**
  * @swagger
@@ -39,33 +120,45 @@ const router = express.Router();
  *               $ref: '#/components/schemas/ErrorResponse'
  */
 
-// Get all clubs (SuperAdmin only)
+// Get all clubs (SuperAdmin only) - Card 22 & 23: Pagination + soft delete filter
 router.get('/', requireAuth, requireRole(['SUPER_ADMIN']), async (req: AuthRequest, res) => {
   try {
-    const clubs = await prisma.club.findMany({
-      where: {
-        deletedAt: null
-      },
-      select: {
-        id: true,
-        name: true,
-        location: true,
-        description: true,
-        logoUrl: true,
-        createdAt: true,
-        admin: {
-          select: {
-            id: true,
-            name: true,
-            email: true
+    const { page, pageSize, search } = parsePaginationParams(req.query);
+    const includeDeleted = req.query.includeDeleted === 'true';
+    
+    const where: any = {
+      ...(includeDeleted ? {} : { deletedAt: null }),
+      ...(search ? {
+        OR: [
+          { name: { contains: search, mode: 'insensitive' } },
+          { location: { contains: search, mode: 'insensitive' } },
+          { description: { contains: search, mode: 'insensitive' } }
+        ]
+      } : {})
+    };
+    
+    const [clubs, total] = await Promise.all([
+      prisma.club.findMany({
+        where,
+        select: {
+          ...clubSelect,
+          _count: {
+            select: { users: true, students: true, coaches: true, facilities: true }
           }
-        }
-      },
-      orderBy: {
-        createdAt: 'desc'
-      }
-    });
-    res.json({ clubs });
+        },
+        orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * pageSize,
+        take: pageSize
+      }),
+      prisma.club.count({ where })
+    ]);
+    
+    const response: PaginatedResponse<any> = {
+      data: clubs.map(mapClubResponse),
+      pageInfo: buildPageInfo(total, page, pageSize),
+      filtersApplied: { search, includeDeleted }
+    };
+    res.json(response);
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Internal error' });
@@ -154,18 +247,9 @@ router.get('/:id', requireAuth, async (req: AuthRequest, res) => {
         deletedAt: null
       },
       select: {
-        id: true,
-        name: true,
-        location: true,
-        description: true,
-        logoUrl: true,
-        createdAt: true,
-        admin: {
-          select: {
-            id: true,
-            name: true,
-            email: true
-          }
+        ...clubSelect,
+        _count: {
+          select: { users: true, students: true, coaches: true, facilities: true }
         }
       }
     });
@@ -174,7 +258,7 @@ router.get('/:id', requireAuth, async (req: AuthRequest, res) => {
       return res.status(404).json({ message: 'Club not found' });
     }
 
-    res.json({ club });
+    res.json(mapClubResponse(club));
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Internal error' });
@@ -219,24 +303,15 @@ router.get('/my', requireAuth, async (req: AuthRequest, res) => {
     const club = await prisma.club.findUnique({
       where: { id: clubId },
       select: {
-        id: true,
-        name: true,
-        location: true,
-        description: true,
-        logoUrl: true,
-        createdAt: true,
-        admin: {
-          select: {
-            id: true,
-            name: true,
-            email: true
-          }
+        ...clubSelect,
+        _count: {
+          select: { users: true, students: true, coaches: true, facilities: true }
         }
       }
     });
 
     if (!club) return res.status(404).json({ message: 'Club not found' });
-    res.json(club);
+    res.json(mapClubResponse(club));
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Internal error' });
@@ -290,7 +365,7 @@ router.get('/my', requireAuth, async (req: AuthRequest, res) => {
  *               $ref: '#/components/schemas/ErrorResponse'
  */
 
-// Create club (SuperAdmin only)
+// Create club (SuperAdmin only) - Card 19: Accept all schema fields
 router.post('/', requireAuth, requireRole(['SUPER_ADMIN']), async (req: AuthRequest, res) => {
   try {
     const { name, location, description, logoUrl, adminId } = req.body;
@@ -307,22 +382,15 @@ router.post('/', requireAuth, requireRole(['SUPER_ADMIN']), async (req: AuthRequ
     const club = await prisma.club.create({
       data: {
         name,
-        location,
-        description,
-        logoUrl,
+        location: location || null,
+        description: description || null,
+        logoUrl: logoUrl || null,
         adminId: parseInt(adminId)
       },
-      select: {
-        id: true,
-        name: true,
-        location: true,
-        description: true,
-        logoUrl: true,
-        createdAt: true
-      }
+      select: clubSelect
     });
 
-    res.json(club);
+    res.status(201).json(mapClubResponse(club));
   } catch (err) {
     console.error(err);
     if ((err as any).code === 'P2002') {
@@ -380,20 +448,20 @@ router.post('/', requireAuth, requireRole(['SUPER_ADMIN']), async (req: AuthRequ
  *               $ref: '#/components/schemas/ErrorResponse'
  */
 
-// Update club (admin of the club or SuperAdmin)
+// Update club (admin of the club or SuperAdmin) - Card 19: Accept all fields
 router.put('/:id', requireAuth, async (req: AuthRequest, res) => {
   try {
     const clubId = parseInt(req.params.id);
     const currentUserId = req.user!.id;
-    const userClubId = req.user!.clubId;
 
     // Check if user is admin of this club or SuperAdmin
     const club = await prisma.club.findUnique({
       where: { id: clubId },
-      select: { adminId: true, id: true }
+      select: { adminId: true, id: true, deletedAt: true }
     });
 
     if (!club) return res.status(404).json({ message: 'Club not found' });
+    if (club.deletedAt) return res.status(400).json({ message: 'Cannot update deleted club' });
 
     const isClubAdmin = club.adminId === currentUserId;
     const isSuperAdmin = await prisma.userRoleAssignment.findFirst({
@@ -408,27 +476,25 @@ router.put('/:id', requireAuth, async (req: AuthRequest, res) => {
     }
 
     const { name, location, description, logoUrl } = req.body;
+    
+    const data: any = {};
+    if (name !== undefined) data.name = name;
+    if (location !== undefined) data.location = location;
+    if (description !== undefined) data.description = description;
+    if (logoUrl !== undefined) data.logoUrl = logoUrl;
 
     const updatedClub = await prisma.club.update({
       where: { id: clubId },
-      data: {
-        name,
-        location,
-        description,
-        logoUrl,
-        updatedAt: new Date()
-      },
+      data,
       select: {
-        id: true,
-        name: true,
-        location: true,
-        description: true,
-        logoUrl: true,
-        updatedAt: true
+        ...clubSelect,
+        _count: {
+          select: { users: true, students: true, coaches: true, facilities: true }
+        }
       }
     });
 
-    res.json(updatedClub);
+    res.json(mapClubResponse(updatedClub));
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Internal error' });
@@ -475,19 +541,56 @@ router.put('/:id', requireAuth, async (req: AuthRequest, res) => {
  *               $ref: '#/components/schemas/ErrorResponse'
  */
 
-// Soft delete club (SuperAdmin only)
+// Soft delete club (SuperAdmin only) - Card 22
 router.delete('/:id', requireAuth, requireRole(['SUPER_ADMIN']), async (req: AuthRequest, res) => {
   try {
     const clubId = parseInt(req.params.id);
 
+    const existing = await prisma.club.findUnique({
+      where: { id: clubId },
+      select: { deletedAt: true }
+    });
+    
+    if (!existing) return res.status(404).json({ message: 'Club not found' });
+    if (existing.deletedAt) return res.status(400).json({ message: 'Already deleted' });
+
     await prisma.club.update({
       where: { id: clubId },
-      data: {
-        deletedAt: new Date()
+      data: { deletedAt: new Date() }
+    });
+
+    res.json({ ok: true, message: 'Club soft deleted' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Internal error' });
+  }
+});
+
+// Restore club (SuperAdmin only) - Card 22
+router.post('/:id/restore', requireAuth, requireRole(['SUPER_ADMIN']), async (req: AuthRequest, res) => {
+  try {
+    const clubId = parseInt(req.params.id);
+
+    const existing = await prisma.club.findUnique({
+      where: { id: clubId },
+      select: { deletedAt: true }
+    });
+    
+    if (!existing) return res.status(404).json({ message: 'Club not found' });
+    if (!existing.deletedAt) return res.status(400).json({ message: 'Club is not deleted' });
+
+    const restored = await prisma.club.update({
+      where: { id: clubId },
+      data: { deletedAt: null },
+      select: {
+        ...clubSelect,
+        _count: {
+          select: { users: true, students: true, coaches: true, facilities: true }
+        }
       }
     });
 
-    res.json({ ok: true });
+    res.json(mapClubResponse(restored));
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Internal error' });
