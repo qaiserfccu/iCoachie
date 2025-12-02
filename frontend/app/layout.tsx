@@ -1,35 +1,10 @@
 import type React from "react"
 import type { Metadata } from "next"
-import localFont from "next/font/local"
+import "@fontsource/inter/400.css"
+import "@fontsource/inter/500.css"
+import "@fontsource/inter/600.css"
+import "@fontsource/inter/700.css"
 import "./globals.css"
-
-const inter = localFont({
-  src: [
-    {
-      path: "../node_modules/@fontsource/inter/files/inter-latin-400-normal.woff2",
-      weight: "400",
-      style: "normal",
-    },
-    {
-      path: "../node_modules/@fontsource/inter/files/inter-latin-500-normal.woff2",
-      weight: "500",
-      style: "normal",
-    },
-    {
-      path: "../node_modules/@fontsource/inter/files/inter-latin-600-normal.woff2",
-      weight: "600",
-      style: "normal",
-    },
-    {
-      path: "../node_modules/@fontsource/inter/files/inter-latin-700-normal.woff2",
-      weight: "700",
-      style: "normal",
-    },
-  ],
-  display: "swap",
-  variable: "--font-inter",
-  fallback: ["system-ui", "arial"],
-})
 
 export const metadata: Metadata = {
   title: "iCoachie - All-in-One Coaching Platform",
@@ -44,7 +19,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" className={`${inter.variable} antialiased`}>
+    <html lang="en" className="antialiased">
       <body className="font-sans">{children}</body>
     </html>
   )
