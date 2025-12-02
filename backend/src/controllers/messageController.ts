@@ -261,6 +261,66 @@ router.delete('/:id', async (req: AuthRequest, res) => {
   }
 });
 
+// =============================================================================
+// Card 22 - Restore Soft-Deleted Message
+// =============================================================================
+
+// Restore a soft-deleted message
+router.post('/:id/restore', async (req: AuthRequest, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user!.id;
+
+    const existing = await prisma.message.findFirst({
+      where: {
+        id: parseInt(id, 10),
+        OR: [
+          { fromUserId: userId },
+          { toUserId: userId },
+        ],
+      },
+    });
+
+    if (!existing) {
+      return res.status(404).json({
+        success: false,
+        error: 'Message not found',
+      });
+    }
+
+    if (!existing.deletedAt) {
+      return res.status(400).json({
+        success: false,
+        error: 'Message is not deleted',
+      });
+    }
+
+    const restored = await prisma.message.update({
+      where: { id: existing.id },
+      data: { deletedAt: null },
+      include: {
+        fromUser: {
+          select: { id: true, name: true, email: true },
+        },
+        toUser: {
+          select: { id: true, name: true, email: true },
+        },
+      },
+    });
+
+    res.json({
+      success: true,
+      data: restored,
+    });
+  } catch (error) {
+    console.error('Error restoring message:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error',
+    });
+  }
+});
+
 // Get unread message count
 router.get('/unread-count', async (req: AuthRequest, res) => {
   try {

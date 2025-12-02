@@ -417,7 +417,7 @@ router.put('/:id', requireAuth, async (req: AuthRequest, res) => {
   }
 });
 
-// Delete payment (admin only, only if not completed)
+// Soft delete payment (admin only, only if not completed) - Card 22
 router.delete('/:id', requireAuth, requireRole(['SUPER_ADMIN']), async (req: AuthRequest, res) => {
   try {
     const paymentId = parseInt(req.params.id);
@@ -427,29 +427,64 @@ router.delete('/:id', requireAuth, requireRole(['SUPER_ADMIN']), async (req: Aut
     const payment = await prisma.payment.findFirst({
       where: {
         id: paymentId,
-        user: {
-          clubId
-        }
+        user: { clubId },
+        deletedAt: null
       },
       select: {
         id: true,
-        status: {
-          select: {
-            code: true
-          }
-        }
+        status: { select: { code: true } }
       }
     });
 
-    if (!payment || payment.status?.code === 'COMPLETED') {
-      return res.status(404).json({ message: 'Payment not found or already completed' });
+    if (!payment) return res.status(404).json({ message: 'Payment not found' });
+    if (payment.status?.code === 'COMPLETED') {
+      return res.status(400).json({ message: 'Cannot delete completed payment' });
     }
 
-    await prisma.payment.delete({
-      where: { id: paymentId }
+    await prisma.payment.update({
+      where: { id: paymentId },
+      data: { deletedAt: new Date() }
     });
 
-    res.json({ ok: true });
+    res.json({ ok: true, message: 'Payment soft deleted' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Internal error' });
+  }
+});
+
+// Restore payment (admin only) - Card 22
+router.post('/:id/restore', requireAuth, requireRole(['SUPER_ADMIN']), async (req: AuthRequest, res) => {
+  try {
+    const paymentId = parseInt(req.params.id);
+    const clubId = req.user!.clubId;
+
+    const existing = await prisma.payment.findFirst({
+      where: {
+        id: paymentId,
+        user: { clubId }
+      }
+    });
+    
+    if (!existing) return res.status(404).json({ message: 'Payment not found' });
+    if (!existing.deletedAt) return res.status(400).json({ message: 'Payment is not deleted' });
+
+    const restored = await prisma.payment.update({
+      where: { id: paymentId },
+      data: { deletedAt: null },
+      select: {
+        id: true,
+        amount: true,
+        currency: true,
+        paymentType: true,
+        status: { select: { code: true, name: true } },
+        description: true,
+        createdAt: true,
+        user: { select: { id: true, name: true } }
+      }
+    });
+
+    res.json(restored);
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Internal error' });

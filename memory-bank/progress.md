@@ -2,26 +2,55 @@
 
 ## Latest Updates (2025-12-02)
 
-### Context Preservation & Ownership Change Prep
-- Captured entire helper conversation state inside `memory-bank/activeContext.md` so future agents can restore Cards 15/19 progress after the repository transfers ownership.
-- Highlighted dependencies, documentation entry points, and Kanban expectations to avoid drift once work resumes.
+### Cards 19-24 – Facility Stack Enhancements COMPLETED ✅
+
+**Card 19 - Metadata DTO Expansion**
+- Updated `facilitySelect`, `venueSelect`, `groundSelect` with all schema fields
+- Response mappers normalize API responses consistently
+- All fields (location, description, amenities, capacity, hourlyRate, dimensions, etc.) now accepted in POST/PUT
+
+**Card 20 - Manager & Staff Assignment**
+- Facility: `PUT /:id/manager`, `GET /:id/staff`, `POST /:id/staff`, `DELETE /:id/staff/:userId`
+- Venue: `PUT /venues/:id/manager`
+- Ground: `PUT /grounds/:id/manager`
+- All endpoints validate club ownership and user existence
+
+**Card 21 - Venue/Ground Schedule APIs**
+- New Prisma models: `VenueSchedule`, `GroundSchedule`
+- CRUD endpoints for both venues and grounds: `POST/GET/PUT/DELETE .../:id/schedule`
+- Supports recurring schedules (dayOfWeek) and one-off dates (specificDate)
+- Blackout windows for maintenance/closures
+- Conflict detection prevents overlapping slots
+
+**Card 22 - Soft Delete & Restore**
+- DELETE endpoints now set `deletedAt` instead of removing records
+- Restore endpoints: `POST /:id/restore`
+- List endpoints filter out deleted records by default
+- `?includeDeleted=true` query param to show deleted records
+
+**Card 23 - Pagination & Filtering**
+- Standard response envelope: `{ data, pageInfo, filtersApplied }`
+- Query params: `page`, `pageSize`, `search`, `includeDeleted`, `available`
+- Applied to facilities, venues, and grounds list endpoints
+
+**Card 24 - Permission-based RBAC**
+- `requirePermission` middleware wired on all new routes
+- Permissions used: `facility.staff.manage`, `venue.manage`, `venue.schedule.manage`, `ground.manage`, `ground.schedule.manage`
 
 ### Card 15 – Frontend Role Screens
 - System Support workspace scaffolded under `frontend/app/system-support/*` with mock data until diagnostics/ticketing APIs exist.
 - `docs/frontend/role-screen-inventory.md` continues to track remaining 20 role experiences; waiting on role questionnaires before finishing remaining layouts.
 
-### Card 19 – Facility/Venue/Ground DTO Expansion
-- Work paused until backend Cards 20–24 (facility metadata, venue chaining, ground availability, DTO contracts, API exposure) finish; plan remains documented in `docs/backend/dto/facility-metadata-expansion.md`.
-
 ### Kanban & Documentation Hygiene
 - `.vscode/vscode-kanban.json` now focused on Cards 15, 19, and dependency stack; emphasized keeping docs plus new context snapshots in repo so the next helper can resume instantly.
+- `docs/backend/global-endpoint-matrix.md` updated with Cards 19-24 completion status and new endpoint documentation.
 
 ### Historical RBAC Phase 1 (Completed Earlier)
 - Previous migration from enums to lookup tables, 22-role seed, and facility/venue/ground schema changes remain valid foundations for current tasks.
 
 ## Next Steps
+- Run Prisma migration for new VenueSchedule and GroundSchedule models
 - Gather outstanding role-specific answers, then finish Card 15 UI wiring (role-specific dashboards, diagnostics routing, live data hooks).
-- Execute backend Cards 20–24 sequentially so Card 19 DTO work can restart with real API shapes.
 - Stand up ticketing/diagnostics endpoints plus mock/stub data services so System Support screens can flip from placeholder data to live sources.
 - Keep Kanban, docs, and memory bank entries updated after ownership change so no tribal knowledge is lost.
 

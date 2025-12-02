@@ -427,6 +427,66 @@ router.delete('/:id', async (req: AuthRequest, res) => {
   }
 });
 
+// =============================================================================
+// Card 22 - Restore Soft-Deleted Review
+// =============================================================================
+
+// Restore a soft-deleted review
+router.post('/:id/restore', async (req: AuthRequest, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user!.id;
+
+    const existing = await prisma.review.findFirst({
+      where: {
+        id: parseInt(id, 10),
+        reviewerId: userId,
+      },
+    });
+
+    if (!existing) {
+      return res.status(404).json({
+        success: false,
+        error: 'Review not found',
+      });
+    }
+
+    if (!existing.deletedAt) {
+      return res.status(400).json({
+        success: false,
+        error: 'Review is not deleted',
+      });
+    }
+
+    const restored = await prisma.review.update({
+      where: { id: existing.id },
+      data: { deletedAt: null },
+      include: {
+        reviewer: {
+          select: { id: true, name: true },
+        },
+        reviewee: {
+          select: { id: true, name: true },
+        },
+        booking: {
+          select: { id: true, serviceType: true },
+        },
+      },
+    });
+
+    res.json({
+      success: true,
+      data: restored,
+    });
+  } catch (error) {
+    console.error('Error restoring review:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error',
+    });
+  }
+});
+
 // Get review stats for a user
 router.get('/stats/:userId', async (req: AuthRequest, res) => {
   try {
