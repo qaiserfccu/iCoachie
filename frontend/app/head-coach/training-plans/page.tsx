@@ -1,27 +1,26 @@
 "use client"
 
+import { useEffect, useState } from "react"
+import Link from "next/link"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
+import { Skeleton } from "@/components/ui/skeleton"
 import { 
   Plus, ClipboardList, Calendar, Target, Clock,
-  ArrowRight, CheckCircle, Play, Edit
+  ArrowRight, CheckCircle, Play, Edit, AlertCircle
 } from "lucide-react"
+import { headCoachService, TrainingPlan } from "@/lib/services/headCoachService"
 
-const trainingPlans = [
-  { id: 1, name: "Pre-Season Conditioning", team: "U-12 Soccer Elite", duration: "4 weeks", progress: 75, status: "in-progress", sessions: 16, completed: 12 },
-  { id: 2, name: "Technical Skills Development", team: "U-14 Basketball Stars", duration: "6 weeks", progress: 45, status: "in-progress", sessions: 24, completed: 11 },
-  { id: 3, name: "Endurance Training Program", team: "U-16 Swimming Champions", duration: "8 weeks", progress: 30, status: "in-progress", sessions: 32, completed: 10 },
-  { id: 4, name: "Match Preparation", team: "U-12 Soccer Elite", duration: "2 weeks", progress: 100, status: "completed", sessions: 8, completed: 8 },
-  { id: 5, name: "Speed & Agility", team: "Junior Tennis Academy", duration: "4 weeks", progress: 0, status: "scheduled", sessions: 12, completed: 0 },
-]
-
-const todaySessions = [
-  { id: 1, plan: "Pre-Season Conditioning", team: "U-12 Soccer Elite", time: "10:00 AM", duration: "90 min", focus: "Cardio & Strength" },
-  { id: 2, plan: "Technical Skills Development", team: "U-14 Basketball Stars", time: "2:00 PM", duration: "120 min", focus: "Ball Handling" },
-  { id: 3, plan: "Endurance Training Program", team: "U-16 Swimming Champions", time: "4:00 PM", duration: "60 min", focus: "Lap Training" },
-]
+interface TodaySession {
+  id: number
+  plan: string
+  team: string
+  time: string
+  duration: string
+  focus: string
+}
 
 const statusConfig = {
   "in-progress": { color: "bg-blue-500/20 text-blue-500" },
@@ -30,11 +29,106 @@ const statusConfig = {
 }
 
 export default function TrainingPlansPage() {
+  const [trainingPlans, setTrainingPlans] = useState<TrainingPlan[]>([])
+  const [todaySessions, setTodaySessions] = useState<TodaySession[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  // Fallback mock data
+  const fallbackPlans: TrainingPlan[] = [
+    { id: 1, name: "Pre-Season Conditioning", team: "U-12 Soccer Elite", duration: "4 weeks", progress: 75, status: "in-progress", sessions: 16, completed: 12 },
+    { id: 2, name: "Technical Skills Development", team: "U-14 Basketball Stars", duration: "6 weeks", progress: 45, status: "in-progress", sessions: 24, completed: 11 },
+    { id: 3, name: "Endurance Training Program", team: "U-16 Swimming Champions", duration: "8 weeks", progress: 30, status: "in-progress", sessions: 32, completed: 10 },
+    { id: 4, name: "Match Preparation", team: "U-12 Soccer Elite", duration: "2 weeks", progress: 100, status: "completed", sessions: 8, completed: 8 },
+    { id: 5, name: "Speed & Agility", team: "Junior Tennis Academy", duration: "4 weeks", progress: 0, status: "scheduled", sessions: 12, completed: 0 },
+  ]
+
+  const fallbackTodaySessions: TodaySession[] = [
+    { id: 1, plan: "Pre-Season Conditioning", team: "U-12 Soccer Elite", time: "10:00 AM", duration: "90 min", focus: "Cardio & Strength" },
+    { id: 2, plan: "Technical Skills Development", team: "U-14 Basketball Stars", time: "2:00 PM", duration: "120 min", focus: "Ball Handling" },
+    { id: 3, plan: "Endurance Training Program", team: "U-16 Swimming Champions", time: "4:00 PM", duration: "60 min", focus: "Lap Training" },
+  ]
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true)
+        setError(null)
+        const plans = await headCoachService.getTrainingPlans()
+        setTrainingPlans(plans.length > 0 ? plans : fallbackPlans)
+        
+        // Get today's sessions
+        const sessionsResponse = await headCoachService.getSessions({ page: 1, pageSize: 10 })
+        const today = new Date().toISOString().split('T')[0]
+        const todaySessionsData = sessionsResponse.data
+          .filter(s => s.sessionDate.startsWith(today))
+          .slice(0, 5)
+          .map((s, idx) => ({
+            id: s.id,
+            plan: s.title,
+            team: 'General',
+            time: new Date(s.startTime).toLocaleTimeString('en-US', { 
+              hour: 'numeric', 
+              minute: '2-digit', 
+              hour12: true 
+            }),
+            duration: `${Math.round((new Date(s.endTime).getTime() - new Date(s.startTime).getTime()) / 60000)} min`,
+            focus: s.description || 'Training Session'
+          }))
+        
+        setTodaySessions(todaySessionsData.length > 0 ? todaySessionsData : fallbackTodaySessions)
+      } catch (err) {
+        console.error('Failed to fetch training plans:', err)
+        setError('Failed to load training plans. Using fallback data.')
+        setTrainingPlans(fallbackPlans)
+        setTodaySessions(fallbackTodaySessions)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [])
+
   const activePlans = trainingPlans.filter(p => p.status === "in-progress").length
   const completedPlans = trainingPlans.filter(p => p.status === "completed").length
 
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">Training Plans</h1>
+            <p className="text-muted-foreground">Create and manage training programs</p>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map((i) => (
+            <Card key={i} className="glass-card border-white/20">
+              <CardContent className="p-4">
+                <Skeleton className="h-16 w-full" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+        <Card className="glass-card border-white/20">
+          <CardContent className="p-4">
+            <Skeleton className="h-60 w-full" />
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-6">
+      {error && (
+        <div className="flex items-center gap-2 p-4 rounded-lg bg-yellow-500/10 border border-yellow-500/20 text-yellow-600">
+          <AlertCircle className="w-5 h-5" />
+          <span className="text-sm">{error}</span>
+        </div>
+      )}
+
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Training Plans</h1>
@@ -133,23 +227,27 @@ export default function TrainingPlansPage() {
             <Badge className="bg-orange-500/20 text-orange-500">{todaySessions.length} Scheduled</Badge>
           </CardHeader>
           <CardContent className="space-y-3">
-            {todaySessions.map((session) => (
-              <div key={session.id} className="p-4 rounded-xl glass-subtle">
-                <div className="flex items-center justify-between mb-2">
-                  <p className="font-medium text-sm">{session.plan}</p>
-                  <Badge variant="outline" className="text-xs">{session.time}</Badge>
+            {todaySessions.length > 0 ? (
+              todaySessions.map((session) => (
+                <div key={session.id} className="p-4 rounded-xl glass-subtle">
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="font-medium text-sm">{session.plan}</p>
+                    <Badge variant="outline" className="text-xs">{session.time}</Badge>
+                  </div>
+                  <p className="text-sm text-muted-foreground">{session.team}</p>
+                  <div className="flex items-center justify-between mt-2 text-xs text-muted-foreground">
+                    <span className="flex items-center gap-1">
+                      <Clock className="w-3 h-3" /> {session.duration}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <Target className="w-3 h-3" /> {session.focus}
+                    </span>
+                  </div>
                 </div>
-                <p className="text-sm text-muted-foreground">{session.team}</p>
-                <div className="flex items-center justify-between mt-2 text-xs text-muted-foreground">
-                  <span className="flex items-center gap-1">
-                    <Clock className="w-3 h-3" /> {session.duration}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Target className="w-3 h-3" /> {session.focus}
-                  </span>
-                </div>
-              </div>
-            ))}
+              ))
+            ) : (
+              <p className="text-muted-foreground text-center py-4">No sessions scheduled for today</p>
+            )}
             <Button variant="outline" className="w-full glass-subtle border-white/20">
               View Full Schedule
             </Button>

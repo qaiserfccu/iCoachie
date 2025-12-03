@@ -1,37 +1,120 @@
 "use client"
 
+import { useEffect, useState } from "react"
+import Link from "next/link"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { Skeleton } from "@/components/ui/skeleton"
 import { 
   Plus, Users, Trophy, TrendingUp, Calendar, 
-  ArrowRight, Star, UserPlus
+  ArrowRight, Star, UserPlus, AlertCircle
 } from "lucide-react"
+import { headCoachService, Team } from "@/lib/services/headCoachService"
 
-const teams = [
-  { id: 1, name: "U-12 Soccer Elite", sport: "Soccer", players: 18, coaches: 2, record: "12-3-2", status: "active" },
-  { id: 2, name: "U-14 Basketball Stars", sport: "Basketball", players: 12, coaches: 1, record: "8-4-0", status: "active" },
-  { id: 3, name: "U-16 Swimming Champions", sport: "Swimming", players: 24, coaches: 3, record: "N/A", status: "active" },
-  { id: 4, name: "Junior Tennis Academy", sport: "Tennis", players: 16, coaches: 2, record: "N/A", status: "active" },
-  { id: 5, name: "U-10 Soccer Development", sport: "Soccer", players: 20, coaches: 2, record: "6-5-4", status: "active" },
-]
+interface TopPerformer {
+  name: string
+  team: string
+  position: string
+  rating: number
+  goals?: number
+  points?: number
+  medals?: number
+}
 
-const upcomingMatches = [
-  { team: "U-12 Soccer Elite", opponent: "City FC", date: "Jan 20", time: "10:00 AM", venue: "Main Field" },
-  { team: "U-14 Basketball Stars", opponent: "Metro Hawks", date: "Jan 22", time: "2:00 PM", venue: "Indoor Court A" },
-  { team: "U-12 Soccer Elite", opponent: "Valley United", date: "Jan 27", time: "11:00 AM", venue: "Away" },
-]
-
-const topPerformers = [
-  { name: "Alex Thompson", team: "U-12 Soccer Elite", position: "Forward", rating: 4.9, goals: 12 },
-  { name: "Jordan Lee", team: "U-14 Basketball Stars", position: "Point Guard", rating: 4.8, points: 156 },
-  { name: "Casey Rivera", team: "U-16 Swimming Champions", position: "Freestyle", rating: 4.9, medals: 8 },
-]
+interface UpcomingMatch {
+  team: string
+  opponent: string
+  date: string
+  time: string
+  venue: string
+}
 
 export default function TeamsPage() {
+  const [teams, setTeams] = useState<Team[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  // Fallback mock data
+  const fallbackTeams: Team[] = [
+    { id: 1, name: "U-12 Soccer Elite", sport: "Soccer", players: 18, coaches: 2, record: "12-3-2", status: "active" },
+    { id: 2, name: "U-14 Basketball Stars", sport: "Basketball", players: 12, coaches: 1, record: "8-4-0", status: "active" },
+    { id: 3, name: "U-16 Swimming Champions", sport: "Swimming", players: 24, coaches: 3, record: "N/A", status: "active" },
+    { id: 4, name: "Junior Tennis Academy", sport: "Tennis", players: 16, coaches: 2, record: "N/A", status: "active" },
+    { id: 5, name: "U-10 Soccer Development", sport: "Soccer", players: 20, coaches: 2, record: "6-5-4", status: "active" },
+  ]
+
+  const upcomingMatches: UpcomingMatch[] = [
+    { team: "U-12 Soccer Elite", opponent: "City FC", date: "Jan 20", time: "10:00 AM", venue: "Main Field" },
+    { team: "U-14 Basketball Stars", opponent: "Metro Hawks", date: "Jan 22", time: "2:00 PM", venue: "Indoor Court A" },
+    { team: "U-12 Soccer Elite", opponent: "Valley United", date: "Jan 27", time: "11:00 AM", venue: "Away" },
+  ]
+
+  const topPerformers: TopPerformer[] = [
+    { name: "Alex Thompson", team: "U-12 Soccer Elite", position: "Forward", rating: 4.9, goals: 12 },
+    { name: "Jordan Lee", team: "U-14 Basketball Stars", position: "Point Guard", rating: 4.8, points: 156 },
+    { name: "Casey Rivera", team: "U-16 Swimming Champions", position: "Freestyle", rating: 4.9, medals: 8 },
+  ]
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true)
+        setError(null)
+        const teamsData = await headCoachService.getTeams()
+        setTeams(teamsData.length > 0 ? teamsData : fallbackTeams)
+      } catch (err) {
+        console.error('Failed to fetch teams:', err)
+        setError('Failed to load teams. Using fallback data.')
+        setTeams(fallbackTeams)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [])
+
+  const totalPlayers = teams.reduce((sum, t) => sum + t.players, 0)
+  const totalCoaches = teams.reduce((sum, t) => sum + t.coaches, 0)
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">Team Management</h1>
+            <p className="text-muted-foreground">Manage all teams under your supervision</p>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map((i) => (
+            <Card key={i} className="glass-card border-white/20">
+              <CardContent className="p-4">
+                <Skeleton className="h-16 w-full" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+        <Card className="glass-card border-white/20">
+          <CardContent className="p-4">
+            <Skeleton className="h-60 w-full" />
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-6">
+      {error && (
+        <div className="flex items-center gap-2 p-4 rounded-lg bg-yellow-500/10 border border-yellow-500/20 text-yellow-600">
+          <AlertCircle className="w-5 h-5" />
+          <span className="text-sm">{error}</span>
+        </div>
+      )}
+
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Team Management</h1>
@@ -60,7 +143,7 @@ export default function TeamsPage() {
           <CardContent className="p-4 flex items-center justify-between">
             <div>
               <p className="text-sm text-muted-foreground">Total Athletes</p>
-              <p className="text-2xl font-bold">{teams.reduce((sum, t) => sum + t.players, 0)}</p>
+              <p className="text-2xl font-bold">{totalPlayers}</p>
             </div>
             <div className="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center">
               <UserPlus className="w-6 h-6 text-blue-500" />
@@ -71,7 +154,7 @@ export default function TeamsPage() {
           <CardContent className="p-4 flex items-center justify-between">
             <div>
               <p className="text-sm text-muted-foreground">Total Coaches</p>
-              <p className="text-2xl font-bold">{teams.reduce((sum, t) => sum + t.coaches, 0)}</p>
+              <p className="text-2xl font-bold">{totalCoaches}</p>
             </div>
             <div className="w-12 h-12 rounded-xl bg-purple-500/20 flex items-center justify-center">
               <Star className="w-6 h-6 text-purple-500" />
