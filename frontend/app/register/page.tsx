@@ -10,6 +10,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Eye, EyeOff, Mail, Lock, User, Building2, Users, Briefcase, Baby } from "lucide-react"
+import RolePicker, { ROLE_OPTIONS } from "@/components/register/RolePicker"
+import { getMockUser } from "@/lib/services/mockDataService"
 import { authService } from "@/lib/auth"
 
 const userTypes = [
@@ -56,6 +58,7 @@ export default function RegisterPage() {
     email: "",
     password: "",
   })
+  const [termsAccepted, setTermsAccepted] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
   const router = useRouter()
@@ -73,6 +76,12 @@ export default function RegisterPage() {
 
     if (formData.password.length < 8) {
       setError("Password must be at least 8 characters")
+      setIsLoading(false)
+      return
+    }
+
+    if (!termsAccepted) {
+      setError("You must agree to the Terms of Service and Privacy Policy")
       setIsLoading(false)
       return
     }
@@ -97,6 +106,25 @@ export default function RegisterPage() {
       setError(err instanceof Error ? err.message : "Registration failed. Please try again.")
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  // Auto-populate fields when role selected in dev mode
+  const isDev = process.env.NODE_ENV === "development"
+  function autoPopulateRole(roleCode: string | undefined) {
+    if (!isDev || !roleCode) return
+    // Find ROLE_OPTIONS match for sampleUserKey
+    const option = ROLE_OPTIONS.find((o) => o.code === roleCode)
+    const sampleKey = option?.sampleUserKey
+    if (!sampleKey) return
+    try {
+      const sample = getMockUser(sampleKey)
+      if (sample) {
+        setFormData({ fullName: sample.name || "", email: sample.email || "", password: "Password123!" })
+        setTermsAccepted(true)
+      }
+    } catch (err) {
+      // noop
     }
   }
 
@@ -168,25 +196,38 @@ export default function RegisterPage() {
             {/* User Type Selection */}
             <div className="space-y-3">
               <Label className="text-foreground">I am a</Label>
-              <div className="grid grid-cols-2 gap-3">
-                {userTypes.map((type) => (
-                  <button
-                    key={type.id}
-                    type="button"
-                    onClick={() => setSelectedType(type.id)}
-                    className={`p-4 rounded-xl text-left transition-all hover-lift ${
-                      selectedType === type.id
-                        ? "glass-card border-2 border-primary/50 shadow-lg shadow-primary/10"
-                        : "glass-subtle border border-white/30 hover:border-primary/30"
-                    }`}
-                  >
-                    <type.icon
-                      className={`w-6 h-6 mb-2 ${selectedType === type.id ? "text-primary" : "text-muted-foreground"}`}
-                    />
-                    <p className="font-semibold text-foreground">{type.label}</p>
-                    <p className="text-xs text-muted-foreground">{type.description}</p>
-                  </button>
-                ))}
+              <div className="space-y-2">
+                {/* In dev mode show the full animated role grid; otherwise fall back to a compact list */}
+                {isDev ? (
+                  <RolePicker
+                    value={selectedType}
+                    onChange={(roleCode) => {
+                      setSelectedType(roleCode)
+                      autoPopulateRole(roleCode)
+                    }}
+                  />
+                ) : (
+                  <div className="grid grid-cols-2 gap-3">
+                    {userTypes.map((type) => (
+                      <button
+                        key={type.id}
+                        type="button"
+                        onClick={() => setSelectedType(type.id)}
+                        className={`p-4 rounded-xl text-left transition-all hover-lift ${
+                          selectedType === type.id
+                            ? "glass-card border-2 border-primary/50 shadow-lg shadow-primary/10"
+                            : "glass-subtle border border-white/30 hover:border-primary/30"
+                        }`}
+                      >
+                        <type.icon
+                          className={`w-6 h-6 mb-2 ${selectedType === type.id ? "text-primary" : "text-muted-foreground"}`}
+                        />
+                        <p className="font-semibold text-foreground">{type.label}</p>
+                        <p className="text-xs text-muted-foreground">{type.description}</p>
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -253,7 +294,7 @@ export default function RegisterPage() {
             </div>
 
             <div className="flex items-start gap-2">
-              <Checkbox id="terms" className="mt-1" required />
+              <Checkbox id="terms" className="mt-1" checked={termsAccepted} onCheckedChange={(c) => setTermsAccepted(Boolean(c))} required />
               <Label htmlFor="terms" className="text-sm text-muted-foreground cursor-pointer leading-relaxed">
                 I agree to the{" "}
                 <Link href="/terms" className="text-primary hover:underline">
