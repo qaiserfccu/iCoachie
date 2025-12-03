@@ -5,23 +5,7 @@
  * These tests mock Prisma since we want pure unit tests
  */
 
-import {
-  getRoleIdByCode,
-  getAllActiveRoles,
-  getUserStatusIdByCode,
-  getSessionStatusIdByCode,
-  getAttendanceStatusIdByCode,
-  getPaymentStatusIdByCode,
-  getBookingStatusIdByCode,
-  getAllUserStatuses,
-  getAllSessionStatuses,
-  getAllAttendanceStatuses,
-  getAllPaymentStatuses,
-  getAllBookingStatuses,
-  clearLookupCaches
-} from '../../src/utils/lookups';
-
-// Mock the Prisma client
+// Mock the db module first (before any imports)
 jest.mock('../../src/db', () => ({
   __esModule: true,
   default: {
@@ -52,6 +36,22 @@ jest.mock('../../src/db', () => ({
   },
 }));
 
+import {
+  getRoleIdByCode,
+  getAllActiveRoles,
+  getUserStatusIdByCode,
+  getSessionStatusIdByCode,
+  getAttendanceStatusIdByCode,
+  getPaymentStatusIdByCode,
+  getBookingStatusIdByCode,
+  getAllUserStatuses,
+  getAllSessionStatuses,
+  getAllAttendanceStatuses,
+  getAllPaymentStatuses,
+  getAllBookingStatuses,
+  clearLookupCaches
+} from '../../src/utils/lookups';
+
 import prisma from '../../src/db';
 
 const mockPrisma = prisma as jest.Mocked<typeof prisma>;
@@ -64,13 +64,13 @@ describe('Lookups Utilities', () => {
 
   describe('getRoleIdByCode', () => {
     it('should return role ID when role exists', async () => {
-      (mockPrisma.role.findUnique as jest.Mock).mockResolvedValue({ id: 1 });
+      (mockPrisma.role.findUnique as jest.Mock).mockResolvedValue({ id: 8 });
 
-      const result = await getRoleIdByCode('ADMIN');
+      const result = await getRoleIdByCode('SUPER_ADMIN');
 
-      expect(result).toBe(1);
+      expect(result).toBe(8);
       expect(mockPrisma.role.findUnique).toHaveBeenCalledWith({
-        where: { code: 'ADMIN' },
+        where: { code: 'SUPER_ADMIN' },
         select: { id: true },
       });
     });

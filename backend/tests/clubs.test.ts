@@ -94,10 +94,10 @@ describe('Clubs API - Multi-tenancy Tests', () => {
         .set('Authorization', `Bearer ${adminToken}`)
         .expect(200);
 
-      expect(response.body).toHaveProperty('clubs');
-      expect(Array.isArray(response.body.clubs)).toBe(true);
+      expect(response.body).toHaveProperty('data');
+      expect(Array.isArray(response.body.data)).toBe(true);
       // Admin should see all clubs (for now, adjust based on your business logic)
-      expect(response.body.clubs.length).toBeGreaterThanOrEqual(1);
+      expect(response.body.data.length).toBeGreaterThanOrEqual(1);
     });
 
     it('should require authentication', async () => {
@@ -116,9 +116,9 @@ describe('Clubs API - Multi-tenancy Tests', () => {
         .set('Authorization', `Bearer ${adminToken}`)
         .expect(200);
 
-      expect(response.body).toHaveProperty('club');
-      expect(response.body.club.id).toBe(club1.id);
-      expect(response.body.club.name).toBe(club1.name);
+      expect(response.body).toHaveProperty('id');
+      expect(response.body.id).toBe(club1.id);
+      expect(response.body.name).toBe(club1.name);
     });
 
     it('should return 404 for non-existent club', async () => {
@@ -144,7 +144,7 @@ describe('Clubs API - Multi-tenancy Tests', () => {
         .post('/api/clubs')
         .set('Authorization', `Bearer ${adminToken}`)
         .send(newClubData)
-        .expect(200); // API returns 200, not 201
+        .expect(201); // API returns 201 for created resources
 
       expect(response.body).toHaveProperty('id');
       expect(response.body.name).toBe(newClubData.name);
@@ -221,6 +221,8 @@ describe('Clubs API - Multi-tenancy Tests', () => {
 
       expect(response.body).toHaveProperty('ok');
       expect(response.body.ok).toBe(true);
+      expect(response.body).toHaveProperty('message');
+      expect(response.body.message).toBe('Club soft deleted');
 
       // Verify soft delete (club should still exist but be marked as deleted)
       const deletedClub = await prisma.club.findUnique({
