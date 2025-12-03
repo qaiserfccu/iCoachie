@@ -1,6 +1,7 @@
 // Export all service modules
 export * from './mockDataService'
 export { default as clubService } from './clubService'
+export { default as clubAdminService } from './clubAdminService'
 export { default as studentService } from './studentService'
 export { default as sessionService } from './sessionService'
 export { default as attendanceService } from './attendanceService'
@@ -72,6 +73,20 @@ export type {
   FinancialStats,
   MonthlyCollectionProgress
 } from './operationsService'
+
+// Club Admin types
+export type {
+  ClubInfo,
+  ClubDashboardStats,
+  ClubSession,
+  ClubMember,
+  ClubMemberStats,
+  ClubCoach,
+  ClubPaymentStats,
+  ClubTransaction,
+  ClubAnalytics,
+  TopPerformer
+} from './clubAdminService'
 export type {
   DashboardStat as SystemSupportStat,
   Ticket,

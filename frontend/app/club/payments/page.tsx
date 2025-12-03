@@ -22,6 +22,86 @@ import {
   Loader2,
   AlertCircle,
 } from "lucide-react"
+import { clubAdminService, type ClubPaymentStats, type ClubTransaction } from "@/lib/services"
+
+export default function PaymentsPage() {
+  const [searchQuery, setSearchQuery] = useState("")
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [stats, setStats] = useState<ClubPaymentStats | null>(null)
+  const [transactions, setTransactions] = useState<ClubTransaction[]>([])
+
+  useEffect(() => {
+    loadPaymentsData()
+  }, [])
+
+  async function loadPaymentsData() {
+    try {
+      setLoading(true)
+      setError(null)
+      
+      const [statsData, transactionsData] = await Promise.all([
+        clubAdminService.getPaymentStats(),
+        clubAdminService.getTransactions({ pageSize: 50 })
+      ])
+      
+      setStats(statsData)
+      setTransactions(transactionsData.data)
+    } catch (err) {
+      console.error('Error loading payments data:', err)
+      setError('Failed to load payments data. Please try again.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(Math.abs(amount))
+  }
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString)
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+  }
+
+  const filteredTransactions = transactions.filter(txn => {
+    if (!searchQuery) return true
+    const query = searchQuery.toLowerCase()
+    return txn.studentName.toLowerCase().includes(query) || 
+           txn.type.toLowerCase().includes(query) ||
+           txn.id.toString().includes(query)
+  })
+
+  const paymentStats = stats ? [
+    { title: "Total Revenue", value: formatCurrency(stats.totalRevenue), change: stats.revenueChange, icon: DollarSign, color: "from-green-500 to-green-600" },
+    { title: "This Month", value: formatCurrency(stats.monthlyRevenue), change: stats.monthlyChange, icon: TrendingUp, color: "from-blue-500 to-blue-600" },
+    { title: "Pending", value: formatCurrency(stats.pendingAmount), change: `${stats.pendingCount} invoices`, icon: Clock, color: "from-yellow-500 to-orange-500" },
+    { title: "Refunds", value: formatCurrency(stats.refundAmount), change: `${stats.refundCount} requests`, icon: ArrowDownLeft, color: "from-red-500 to-red-600" },
+  ] : []
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
+        <AlertCircle className="w-12 h-12 text-red-500" />
+        <p className="text-muted-foreground">{error}</p>
+        <Button onClick={loadPaymentsData}>Try Again</Button>
+      </div>
+    )
+  }
+
 import clubPaymentsService, { PaymentTransaction, PaymentStats } from "@/lib/services/clubPaymentsService"
 
 // Stats configuration for rendering
@@ -135,6 +215,19 @@ export default function PaymentsPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {paymentStats.map((stat) => (
+          <Card key={stat.title} className="glass-card border-white/20 hover-lift">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground">{stat.title}</p>
+                  <p className="text-2xl font-bold mt-1">{stat.value}</p>
+                  <p className="text-sm text-green-500 mt-1">{stat.change}</p>
+                </div>
+                <div
+                  className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${stat.color} flex items-center justify-center`}
+                >
+                  <stat.icon className="w-7 h-7 text-white" />
         {statsConfig.map((statConfig) => {
           const value = stats ? stats[statConfig.key as keyof PaymentStats] : 0
           const change = getStatChange(statConfig.changeKey)
@@ -182,6 +275,12 @@ export default function PaymentsPage() {
           </div>
         </CardHeader>
         <CardContent>
+          <div className="rounded-xl overflow-hidden border border-white/20">
+            {filteredTransactions.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                {searchQuery ? 'No transactions found matching your search.' : 'No transactions found.'}
+              </div>
+            ) : (
           {filteredTransactions.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground">
               <CreditCard className="w-12 h-12 mx-auto mb-4 opacity-50" />
@@ -207,6 +306,15 @@ export default function PaymentsPage() {
                 <TableBody>
                   {filteredTransactions.map((txn) => (
                     <TableRow key={txn.id} className="hover:bg-white/10">
+                      <TableCell className="font-mono text-sm">TXN{txn.id.toString().padStart(3, '0')}</TableCell>
+                      <TableCell>{txn.studentName}</TableCell>
+                      <TableCell>{txn.type}</TableCell>
+                      <TableCell
+                        className={txn.status === 'refunded' ? "text-red-500 font-medium" : "text-green-500 font-medium"}
+                      >
+                        {txn.status === 'refunded' ? '-' : ''}{formatCurrency(txn.amount)}
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">{formatDate(txn.date)}</TableCell>
                       <TableCell className="font-mono text-sm">{txn.id}</TableCell>
                       <TableCell>{txn.member}</TableCell>
                       <TableCell>{txn.type}</TableCell>
@@ -242,6 +350,8 @@ export default function PaymentsPage() {
                   ))}
                 </TableBody>
               </Table>
+            )}
+          </div>
             </div>
           )}
         </CardContent>

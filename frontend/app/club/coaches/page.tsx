@@ -9,6 +9,43 @@ import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Search, Filter, UserPlus, Star, Calendar, Users, MoreVertical, Mail, Phone, Loader2, AlertCircle } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { clubAdminService, type ClubCoach } from "@/lib/services"
+
+export default function CoachesPage() {
+  const [searchQuery, setSearchQuery] = useState("")
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [coaches, setCoaches] = useState<ClubCoach[]>([])
+
+  useEffect(() => {
+    loadCoaches()
+  }, [])
+
+  async function loadCoaches() {
+    try {
+      setLoading(true)
+      setError(null)
+      
+      const response = await clubAdminService.getCoaches({ pageSize: 50 })
+      setCoaches(response.data)
+    } catch (err) {
+      console.error('Error loading coaches:', err)
+      setError('Failed to load coaches. Please try again.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const filteredCoaches = coaches.filter(coach => {
+    if (!searchQuery) return true
+    const query = searchQuery.toLowerCase()
+    return coach.name.toLowerCase().includes(query) || 
+           coach.email.toLowerCase().includes(query) ||
+           (coach.specialty?.toLowerCase().includes(query) ?? false)
+  })
+
+  const getInitials = (name: string): string => {
+    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
 import coachService, { Coach } from "@/lib/services/coachService"
 
 export default function CoachesPage() {
@@ -52,6 +89,8 @@ export default function CoachesPage() {
 
   if (loading) {
     return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="text-center">
           <Loader2 className="w-8 h-8 animate-spin text-blue-500 mx-auto mb-4" />
@@ -63,6 +102,10 @@ export default function CoachesPage() {
 
   if (error) {
     return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
+        <AlertCircle className="w-12 h-12 text-red-500" />
+        <p className="text-muted-foreground">{error}</p>
+        <Button onClick={loadCoaches}>Try Again</Button>
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="text-center">
           <AlertCircle className="w-8 h-8 text-red-500 mx-auto mb-4" />
@@ -108,6 +151,7 @@ export default function CoachesPage() {
       {/* Coaches Grid */}
       {filteredCoaches.length === 0 ? (
         <div className="text-center py-12 text-muted-foreground">
+          {searchQuery ? 'No coaches found matching your search.' : 'No coaches found. Add your first coach!'}
           <Users className="w-12 h-12 mx-auto mb-4 opacity-50" />
           <p className="text-lg font-medium">No coaches found</p>
           <p className="text-sm mt-1">
@@ -122,6 +166,7 @@ export default function CoachesPage() {
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center gap-3">
                     <Avatar className="h-14 w-14">
+                      <AvatarImage src={`/.jpg?height=56&width=56&query=${coach.name} coach`} />
                       <AvatarImage src={coach.avatar || `/.jpg?height=56&width=56&query=${coach.name} coach`} />
                       <AvatarFallback className="bg-gradient-to-br from-blue-500 to-teal-500 text-white text-lg font-bold">
                         {getInitials(coach.name)}
@@ -129,6 +174,7 @@ export default function CoachesPage() {
                     </Avatar>
                     <div>
                       <h3 className="font-semibold text-lg">{coach.name}</h3>
+                      <p className="text-sm text-muted-foreground">{coach.specialty || 'General'} Coach</p>
                       <p className="text-sm text-muted-foreground">
                         {coach.specialty && coach.specialty.length > 0 ? coach.specialty.join(', ') : 'General'} Coach
                       </p>
@@ -155,6 +201,11 @@ export default function CoachesPage() {
                       coach.status === "Active" ? "bg-green-500/20 text-green-600" : "bg-yellow-500/20 text-yellow-600"
                     }
                   >
+                    {coach.status}
+                  </Badge>
+                  <div className="flex items-center gap-1 text-yellow-500">
+                    <Star className="w-4 h-4 fill-current" />
+                    <span className="text-sm font-medium">{coach.rating.toFixed(1)}</span>
                     {coach.status || 'Active'}
                   </Badge>
                   <div className="flex items-center gap-1 text-yellow-500">
@@ -166,6 +217,11 @@ export default function CoachesPage() {
                 <div className="grid grid-cols-2 gap-4 mb-4">
                   <div className="flex items-center gap-2 text-sm">
                     <Users className="w-4 h-4 text-muted-foreground" />
+                    <span>{coach.studentCount} students</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm">
+                    <Calendar className="w-4 h-4 text-muted-foreground" />
+                    <span>{coach.sessionCount} sessions/week</span>
                     <span>{coach.students || 0} students</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm">
