@@ -1965,3 +1965,417 @@ export const adminHelpTopics = [
   { id: 5, title: "Reports & Analytics", articles: 5, icon: "chart" },
   { id: 6, title: "Troubleshooting", articles: 15, icon: "help" },
 ]
+
+// ============================================================================
+// MOCK LOGGED-IN USER DATA (for all roles)
+// ============================================================================
+
+export interface MockUser {
+  id: string
+  name: string
+  email: string
+  avatar: string
+  role: string
+  roleLabel: string
+  organization?: string
+}
+
+// Role-based mock users - use these in headers/sidebars instead of hardcoded values
+export const mockUsers: Record<string, MockUser> = {
+  admin: {
+    id: "admin-001",
+    name: "Super Admin",
+    email: "admin@icoachie.com",
+    avatar: "SA",
+    role: "admin",
+    roleLabel: "Super Admin",
+  },
+  clubAdmin: {
+    id: "club-admin-001",
+    name: "Champions FC",
+    email: "admin@championsfc.com",
+    avatar: "CF",
+    role: "club_admin",
+    roleLabel: "Club Admin",
+    organization: "Champions FC",
+  },
+  coach: {
+    id: "coach-001",
+    name: "John Smith",
+    email: "john.smith@email.com",
+    avatar: "JS",
+    role: "coach",
+    roleLabel: "Head Coach",
+    organization: "Champions FC",
+  },
+  freelancer: {
+    id: "freelancer-001",
+    name: "Mike Johnson",
+    email: "mike.j@email.com",
+    avatar: "MJ",
+    role: "freelancer",
+    roleLabel: "Freelancer Coach",
+  },
+  parent: {
+    id: "parent-001",
+    name: "Sarah Wilson",
+    email: "sarah.w@email.com",
+    avatar: "SW",
+    role: "parent",
+    roleLabel: "Parent",
+  },
+  student: {
+    id: "student-001",
+    name: "Emma Davis",
+    email: "emma.d@email.com",
+    avatar: "ED",
+    role: "student",
+    roleLabel: "Student",
+  },
+  accountant: {
+    id: "accountant-001",
+    name: "David Chen",
+    email: "david.chen@email.com",
+    avatar: "DC",
+    role: "accountant",
+    roleLabel: "Accountant",
+    organization: "Champions FC",
+  },
+  frontDesk: {
+    id: "front-desk-001",
+    name: "Lisa Brown",
+    email: "lisa.brown@email.com",
+    avatar: "LB",
+    role: "front_desk",
+    roleLabel: "Front Desk",
+    organization: "Champions FC",
+  },
+  maintenance: {
+    id: "maintenance-001",
+    name: "Tom Wilson",
+    email: "tom.w@email.com",
+    avatar: "TW",
+    role: "maintenance",
+    roleLabel: "Maintenance Tech",
+    organization: "Champions FC",
+  },
+  groundskeeper: {
+    id: "groundskeeper-001",
+    name: "Gary Fields",
+    email: "gary.f@email.com",
+    avatar: "GF",
+    role: "groundskeeper",
+    roleLabel: "Groundskeeper",
+    organization: "Champions FC",
+  },
+  security: {
+    id: "security-001",
+    name: "Mark Stone",
+    email: "mark.s@email.com",
+    avatar: "MS",
+    role: "security",
+    roleLabel: "Security Staff",
+    organization: "Champions FC",
+  },
+  medical: {
+    id: "medical-001",
+    name: "Dr. Emily Chen",
+    email: "emily.chen@email.com",
+    avatar: "EC",
+    role: "medical",
+    roleLabel: "Medical Staff",
+    organization: "Champions FC",
+  },
+  bookingsCoordinator: {
+    id: "bookings-001",
+    name: "Anna Roberts",
+    email: "anna.r@email.com",
+    avatar: "AR",
+    role: "bookings_coordinator",
+    roleLabel: "Bookings Coordinator",
+    organization: "Reservations Team",
+  },
+  contentManager: {
+    id: "content-001",
+    name: "Chris Martin",
+    email: "chris.m@email.com",
+    avatar: "CM",
+    role: "content_manager",
+    roleLabel: "Content Manager",
+    organization: "Champions FC",
+  },
+}
+
+// Helper to get mock user by role
+export function getMockUser(role: string): MockUser {
+  return mockUsers[role] || mockUsers.coach
+}
+
+// ============================================================================
+// MOCK NOTIFICATIONS DATA
+// ============================================================================
+
+export interface MockNotification {
+  id: string
+  title: string
+  message: string
+  type: "info" | "success" | "warning" | "error"
+  time: string
+  read: boolean
+  actionUrl?: string
+}
+
+export const mockNotifications: MockNotification[] = [
+  {
+    id: "notif-1",
+    title: "New Registration",
+    message: "Emma Wilson joined the Junior Soccer program",
+    type: "success",
+    time: "2 min ago",
+    read: false,
+    actionUrl: "/coach/students",
+  },
+  {
+    id: "notif-2",
+    title: "Payment Received",
+    message: "$150 from Michael Brown for monthly subscription",
+    type: "success",
+    time: "15 min ago",
+    read: false,
+  },
+  {
+    id: "notif-3",
+    title: "Session Reminder",
+    message: "Basketball training starts in 30 minutes",
+    type: "info",
+    time: "30 min ago",
+    read: false,
+  },
+  {
+    id: "notif-4",
+    title: "Booking Confirmed",
+    message: "Main Court reserved for tomorrow 9:00 AM",
+    type: "success",
+    time: "1 hour ago",
+    read: true,
+  },
+  {
+    id: "notif-5",
+    title: "Weather Alert",
+    message: "Rain expected tomorrow - consider indoor backup",
+    type: "warning",
+    time: "2 hours ago",
+    read: true,
+  },
+  {
+    id: "notif-6",
+    title: "Maintenance Required",
+    message: "Equipment inspection due for Pool Area",
+    type: "warning",
+    time: "3 hours ago",
+    read: true,
+  },
+  {
+    id: "notif-7",
+    title: "Payment Failed",
+    message: "Subscription payment failed for Elite Academy",
+    type: "error",
+    time: "4 hours ago",
+    read: false,
+  },
+  {
+    id: "notif-8",
+    title: "New Message",
+    message: "Coach Williams sent you a message",
+    type: "info",
+    time: "5 hours ago",
+    read: true,
+    actionUrl: "/messaging",
+  },
+]
+
+// ============================================================================
+// MOCK MESSAGING/CONVERSATIONS DATA
+// ============================================================================
+
+export interface MockConversation {
+  id: string
+  participantName: string
+  participantAvatar: string
+  participantRole: string
+  lastMessage: string
+  lastMessageTime: string
+  unreadCount: number
+  isOnline: boolean
+}
+
+export interface MockMessage {
+  id: string
+  senderId: string
+  senderName: string
+  senderAvatar: string
+  content: string
+  timestamp: string
+  isOwn: boolean
+  status: "sent" | "delivered" | "read"
+}
+
+export const mockConversations: MockConversation[] = [
+  {
+    id: "conv-1",
+    participantName: "Coach Williams",
+    participantAvatar: "CW",
+    participantRole: "Head Coach",
+    lastMessage: "The training schedule has been updated for next week",
+    lastMessageTime: "2 min ago",
+    unreadCount: 2,
+    isOnline: true,
+  },
+  {
+    id: "conv-2",
+    participantName: "Sarah Wilson",
+    participantAvatar: "SW",
+    participantRole: "Parent",
+    lastMessage: "Thank you for the update on Emma's progress!",
+    lastMessageTime: "15 min ago",
+    unreadCount: 0,
+    isOnline: true,
+  },
+  {
+    id: "conv-3",
+    participantName: "Champions FC Admin",
+    participantAvatar: "CF",
+    participantRole: "Club Admin",
+    lastMessage: "Please review the new facility booking guidelines",
+    lastMessageTime: "1 hour ago",
+    unreadCount: 1,
+    isOnline: false,
+  },
+  {
+    id: "conv-4",
+    participantName: "Mike Johnson",
+    participantAvatar: "MJ",
+    participantRole: "Freelancer",
+    lastMessage: "I'm available for the Saturday session",
+    lastMessageTime: "2 hours ago",
+    unreadCount: 0,
+    isOnline: true,
+  },
+  {
+    id: "conv-5",
+    participantName: "Dr. Emily Chen",
+    participantAvatar: "EC",
+    participantRole: "Medical Staff",
+    lastMessage: "Player clearance forms are ready for review",
+    lastMessageTime: "3 hours ago",
+    unreadCount: 0,
+    isOnline: false,
+  },
+  {
+    id: "conv-6",
+    participantName: "Support Team",
+    participantAvatar: "ST",
+    participantRole: "iCoachie Support",
+    lastMessage: "Your ticket has been resolved. Let us know if you need anything else!",
+    lastMessageTime: "1 day ago",
+    unreadCount: 0,
+    isOnline: true,
+  },
+]
+
+export const mockMessages: Record<string, MockMessage[]> = {
+  "conv-1": [
+    {
+      id: "msg-1",
+      senderId: "coach-williams",
+      senderName: "Coach Williams",
+      senderAvatar: "CW",
+      content: "Hi! I wanted to discuss the training schedule for next week.",
+      timestamp: "10:30 AM",
+      isOwn: false,
+      status: "read",
+    },
+    {
+      id: "msg-2",
+      senderId: "current-user",
+      senderName: "You",
+      senderAvatar: "JS",
+      content: "Sure, what changes are you thinking about?",
+      timestamp: "10:32 AM",
+      isOwn: true,
+      status: "read",
+    },
+    {
+      id: "msg-3",
+      senderId: "coach-williams",
+      senderName: "Coach Williams",
+      senderAvatar: "CW",
+      content: "I think we should add an extra practice session on Thursday for the upcoming tournament.",
+      timestamp: "10:35 AM",
+      isOwn: false,
+      status: "read",
+    },
+    {
+      id: "msg-4",
+      senderId: "current-user",
+      senderName: "You",
+      senderAvatar: "JS",
+      content: "That sounds good. I'll check the facility availability.",
+      timestamp: "10:38 AM",
+      isOwn: true,
+      status: "read",
+    },
+    {
+      id: "msg-5",
+      senderId: "coach-williams",
+      senderName: "Coach Williams",
+      senderAvatar: "CW",
+      content: "The training schedule has been updated for next week",
+      timestamp: "Just now",
+      isOwn: false,
+      status: "delivered",
+    },
+  ],
+  "conv-2": [
+    {
+      id: "msg-6",
+      senderId: "current-user",
+      senderName: "You",
+      senderAvatar: "JS",
+      content: "Hi Sarah! Emma has been doing great in practice lately.",
+      timestamp: "Yesterday",
+      isOwn: true,
+      status: "read",
+    },
+    {
+      id: "msg-7",
+      senderId: "sarah-wilson",
+      senderName: "Sarah Wilson",
+      senderAvatar: "SW",
+      content: "That's wonderful to hear! She's been really excited about the sessions.",
+      timestamp: "Yesterday",
+      isOwn: false,
+      status: "read",
+    },
+    {
+      id: "msg-8",
+      senderId: "sarah-wilson",
+      senderName: "Sarah Wilson",
+      senderAvatar: "SW",
+      content: "Thank you for the update on Emma's progress!",
+      timestamp: "15 min ago",
+      isOwn: false,
+      status: "read",
+    },
+  ],
+}
+
+// Helper to get unread notification count
+export function getUnreadNotificationCount(): number {
+  return mockNotifications.filter(n => !n.read).length
+}
+
+// Helper to get unread message count
+export function getUnreadMessageCount(): number {
+  return mockConversations.reduce((acc, conv) => acc + conv.unreadCount, 0)
+}
