@@ -1,10 +1,14 @@
 "use client"
-import { Bell, Search } from "lucide-react"
+import { Search, Wifi, WifiOff } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { GlobalNotifications } from "@/components/GlobalNotifications"
+import { useSocket } from "@/contexts/SocketContext"
 
 export function FacilityHeader() {
+  const { isConnected } = useSocket()
+
   return (
     <header className="sticky top-0 z-30 glass border-b border-white/20">
       <div className="flex items-center justify-between px-4 py-3 lg:px-6">
@@ -16,10 +20,20 @@ export function FacilityHeader() {
           </div>
         </div>
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" className="relative">
-            <Bell className="w-5 h-5" />
-            <span className="absolute -top-1 -right-1 w-5 h-5 bg-amber-500 rounded-full text-[10px] flex items-center justify-center text-white font-medium">4</span>
-          </Button>
+          <div className="hidden sm:flex items-center gap-1.5 px-2 py-1 rounded-full bg-white/5 border border-white/10">
+            {isConnected ? (
+              <>
+                <Wifi className="w-3.5 h-3.5 text-emerald-500" />
+                <span className="text-[10px] font-medium text-emerald-500/90">Live</span>
+              </>
+            ) : (
+              <>
+                <WifiOff className="w-3.5 h-3.5 text-amber-500" />
+                <span className="text-[10px] font-medium text-amber-500/90">Offline</span>
+              </>
+            )}
+          </div>
+          <GlobalNotifications />
           <div className="flex items-center gap-3 pl-3 border-l border-white/20">
             <Avatar className="h-9 w-9"><AvatarImage src="" /><AvatarFallback className="bg-gradient-to-br from-amber-500 to-orange-500 text-white">FM</AvatarFallback></Avatar>
             <div className="hidden sm:block"><p className="text-sm font-medium">Facility Team</p><p className="text-xs text-muted-foreground">Manager</p></div>

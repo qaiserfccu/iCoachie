@@ -1,8 +1,10 @@
 "use client"
 
-import { Bell, Search, Menu } from "lucide-react"
+import { Search, Menu, Wifi, WifiOff } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/lib/contexts/AuthContext"
+import { useSocket } from "@/contexts/SocketContext"
+import { GlobalNotifications } from "@/components/GlobalNotifications"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -17,6 +19,7 @@ import {
 
 export function ParentHeader() {
   const { logout } = useAuth()
+  const { isConnected } = useSocket()
   const router = useRouter()
   const handleLogout = async () => {
     try { await logout(); router.push('/login') } catch (_) { router.push('/login') }
@@ -38,32 +41,24 @@ export function ParentHeader() {
         </div>
 
         <div className="flex items-center gap-3">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="glass-subtle rounded-xl relative">
-                <Bell className="h-5 w-5" />
-                <span className="absolute -top-1 -right-1 w-5 h-5 bg-pink-500 rounded-full text-xs text-white flex items-center justify-center">
-                  3
-                </span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-80 glass-card border-white/20">
-              <DropdownMenuLabel>Notifications</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem className="flex flex-col items-start gap-1 py-3">
-                <span className="font-medium">Session Reminder</span>
-                <span className="text-xs text-muted-foreground">Emma&apos;s swimming class starts in 1 hour</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem className="flex flex-col items-start gap-1 py-3">
-                <span className="font-medium">Progress Update</span>
-                <span className="text-xs text-muted-foreground">Jake earned a new badge in basketball!</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem className="flex flex-col items-start gap-1 py-3">
-                <span className="font-medium">Payment Due</span>
-                <span className="text-xs text-muted-foreground">Monthly subscription due in 3 days</span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          {/* Connection status indicator */}
+          <div className="hidden sm:flex items-center gap-1.5 px-2 py-1 rounded-lg glass-subtle">
+            {isConnected ? (
+              <>
+                <Wifi className="h-4 w-4 text-green-500" />
+                <span className="text-xs text-green-500">Live</span>
+              </>
+            ) : (
+              <>
+                <WifiOff className="h-4 w-4 text-yellow-500" />
+                <span className="text-xs text-yellow-500">Offline</span>
+              </>
+            )}
+          </div>
+
+          <div className="glass-subtle rounded-xl">
+            <GlobalNotifications />
+          </div>
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

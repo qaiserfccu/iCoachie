@@ -1,11 +1,15 @@
 "use client"
 
-import { Bell, Search, Menu, Building } from "lucide-react"
+import { Search, Menu, Building, Wifi, WifiOff } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { GlobalNotifications } from "@/components/GlobalNotifications"
+import { useSocket } from "@/contexts/SocketContext"
 
 export function VenueHeader() {
+  const { isConnected } = useSocket()
+
   return (
     <header className="sticky top-0 z-30 glass border-b border-white/20">
       <div className="flex items-center justify-between p-4">
@@ -27,10 +31,20 @@ export function VenueHeader() {
           </div>
         </div>
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" className="relative glass-subtle">
-            <Bell className="w-5 h-5" />
-            <span className="absolute top-1 right-1 w-2 h-2 bg-violet-500 rounded-full" />
-          </Button>
+          <div className="hidden sm:flex items-center gap-1.5 px-2 py-1 rounded-full bg-white/5 border border-white/10">
+            {isConnected ? (
+              <>
+                <Wifi className="w-3.5 h-3.5 text-emerald-500" />
+                <span className="text-[10px] font-medium text-emerald-500/90">Live</span>
+              </>
+            ) : (
+              <>
+                <WifiOff className="w-3.5 h-3.5 text-amber-500" />
+                <span className="text-[10px] font-medium text-amber-500/90">Offline</span>
+              </>
+            )}
+          </div>
+          <GlobalNotifications />
           <Avatar className="h-9 w-9 border-2 border-violet-500/50">
             <AvatarFallback className="bg-gradient-to-br from-violet-500 to-purple-600 text-white text-sm">VN</AvatarFallback>
           </Avatar>
