@@ -54,9 +54,9 @@ describe('Clubs API - Multi-tenancy Tests', () => {
 
     // Create SuperAdmin role and assign to admin user
     const superAdminRole = await prisma.role.upsert({
-      where: { name: 'SuperAdmin' },
+      where: { code: 'SUPER_ADMIN' },
       update: {},
-      create: { name: 'SuperAdmin' }
+      create: { code: 'SUPER_ADMIN', name: 'Super Administrator' }
     });
 
     await prisma.userRoleAssignment.create({

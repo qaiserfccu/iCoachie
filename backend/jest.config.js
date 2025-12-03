@@ -17,4 +17,6 @@ module.exports = {
   coverageReporters: ['text', 'lcov', 'html'],
   setupFilesAfterEnv: ['<rootDir>/tests/setup.ts'],
   maxWorkers: 1, // Run tests serially to avoid database conflicts
+  testTimeout: 30000, // 30 second timeout per test
+  slowTestThreshold: 5000, // Mark tests slower than 5s as slow
 };

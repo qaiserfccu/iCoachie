@@ -1,14 +1,5 @@
 import request from 'supertest';
 import express from 'express';
-import { prisma, createTestUser, createTestClub } from './setup';
-import authRoutes from '../src/controllers/authController';
-
-const app = express();
-app.use(express.json());
-app.use('/api/auth', authRoutes);
-
-import request from 'supertest';
-import express from 'express';
 import bcrypt from 'bcrypt';
 import { prisma, createTestUser, createTestClub } from './setup';
 import authRoutes from '../src/controllers/authController';

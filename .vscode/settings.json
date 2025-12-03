@@ -1,5 +1,7 @@
 {
     "workbench.colorTheme": "Default Dark+",
     "git.ignoreLimitWarning": true,
-    "todo-tree.tree.scanMode": "current file"
+    "todo-tree.tree.scanMode": "current file",
+    "jest.monitorLongRun": 3000,
+    "files.autoSave": "afterDelay"
 }

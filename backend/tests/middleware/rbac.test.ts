@@ -155,6 +155,16 @@ describe('RBAC Middleware', () => {
 
       expect(mockRes.status).toHaveBeenCalledWith(403);
     });
+
+    it('should handle database errors', async () => {
+      (mockPrisma.user.findUnique as jest.Mock).mockRejectedValue(new Error('DB error'));
+
+      const middleware = requireAnyRole(['ADMIN', 'COACH']);
+      await middleware(mockReq as AuthRequest, mockRes, mockNext);
+
+      expect(mockRes.status).toHaveBeenCalledWith(500);
+      expect(mockRes.json).toHaveBeenCalledWith({ message: 'Internal error' });
+    });
   });
 
   describe('requirePermission', () => {
@@ -261,6 +271,42 @@ describe('RBAC Middleware', () => {
       expect(mockNext).toHaveBeenCalled();
     });
 
+    it('should handle permissions as string values', async () => {
+      (mockPrisma.user.findUnique as jest.Mock).mockResolvedValue({
+        id: 1,
+        primaryRole: {
+          code: 'ADMIN',
+          name: 'Admin',
+          scope: 'GLOBAL',
+          permissions: { manageUsers: 'true', viewReports: 'false' },
+        },
+        userRoles: [],
+      });
+
+      const middleware = requirePermission('manageUsers');
+      await middleware(mockReq as AuthRequest, mockRes, mockNext);
+
+      expect(mockNext).toHaveBeenCalled();
+    });
+
+    it('should handle permissions with string values that are permission names', async () => {
+      (mockPrisma.user.findUnique as jest.Mock).mockResolvedValue({
+        id: 1,
+        primaryRole: {
+          code: 'ADMIN',
+          name: 'Admin',
+          scope: 'GLOBAL',
+          permissions: { 'custom.permission': 'custom.permission' },
+        },
+        userRoles: [],
+      });
+
+      const middleware = requirePermission('custom.permission');
+      await middleware(mockReq as AuthRequest, mockRes, mockNext);
+
+      expect(mockNext).toHaveBeenCalled();
+    });
+
     it('should handle wildcard permissions', async () => {
       (mockPrisma.user.findUnique as jest.Mock).mockResolvedValue({
         id: 1,
@@ -295,6 +341,16 @@ describe('RBAC Middleware', () => {
       await middleware(mockReq as AuthRequest, mockRes, mockNext);
 
       expect(mockNext).toHaveBeenCalled();
+    });
+
+    it('should handle database errors', async () => {
+      (mockPrisma.user.findUnique as jest.Mock).mockRejectedValue(new Error('DB error'));
+
+      const middleware = requirePermission('manageUsers');
+      await middleware(mockReq as AuthRequest, mockRes, mockNext);
+
+      expect(mockRes.status).toHaveBeenCalledWith(500);
+      expect(mockRes.json).toHaveBeenCalledWith({ message: 'Internal error' });
     });
   });
 
@@ -362,6 +418,16 @@ describe('RBAC Middleware', () => {
       await middleware(mockReq as AuthRequest, mockRes, mockNext);
 
       expect(mockNext).toHaveBeenCalled();
+    });
+
+    it('should handle database errors', async () => {
+      (mockPrisma.user.findUnique as jest.Mock).mockRejectedValue(new Error('DB error'));
+
+      const middleware = requireScope('CLUB');
+      await middleware(mockReq as AuthRequest, mockRes, mockNext);
+
+      expect(mockRes.status).toHaveBeenCalledWith(500);
+      expect(mockRes.json).toHaveBeenCalledWith({ message: 'Internal error' });
     });
   });
 });

@@ -158,8 +158,8 @@ describe('RBAC smoke tests', () => {
 
       const findUniqueSpy = jest
         .spyOn(appPrisma.facility, 'findUnique')
-        .mockResolvedValue({ clubId: testClubId } as any);
-      const deleteSpy = jest.spyOn(appPrisma.facility, 'delete').mockResolvedValue({} as any);
+        .mockResolvedValue({ clubId: testClubId, deletedAt: null } as any);
+      const updateSpy = jest.spyOn(appPrisma.facility, 'update').mockResolvedValue({} as any);
 
       await request(app)
         .delete('/api/facilities/100')
@@ -167,7 +167,7 @@ describe('RBAC smoke tests', () => {
         .expect(200);
 
       expect(findUniqueSpy).toHaveBeenCalled();
-      expect(deleteSpy).toHaveBeenCalled();
+      expect(updateSpy).toHaveBeenCalled();
     });
 
     it('blocks non-super-admins from deleting a facility', async () => {
