@@ -232,6 +232,3 @@
 ✅ All 22 roles seeded
 ✅ All status lookup tables populated
 ✅ Facility management models created
-⏳ Backend controllers need updating to use database lookups
-⏳ Frontend needs updating to handle all 22 roles
-⏳ RBAC middleware needs implementation

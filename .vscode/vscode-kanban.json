@@ -4,116 +4,6 @@
       "assignedTo": {
         "name": "Copilot Agent"
       },
-      "category": "integration",
-      "creation_time": "2025-12-03T00:00:00.000Z",
-      "description": {
-        "content": "Complete full backend integration for coach, parent, and student dashboards covering session management, progress tracking, and family management.",
-        "mime": "text/markdown"
-      },
-      "details": {
-        "content": "# 1-1 Coach/Parent/Student Dashboard Integration\n\n## Context\n- Core user roles (HEAD_COACH, COACH, FREELANCER, PARENT, STUDENT) need dedicated dashboards\n- Current dashboards use mock data from mockDataService.ts\n- Need comprehensive integration plan covering coaching operations, family management, and student progress\n- Strict policy: no frontend mocks allowed - must use backend APIs or create backend mock methods\n\n## Dashboard Routes to Integrate\n\n### Coach Dashboard (`/coach/dashboard`)\n- **Mock Data Used**: `coachStats`, `coachTodaySessions`, `coachRecentStudents`, `coachPendingEvaluations`\n- **Required Backend APIs**:\n  - `GET /api/coaches/dashboard/stats` - Coach statistics (active students, sessions today, pending evaluations)\n  - `GET /api/sessions?coachId={id}&date={today}&status=SCHEDULED` - Today's scheduled sessions\n  - `GET /api/students?coachId={id}&limit=5&sort=recentActivity` - Recently active students\n  - `GET /api/evaluations?coachId={id}&status=PENDING&limit=10` - Pending evaluation requests\n\n### Parent Dashboard (`/parent/dashboard`)\n- **Mock Data Used**: `parentStats`, `parentKids`, `parentUpcomingSessions`, `parentRecentAchievements`\n- **Required Backend APIs**:\n  - `GET /api/parents/dashboard/stats` - Parent statistics (children count, upcoming sessions, recent achievements)\n  - `GET /api/students?familyId={id}` - Parent's children/student profiles\n  - `GET /api/sessions?studentIds={childrenIds}&status=SCHEDULED&upcoming=true` - Upcoming sessions for children\n  - `GET /api/achievements?studentIds={childrenIds}&limit=10&sort=recent` - Recent achievements by children\n\n### Student Dashboard (`/student/dashboard`)\n- **Mock Data Used**: `studentPageStats`, `studentPageUpcomingSessions`, `studentPageRecentEvaluations`, `studentPageAchievements`\n- **Required Backend APIs**:\n  - `GET /api/students/{id}/dashboard/stats` - Student statistics (sessions attended, evaluations completed, achievements earned)\n  - `GET /api/sessions?studentId={id}&status=SCHEDULED&upcoming=true` - Upcoming scheduled sessions\n  - `GET /api/evaluations?studentId={id}&limit=5&sort=recent` - Recent evaluation results\n  - `GET /api/achievements?studentId={id}&limit=10&sort=recent` - Student's recent achievements\n\n### Coach Students Sub-page (`/coach/students`)\n- **Mock Data Used**: `coachStudents`\n- **Required Backend APIs**:\n  - `GET /api/students?coachId={id}&include=progress,attendance,evaluations` - Coach's assigned students with progress data\n\n## Implementation Strategy\n\n### For Each Dashboard Route:\n1. **Identify Required Backend APIs**\n   - Review existing endpoints in `docs/backend/global-endpoint-matrix.md`\n   - Map frontend data needs to backend contracts with proper scoping (coach, parent, student)\n   - Identify gaps where APIs don't exist and create mock methods\n\n2. **Replace Mock Services**\n   - Remove imports from `frontend/lib/services/mockDataService.ts`\n   - Update dashboard components to use real API services\n   - Ensure proper error handling and loading states\n\n3. **Create Missing Backend APIs**\n   - For routes without backend support, create mock methods in respective controllers\n   - Add TODO comments indicating these are temporary mocks\n   - Follow existing controller patterns and RBAC with appropriate role scopes\n\n4. **Update Frontend Services**\n   - Extend `frontend/lib/api.ts` and create role-specific service files\n   - Ensure consistent error handling and response formatting\n   - Add proper TypeScript interfaces matching backend DTOs\n\n## Acceptance Criteria\n- ✅ All coach/parent/student dashboard routes load without frontend mock data\n- ✅ All API calls use backend endpoints (real or mock methods) with proper role scoping\n- ✅ No remaining imports from mockDataService in coach/parent/student components\n- ✅ Successful e2e tests covering all dashboard routes and sub-pages\n- ✅ Proper error handling and loading states implemented\n- ✅ RBAC properly enforced for HEAD_COACH/COACH/FREELANCER/PARENT/STUDENT roles\n\n## Testing Requirements\n- E2e test suite covering navigation to all dashboard routes\n- API integration tests for each route's data fetching with role scoping\n- Error scenario testing (unauthorized access, cross-scope access, network failures)\n- Performance testing for data-heavy routes (student lists, session histories)\n\n## Dependencies\n- Card 16-2 (Admin Panel Integration)\n- `docs/backend/global-endpoint-matrix.md` for API mapping\n- Frontend dashboard components (`app/(dashboard)/coach/page.tsx`, `app/(dashboard)/parent/page.tsx`, `app/(dashboard)/student/page.tsx`, `app/(dashboard)/coach/students/page.tsx`)\n- Backend controllers with role-based RBAC",
-        "mime": "text/markdown"
-      },
-      "id": "1-1",
-      "prio": 11,
-      "references": [
-        "16-2",
-        "docs/backend/global-endpoint-matrix.md"
-      ],
-      "title": "1-1 Coach/Parent/Student Dashboard Integration"
-    },
-    {
-      "assignedTo": {
-        "name": "Copilot Agent"
-      },
-      "category": "integration",
-      "creation_time": "2025-12-03T00:00:00.000Z",
-      "description": {
-        "content": "Complete full backend integration for coaching dashboards (HEAD_COACH, COACH, FREELANCER) covering session management, student progress, and coaching analytics.",
-        "mime": "text/markdown"
-      },
-      "details": {
-        "content": "# 16-1-2 Coaching Dashboard Integration\n\n## Context\n- Coaching roles (HEAD_COACH, COACH, FREELANCER) need dedicated dashboards\n- Current dashboards likely use mock data from mockDataService\n- Need comprehensive integration plan covering coaching operations and student management\n- Strict policy: no frontend mocks allowed - must use backend APIs or create backend mock methods\n\n## Coaching Routes to Integrate\n\n### Session Management\n- `/coach/dashboard` - Coach overview with assigned sessions and student progress\n- `/coach/sessions` - Session scheduling and management\n- `/coach/attendance` - Attendance tracking for coached sessions\n- `/coach/evaluations` - Student performance evaluations and feedback\n\n### Student Management\n- `/coach/students` - Assigned students and progress tracking\n- `/coach/progress` - Detailed student progress reports and analytics\n\n### Scheduling & Bookings\n- `/coach/schedule` - Personal coaching schedule management\n- `/coach/bookings` - Facility bookings for coaching sessions\n\n### Analytics & Reporting\n- `/coach/analytics` - Coaching performance metrics and student outcomes\n- `/coach/reports` - Custom reports for coaching activities\n\n## Implementation Strategy\n\n### For Each Route:\n1. **Identify Required Backend APIs**\n   - Review existing endpoints in global-endpoint-matrix.md\n   - Map frontend data needs to backend contracts with coach scoping\n   - Identify gaps where APIs don't exist\n\n2. **Replace Mock Services**\n   - Remove imports from `frontend/lib/services/mockDataService.ts`\n   - Update components to use real API services\n   - Ensure proper error handling and loading states\n\n3. **Create Missing Backend APIs**\n   - For routes without backend support, create mock methods in backend controllers\n   - Add TODO comments indicating these are temporary mocks\n   - Follow existing controller patterns and RBAC with appropriate coach roles\n\n4. **Update Frontend Services**\n   - Extend `frontend/lib/api.ts` and service files as needed\n   - Ensure consistent error handling and response formatting\n   - Add proper TypeScript interfaces\n\n## Acceptance Criteria\n- ✅ All coaching routes successfully load without frontend mock data\n- ✅ All API calls use backend endpoints (real or mock methods) with proper coach scoping\n- ✅ No remaining imports from mockDataService in coaching components\n- ✅ Successful e2e tests covering all coaching routes\n- ✅ Proper error handling and loading states implemented\n- ✅ RBAC properly enforced for HEAD_COACH/COACH/FREELANCER roles\n\n## Testing Requirements\n- E2e test suite covering navigation to all coaching routes\n- API integration tests for each route's data fetching with coach scoping\n- Error scenario testing (unauthorized access, network failures)\n- Performance testing for data-heavy routes\n\n## Dependencies\n- Card 16-2 (Admin Panel Integration)\n- `docs/backend/global-endpoint-matrix.md` for API mapping\n- Frontend coach dashboard components (likely in `app/(dashboard)/coach/`)\n- Backend controllers with coach role RBAC",
-        "mime": "text/markdown"
-      },
-      "id": "16-1-2",
-      "prio": 11,
-      "references": [
-        "16-2",
-        "docs/backend/global-endpoint-matrix.md"
-      ],
-      "title": "16-1-2 Coaching dashboard integration"
-    },
-    {
-      "assignedTo": {
-        "name": "Copilot Agent"
-      },
-      "category": "integration",
-      "creation_time": "2025-12-03T00:00:00.000Z",
-      "description": {
-        "content": "Complete full backend integration for facility operations dashboards covering facility management, maintenance, and operational workflows.",
-        "mime": "text/markdown"
-      },
-      "details": {
-        "content": "# 16-2-1 Facility Operations Dashboard Integration\n\n## Context\n- Facility operations roles (FACILITY_MANAGER, VENUE_MANAGER, GROUND_MANAGER, GROUNDSKEEPER, MAINTENANCE_TECH, EQUIPMENT_MANAGER, SECURITY_STAFF, CLEANING_STAFF) need dedicated dashboards\n- Current dashboards likely use mock data from mockDataService\n- Need comprehensive integration plan covering facility operations and maintenance\n- Strict policy: no frontend mocks allowed - must use backend APIs or create backend mock methods\n\n## Facility Operations Routes to Integrate\n\n### Facility Management\n- `/facility/dashboard` - Facility overview with status and maintenance alerts\n- `/facility/venues` - Venue management and scheduling\n- `/facility/grounds` - Ground maintenance and availability\n- `/facility/equipment` - Equipment inventory and maintenance tracking\n\n### Maintenance & Operations\n- `/facility/maintenance` - Maintenance schedules and work orders\n- `/facility/cleaning` - Cleaning schedules and assignments\n- `/facility/security` - Security logs and incident reporting\n\n### Scheduling & Bookings\n- `/facility/schedule` - Facility-wide scheduling and availability\n- `/facility/bookings` - Booking management and conflict resolution\n\n### Analytics & Reporting\n- `/facility/analytics` - Facility utilization and maintenance metrics\n- `/facility/reports` - Operational reports and compliance tracking\n\n## Implementation Strategy\n\n### For Each Route:\n1. **Identify Required Backend APIs**\n   - Review existing endpoints in global-endpoint-matrix.md\n   - Map frontend data needs to backend contracts with facility scoping\n   - Identify gaps where APIs don't exist\n\n2. **Replace Mock Services**\n   - Remove imports from `frontend/lib/services/mockDataService.ts`\n   - Update components to use real API services\n   - Ensure proper error handling and loading states\n\n3. **Create Missing Backend APIs**\n   - For routes without backend support, create mock methods in backend controllers\n   - Add TODO comments indicating these are temporary mocks\n   - Follow existing controller patterns and RBAC with FACILITY scope\n\n4. **Update Frontend Services**\n   - Extend `frontend/lib/api.ts` and service files as needed\n   - Ensure consistent error handling and response formatting\n   - Add proper TypeScript interfaces\n\n## Acceptance Criteria\n- ✅ All facility operations routes successfully load without frontend mock data\n- ✅ All API calls use backend endpoints (real or mock methods) with proper facility scoping\n- ✅ No remaining imports from mockDataService in facility components\n- ✅ Successful e2e tests covering all facility operations routes\n- ✅ Proper error handling and loading states implemented\n- ✅ RBAC properly enforced for facility operations roles\n\n## Testing Requirements\n- E2e test suite covering navigation to all facility operations routes\n- API integration tests for each route's data fetching with facility scoping\n- Error scenario testing (unauthorized access, network failures)\n- Performance testing for data-heavy routes\n\n## Dependencies\n- Card 16-2 (Admin Panel Integration)\n- `docs/backend/global-endpoint-matrix.md` for API mapping\n- Frontend facility dashboard components (likely in `app/(dashboard)/facility/`)\n- Backend controllers with facility role RBAC",
-        "mime": "text/markdown"
-      },
-      "id": "16-2-1",
-      "prio": 11,
-      "references": [
-        "16-2",
-        "docs/backend/global-endpoint-matrix.md"
-      ],
-      "title": "16-2-1 Facility operations dashboard integration"
-    },
-    {
-      "assignedTo": {
-        "name": "Copilot Agent"
-      },
-      "category": "integration",
-      "creation_time": "2025-12-03T00:00:00.000Z",
-      "description": {
-        "content": "Complete full backend integration for content and medical dashboards (CONTENT_MANAGER, MEDICAL_STAFF) covering content management and medical services.",
-        "mime": "text/markdown"
-      },
-      "details": {
-        "content": "# 16-2-3 Content & Medical Dashboard Integration\n\n## Context\n- Content and medical roles (CONTENT_MANAGER, MEDICAL_STAFF) need dedicated dashboards\n- Current dashboards likely use mock data from mockDataService\n- Need comprehensive integration plan covering content and medical operations\n- Strict policy: no frontend mocks allowed - must use backend APIs or create backend mock methods\n\n## Content & Medical Routes to Integrate\n\n### Content Management\n- `/content/dashboard` - Content overview and publishing status\n- `/content/articles` - Article creation and management\n- `/content/media` - Media library and asset management\n- `/content/publishing` - Content scheduling and publishing workflow\n\n### Medical Services\n- `/medical/dashboard` - Medical services overview and alerts\n- `/medical/incidents` - Medical incident tracking and reporting\n- `/medical/emergency` - Emergency response coordination\n- `/medical/health` - Health records and monitoring\n\n### Analytics & Reporting\n- `/content/analytics` - Content performance and engagement metrics\n- `/medical/reports` - Medical service reports and compliance\n\n## Implementation Strategy\n\n### For Each Route:\n1. **Identify Required Backend APIs**\n   - Review existing endpoints in global-endpoint-matrix.md\n   - Map frontend data needs to backend contracts\n   - Identify gaps where APIs don't exist\n\n2. **Replace Mock Services**\n   - Remove imports from `frontend/lib/services/mockDataService.ts`\n   - Update components to use real API services\n   - Ensure proper error handling and loading states\n\n3. **Create Missing Backend APIs**\n   - For routes without backend support, create mock methods in backend controllers\n   - Add TODO comments indicating these are temporary mocks\n   - Follow existing controller patterns and RBAC with appropriate roles\n\n4. **Update Frontend Services**\n   - Extend `frontend/lib/api.ts` and service files as needed\n   - Ensure consistent error handling and response formatting\n   - Add proper TypeScript interfaces\n\n## Acceptance Criteria\n- ✅ All content and medical routes successfully load without frontend mock data\n- ✅ All API calls use backend endpoints (real or mock methods)\n- ✅ No remaining imports from mockDataService in content/medical components\n- ✅ Successful e2e tests covering all content and medical routes\n- ✅ Proper error handling and loading states implemented\n- ✅ RBAC properly enforced for CONTENT_MANAGER/MEDICAL_STAFF roles\n\n## Testing Requirements\n- E2e test suite covering navigation to all content and medical routes\n- API integration tests for each route's data fetching\n- Error scenario testing (unauthorized access, network failures)\n- Performance testing for data-heavy routes\n\n## Dependencies\n- Card 16-2 (Admin Panel Integration)\n- `docs/backend/global-endpoint-matrix.md` for API mapping\n- Frontend content/medical dashboard components\n- Backend controllers with content/medical role RBAC",
-        "mime": "text/markdown"
-      },
-      "id": "16-2-3",
-      "prio": 11,
-      "references": [
-        "16-2",
-        "docs/backend/global-endpoint-matrix.md"
-      ],
-      "title": "16-2-3 Content & medical dashboard integration"
-    },
-    {
-      "assignedTo": {
-        "name": "Copilot Agent"
-      },
-      "category": "integration",
-      "creation_time": "2025-12-03T00:00:00.000Z",
-      "description": {
-        "content": "Complete full backend integration for user dashboards (PARENT, STUDENT) covering personal profiles, progress tracking, and family management.",
-        "mime": "text/markdown"
-      },
-      "details": {
-        "content": "# 16-2-4 User Dashboard Integration\n\n## Context\n- User roles (PARENT, STUDENT) need dedicated dashboards\n- Current dashboards likely use mock data from mockDataService\n- Need comprehensive integration plan covering user profiles and progress tracking\n- Strict policy: no frontend mocks allowed - must use backend APIs or create backend mock methods\n\n## User Routes to Integrate\n\n### Student Dashboard\n- `/student/dashboard` - Personal progress and upcoming sessions\n- `/student/sessions` - Session history and scheduling\n- `/student/progress` - Performance tracking and evaluations\n- `/student/achievements` - Awards and milestone tracking\n\n### Parent Dashboard\n- `/parent/dashboard` - Family overview and children's progress\n- `/parent/children` - Child profile management and enrollment\n- `/parent/payments` - Payment history and billing\n- `/parent/communication` - Messages and notifications from coaches\n\n### Profile Management\n- `/user/profile` - Personal profile settings and preferences\n- `/user/notifications` - Notification preferences and history\n- `/user/privacy` - Privacy settings and data management\n\n### Analytics & Reporting\n- `/user/analytics` - Personal performance analytics\n- `/user/reports` - Progress reports and certificates\n\n## Implementation Strategy\n\n### For Each Route:\n1. **Identify Required Backend APIs**\n   - Review existing endpoints in global-endpoint-matrix.md\n   - Map frontend data needs to backend contracts with user scoping\n   - Identify gaps where APIs don't exist\n\n2. **Replace Mock Services**\n   - Remove imports from `frontend/lib/services/mockDataService.ts`\n   - Update components to use real API services\n   - Ensure proper error handling and loading states\n\n3. **Create Missing Backend APIs**\n   - For routes without backend support, create mock methods in backend controllers\n   - Add TODO comments indicating these are temporary mocks\n   - Follow existing controller patterns and RBAC with USER scope\n\n4. **Update Frontend Services**\n   - Extend `frontend/lib/api.ts` and service files as needed\n   - Ensure consistent error handling and response formatting\n   - Add proper TypeScript interfaces\n\n## Acceptance Criteria\n- ✅ All user routes successfully load without frontend mock data\n- ✅ All API calls use backend endpoints (real or mock methods) with proper user scoping\n- ✅ No remaining imports from mockDataService in user components\n- ✅ Successful e2e tests covering all user routes\n- ✅ Proper error handling and loading states implemented\n- ✅ RBAC properly enforced for PARENT/STUDENT roles\n\n## Testing Requirements\n- E2e test suite covering navigation to all user routes\n- API integration tests for each route's data fetching with user scoping\n- Error scenario testing (unauthorized access, network failures)\n- Performance testing for data-heavy routes\n\n## Dependencies\n- Card 16-2 (Admin Panel Integration)\n- `docs/backend/global-endpoint-matrix.md` for API mapping\n- Frontend user dashboard components (likely in `app/(dashboard)/parent/`, `app/(dashboard)/student/`)\n- Backend controllers with user role RBAC",
-        "mime": "text/markdown"
-      },
-      "id": "16-2-4",
-      "prio": 11,
-      "references": [
-        "16-2",
-        "docs/backend/global-endpoint-matrix.md"
-      ],
-      "title": "16-2-4 User dashboard integration"
-    },
-    {
-      "assignedTo": {
-        "name": "Copilot Agent"
-      },
       "category": "testing",
       "creation_time": "2025-12-02T00:00:00.000Z",
       "description": {
@@ -134,40 +24,433 @@
       "assignedTo": {
         "name": "Copilot Agent"
       },
-      "category": "planning",
-      "creation_time": "2025-12-02T00:00:00.000Z",
+      "category": "integration",
+      "creation_time": "2025-12-03T00:00:00.000Z",
       "description": {
-        "content": "Create master card 'Backend integration (phase-2)' and break it into role-specific backend integration subtasks referencing OpenAPI/Postman assets.",
+        "content": "# 16.B.10 Bookings Coordinator Sidebar Backend Integration\n\n## Overview\nComplete full backend integration for all Bookings Coordinator sidebar menus defined in bookings-coordinator-sidebar.tsx, replacing all mock services with backend API calls or creating backend mock methods where APIs don't exist yet.\n\n## Reference Screenshot\n[Bookings Coordinator Sidebar Screenshot](https://example.com/bookings-coordinator-sidebar.png)\n\n## Bookings Coordinator Sidebar Menus to Integrate\n- Dashboard: /bookings-coordinator\n- Booking Calendar: /bookings-coordinator/calendar\n- Reservations: /bookings-coordinator/reservations\n- Availability: /bookings-coordinator/availability\n- Pricing: /bookings-coordinator/pricing\n- Confirmations: /bookings-coordinator/confirmations\n- Settings: /bookings-coordinator/settings\n- View Site: /\n- Help: /bookings-coordinator/help",
         "mime": "text/markdown"
       },
       "details": {
-        "content": "# Task 7 - Backend Integration (Phase 2) Planning (Priority 10)\n\n## Deliverables\n1. Parent Kanban card titled \"Backend integration (phase-2)\" with summary, scope, timeline.\n2. 22 sub-cards (one per role or logical grouping) describing backend integration tasks, dependencies, APIs to consume, validation rules, and acceptance tests.\n3. Linking each sub-card to relevant OpenAPI sections, Postman requests, and Swagger docs for parameter alignment.\n4. Checklist covering request/response payload sync, error handling, and logging requirements.\n5. Communication plan with frontend owners for each role-based feature.\n\n## Notes\n- Include risk assessment + mitigation per role.\n- Highlight data migration or seeding needs for integration.\n- Outline testing strategy (unit, integration, UAT) for each subtask.",
+        "content": "# 16.B.10 Bookings Coordinator Sidebar Backend Integration - Implementation Details\n\n## Current Status\nBookings Coordinator sidebar integration is partially complete. Card 16-2 exists for admin panel integration but focuses on backend API creation. This new card (16.B.10) focuses on full frontend-backend integration including real-time features.\n\n## Implementation Strategy\n\n### Phase 1: Backend API Assessment\n1. Review existing endpoints in `docs/backend/global-endpoint-matrix.md`\n2. Map bookings coordinator sidebar routes to backend APIs\n3. Identify gaps where APIs don't exist\n4. Create mock methods for missing APIs with TODO comments\n\n### Phase 2: Frontend Service Updates\n1. Remove all imports from `frontend/lib/services/mockDataService.ts`\n2. Update `frontend/lib/api.ts` and bookings coordinator service files\n3. Add proper TypeScript interfaces for all bookings coordinator data\n4. Implement error handling and loading states\n\n### Phase 3: Real-time Integration\n1. Connect bookings coordinator routes to socket events (`bookings-coordinator-calendar-updated`, `bookings-coordinator-reservation-updated`, etc.)\n2. Implement live notifications and message popups\n3. Add real-time dashboard updates\n\n### Phase 4: Testing & Validation\n1. E2e test suite for all bookings coordinator routes\n2. API integration tests with seeded data\n3. Performance testing for data-heavy routes\n4. RBAC validation for all bookings coordinator endpoints\n\n## Dependencies\n- Card 16-2 (Admin Panel Backend APIs)\n- `docs/backend/global-endpoint-matrix.md`\n- `frontend/components/bookings-coordinator/bookings-coordinator-sidebar.tsx`\n- Backend controllers for all bookings coordinator domains\n- Socket service for real-time updates\n\n## Files to Modify\n- `frontend/lib/services/bookingsCoordinatorService.ts` (extend)\n- `frontend/lib/services/mockDataService.ts` (remove imports)\n- `frontend/app/bookings-coordinator/*` routes (update to use real APIs)\n- Backend controllers (create mock methods where needed)\n- `backend/src/services/socketService.ts` (add bookings coordinator events)\n\n## Risk Mitigation\n- Create backend mock methods for missing APIs to avoid blocking frontend\n- Add TODO comments indicating temporary mocks\n- Implement proper error boundaries for API failures\n- Ensure backward compatibility during transition",
         "mime": "text/markdown"
       },
-      "id": "17",
+      "id": "16.B.10",
       "prio": 10,
-      "references": [],
-      "title": "17 - Backend integration (phase-2) plan",
-      "type": "epic"
+      "references": [
+        "16-2",
+        "docs/backend/global-endpoint-matrix.md",
+        "frontend/components/bookings-coordinator/bookings-coordinator-sidebar.tsx"
+      ],
+      "title": "16.B.10 Bookings coordinator sidebar backend integration",
+      "type": "task"
     },
     {
       "assignedTo": {
         "name": "Copilot Agent"
       },
       "category": "integration",
-      "creation_time": "2025-12-02T00:00:00.000Z",
+      "creation_time": "2025-12-03T00:00:00.000Z",
       "description": {
-        "content": "Ensure frontend has all necessary backend endpoints and author integration tests covering the full stack.",
+        "content": "# 16.B.11 Venue Manager Sidebar Backend Integration\n\n## Overview\nComplete full backend integration for all Venue Manager sidebar menus defined in venue-sidebar.tsx, replacing all mock services with backend API calls or creating backend mock methods where APIs don't exist yet.\n\n## Reference Screenshot\n[Venue Manager Sidebar Screenshot](https://example.com/venue-manager-sidebar.png)\n\n## Venue Manager Sidebar Menus to Integrate\n- Dashboard: /venue\n- Venue Bookings: /venue/bookings\n- Event Management: /venue/events\n- Capacity Planning: /venue/capacity\n- Amenities: /venue/amenities\n- Pricing: /venue/pricing\n- Settings: /venue/settings\n- View Site: /\n- Help: /venue/help",
         "mime": "text/markdown"
       },
       "details": {
-        "content": "# Task 6 - Frontend ↔ Backend Gap Analysis & Integration Tests (Priority 9)\n\n## Steps\n1. Review frontend API calls/services to list required endpoints.\n2. Compare against backend routes to identify gaps/mismatches.\n3. Implement missing backend routes or adjust payloads.\n4. Create integration tests (Playwright, Cypress, or Pact) validating frontend modules against backend API with seeded data.\n5. Document API usage contract per screen.\n\n## Acceptance\n- Gap matrix signed off by frontend + backend leads.\n- All blocking backend endpoints implemented or scheduled.\n- Integration test suite added to CI with environment bootstrap instructions.",
+        "content": "# 16.B.11 Venue Manager Sidebar Backend Integration - Implementation Details\n\n## Current Status\nVenue Manager sidebar integration is partially complete. Card 16-2 exists for admin panel integration but focuses on backend API creation. This new card (16.B.11) focuses on full frontend-backend integration including real-time features.\n\n## Implementation Strategy\n\n### Phase 1: Backend API Assessment\n1. Review existing endpoints in `docs/backend/global-endpoint-matrix.md`\n2. Map venue manager sidebar routes to backend APIs\n3. Identify gaps where APIs don't exist\n4. Create mock methods for missing APIs with TODO comments\n\n### Phase 2: Frontend Service Updates\n1. Remove all imports from `frontend/lib/services/mockDataService.ts`\n2. Update `frontend/lib/api.ts` and venue manager service files\n3. Add proper TypeScript interfaces for all venue manager data\n4. Implement error handling and loading states\n\n### Phase 3: Real-time Integration\n1. Connect venue manager routes to socket events (`venue-booking-updated`, `venue-event-updated`, etc.)\n2. Implement live notifications and message popups\n3. Add real-time dashboard updates\n\n### Phase 4: Testing & Validation\n1. E2e test suite for all venue manager routes\n2. API integration tests with seeded data\n3. Performance testing for data-heavy routes\n4. RBAC validation for all venue manager endpoints\n\n## Dependencies\n- Card 16-2 (Admin Panel Backend APIs)\n- `docs/backend/global-endpoint-matrix.md`\n- `frontend/components/venue/venue-sidebar.tsx`\n- Backend controllers for all venue manager domains\n- Socket service for real-time updates\n\n## Files to Modify\n- `frontend/lib/services/venueManagerService.ts` (extend)\n- `frontend/lib/services/mockDataService.ts` (remove imports)\n- `frontend/app/venue/*` routes (update to use real APIs)\n- Backend controllers (create mock methods where needed)\n- `backend/src/services/socketService.ts` (add venue manager events)\n\n## Risk Mitigation\n- Create backend mock methods for missing APIs to avoid blocking frontend\n- Add TODO comments indicating temporary mocks\n- Implement proper error boundaries for API failures\n- Ensure backward compatibility during transition",
         "mime": "text/markdown"
       },
-      "id": "16",
-      "prio": 9,
-      "references": [],
-      "title": "16 - Frontend/backend integration readiness"
+      "id": "16.B.11",
+      "prio": 10,
+      "references": [
+        "16-2",
+        "docs/backend/global-endpoint-matrix.md",
+        "frontend/components/venue/venue-sidebar.tsx"
+      ],
+      "title": "16.B.11 Venue manager sidebar backend integration",
+      "type": "task"
+    },
+    {
+      "assignedTo": {
+        "name": "Copilot Agent"
+      },
+      "category": "integration",
+      "creation_time": "2025-12-03T00:00:00.000Z",
+      "description": {
+        "content": "# 16.B.12 Ground Manager Sidebar Backend Integration\n\n## Overview\nComplete full backend integration for all Ground Manager sidebar menus defined in ground-sidebar.tsx, replacing all mock services with backend API calls or creating backend mock methods where APIs don't exist yet.\n\n## Reference Screenshot\n[Ground Manager Sidebar Screenshot](https://example.com/ground-manager-sidebar.png)\n\n## Ground Manager Sidebar Menus to Integrate\n- Dashboard: /ground\n- Ground Schedules: /ground/schedules\n- Field Conditions: /ground/conditions\n- Weather Monitoring: /ground/weather\n- Usage Reports: /ground/usage\n- Maintenance: /ground/maintenance\n- Settings: /ground/settings\n- View Site: /\n- Help: /ground/help",
+        "mime": "text/markdown"
+      },
+      "details": {
+        "content": "# 16.B.12 Ground Manager Sidebar Backend Integration - Implementation Details\n\n## Current Status\nGround Manager sidebar integration is partially complete. Card 16-2 exists for admin panel integration but focuses on backend API creation. This new card (16.B.12) focuses on full frontend-backend integration including real-time features.\n\n## Implementation Strategy\n\n### Phase 1: Backend API Assessment\n1. Review existing endpoints in `docs/backend/global-endpoint-matrix.md`\n2. Map ground manager sidebar routes to backend APIs\n3. Identify gaps where APIs don't exist\n4. Create mock methods for missing APIs with TODO comments\n\n### Phase 2: Frontend Service Updates\n1. Remove all imports from `frontend/lib/services/mockDataService.ts`\n2. Update `frontend/lib/api.ts` and ground manager service files\n3. Add proper TypeScript interfaces for all ground manager data\n4. Implement error handling and loading states\n\n### Phase 3: Real-time Integration\n1. Connect ground manager routes to socket events (`ground-schedule-updated`, `ground-condition-updated`, etc.)\n2. Implement live notifications and message popups\n3. Add real-time dashboard updates\n\n### Phase 4: Testing & Validation\n1. E2e test suite for all ground manager routes\n2. API integration tests with seeded data\n3. Performance testing for data-heavy routes\n4. RBAC validation for all ground manager endpoints\n\n## Dependencies\n- Card 16-2 (Admin Panel Backend APIs)\n- `docs/backend/global-endpoint-matrix.md`\n- `frontend/components/ground/ground-sidebar.tsx`\n- Backend controllers for all ground manager domains\n- Socket service for real-time updates\n\n## Files to Modify\n- `frontend/lib/services/groundManagerService.ts` (extend)\n- `frontend/lib/services/mockDataService.ts` (remove imports)\n- `frontend/app/ground/*` routes (update to use real APIs)\n- Backend controllers (create mock methods where needed)\n- `backend/src/services/socketService.ts` (add ground manager events)\n\n## Risk Mitigation\n- Create backend mock methods for missing APIs to avoid blocking frontend\n- Add TODO comments indicating temporary mocks\n- Implement proper error boundaries for API failures\n- Ensure backward compatibility during transition",
+        "mime": "text/markdown"
+      },
+      "id": "16.B.12",
+      "prio": 10,
+      "references": [
+        "16-2",
+        "docs/backend/global-endpoint-matrix.md",
+        "frontend/components/ground/ground-sidebar.tsx"
+      ],
+      "title": "16.B.12 Ground manager sidebar backend integration",
+      "type": "task"
+    },
+    {
+      "assignedTo": {
+        "name": "Copilot Agent"
+      },
+      "category": "integration",
+      "creation_time": "2025-12-03T00:00:00.000Z",
+      "description": {
+        "content": "# 16.B.13 Groundskeeper Sidebar Backend Integration\n\n## Overview\nComplete full backend integration for all Groundskeeper sidebar menus defined in groundskeeper-sidebar.tsx, replacing all mock services with backend API calls or creating backend mock methods where APIs don't exist yet.\n\n## Reference Screenshot\n[Groundskeeper Sidebar Screenshot](https://example.com/groundskeeper-sidebar.png)\n\n## Groundskeeper Sidebar Menus to Integrate\n- Dashboard: /groundskeeper\n- Daily Tasks: /groundskeeper/daily-tasks\n- Turf Management: /groundskeeper/turf\n- Irrigation: /groundskeeper/irrigation\n- Pest Control: /groundskeeper/pest-control\n- Seasonal Maintenance: /groundskeeper/seasonal\n- Settings: /groundskeeper/settings\n- View Site: /\n- Help: /groundskeeper/help",
+        "mime": "text/markdown"
+      },
+      "details": {
+        "content": "# 16.B.13 Groundskeeper Sidebar Backend Integration - Implementation Details\n\n## Current Status\nGroundskeeper sidebar integration is partially complete. Card 16-2 exists for admin panel integration but focuses on backend API creation. This new card (16.B.13) focuses on full frontend-backend integration including real-time features.\n\n## Implementation Strategy\n\n### Phase 1: Backend API Assessment\n1. Review existing endpoints in `docs/backend/global-endpoint-matrix.md`\n2. Map groundskeeper sidebar routes to backend APIs\n3. Identify gaps where APIs don't exist\n4. Create mock methods for missing APIs with TODO comments\n\n### Phase 2: Frontend Service Updates\n1. Remove all imports from `frontend/lib/services/mockDataService.ts`\n2. Update `frontend/lib/api.ts` and groundskeeper service files\n3. Add proper TypeScript interfaces for all groundskeeper data\n4. Implement error handling and loading states\n\n### Phase 3: Real-time Integration\n1. Connect groundskeeper routes to socket events (`groundskeeper-task-updated`, `groundskeeper-turf-updated`, etc.)\n2. Implement live notifications and message popups\n3. Add real-time dashboard updates\n\n### Phase 4: Testing & Validation\n1. E2e test suite for all groundskeeper routes\n2. API integration tests with seeded data\n3. Performance testing for data-heavy routes\n4. RBAC validation for all groundskeeper endpoints\n\n## Dependencies\n- Card 16-2 (Admin Panel Backend APIs)\n- `docs/backend/global-endpoint-matrix.md`\n- `frontend/components/groundskeeper/groundskeeper-sidebar.tsx`\n- Backend controllers for all groundskeeper domains\n- Socket service for real-time updates\n\n## Files to Modify\n- `frontend/lib/services/groundskeeperService.ts` (extend)\n- `frontend/lib/services/mockDataService.ts` (remove imports)\n- `frontend/app/groundskeeper/*` routes (update to use real APIs)\n- Backend controllers (create mock methods where needed)\n- `backend/src/services/socketService.ts` (add groundskeeper events)\n\n## Risk Mitigation\n- Create backend mock methods for missing APIs to avoid blocking frontend\n- Add TODO comments indicating temporary mocks\n- Implement proper error boundaries for API failures\n- Ensure backward compatibility during transition",
+        "mime": "text/markdown"
+      },
+      "id": "16.B.13",
+      "prio": 10,
+      "references": [
+        "16-2",
+        "docs/backend/global-endpoint-matrix.md",
+        "frontend/components/groundskeeper/groundskeeper-sidebar.tsx"
+      ],
+      "title": "16.B.13 Groundskeeper sidebar backend integration",
+      "type": "task"
+    },
+    {
+      "assignedTo": {
+        "name": "Copilot Agent"
+      },
+      "category": "integration",
+      "creation_time": "2025-12-03T00:00:00.000Z",
+      "description": {
+        "content": "# 16.B.14 Maintenance Tech Sidebar Backend Integration\n\n## Overview\nComplete full backend integration for all Maintenance Tech sidebar menus defined in maintenance-sidebar.tsx, replacing all mock services with backend API calls or creating backend mock methods where APIs don't exist yet.\n\n## Reference Screenshot\n[Maintenance Tech Sidebar Screenshot](https://example.com/maintenance-tech-sidebar.png)\n\n## Maintenance Tech Sidebar Menus to Integrate\n- Dashboard: /maintenance\n- Work Orders: /maintenance/work-orders\n- Preventive: /maintenance/preventive\n- Inventory: /maintenance/inventory\n- Vendors: /maintenance/vendors\n- Reports: /maintenance/reports\n- Settings: /maintenance/settings\n- View Site: /\n- Help: /maintenance/help",
+        "mime": "text/markdown"
+      },
+      "details": {
+        "content": "# 16.B.14 Maintenance Tech Sidebar Backend Integration - Implementation Details\n\n## Current Status\nMaintenance Tech sidebar integration is partially complete. Card 16-2 exists for admin panel integration but focuses on backend API creation. This new card (16.B.14) focuses on full frontend-backend integration including real-time features.\n\n## Implementation Strategy\n\n### Phase 1: Backend API Assessment\n1. Review existing endpoints in `docs/backend/global-endpoint-matrix.md`\n2. Map maintenance tech sidebar routes to backend APIs\n3. Identify gaps where APIs don't exist\n4. Create mock methods for missing APIs with TODO comments\n\n### Phase 2: Frontend Service Updates\n1. Remove all imports from `frontend/lib/services/mockDataService.ts`\n2. Update `frontend/lib/api.ts` and maintenance tech service files\n3. Add proper TypeScript interfaces for all maintenance tech data\n4. Implement error handling and loading states\n\n### Phase 3: Real-time Integration\n1. Connect maintenance tech routes to socket events (`maintenance-work-order-updated`, `maintenance-inventory-updated`, etc.)\n2. Implement live notifications and message popups\n3. Add real-time dashboard updates\n\n### Phase 4: Testing & Validation\n1. E2e test suite for all maintenance tech routes\n2. API integration tests with seeded data\n3. Performance testing for data-heavy routes\n4. RBAC validation for all maintenance tech endpoints\n\n## Dependencies\n- Card 16-2 (Admin Panel Backend APIs)\n- `docs/backend/global-endpoint-matrix.md`\n- `frontend/components/maintenance/maintenance-sidebar.tsx`\n- Backend controllers for all maintenance tech domains\n- Socket service for real-time updates\n\n## Files to Modify\n- `frontend/lib/services/maintenanceTechService.ts` (extend)\n- `frontend/lib/services/mockDataService.ts` (remove imports)\n- `frontend/app/maintenance/*` routes (update to use real APIs)\n- Backend controllers (create mock methods where needed)\n- `backend/src/services/socketService.ts` (add maintenance tech events)\n\n## Risk Mitigation\n- Create backend mock methods for missing APIs to avoid blocking frontend\n- Add TODO comments indicating temporary mocks\n- Implement proper error boundaries for API failures\n- Ensure backward compatibility during transition",
+        "mime": "text/markdown"
+      },
+      "id": "16.B.14",
+      "prio": 10,
+      "references": [
+        "16-2",
+        "docs/backend/global-endpoint-matrix.md",
+        "frontend/components/maintenance/maintenance-sidebar.tsx"
+      ],
+      "title": "16.B.14 Maintenance tech sidebar backend integration",
+      "type": "task"
+    },
+    {
+      "assignedTo": {
+        "name": "Copilot Agent"
+      },
+      "category": "integration",
+      "creation_time": "2025-12-03T00:00:00.000Z",
+      "description": {
+        "content": "# 16.B.15 Equipment Manager Sidebar Backend Integration\n\n## Overview\nComplete full backend integration for all Equipment Manager sidebar menus defined in equipment-sidebar.tsx, replacing all mock services with backend API calls or creating backend mock methods where APIs don't exist yet.\n\n## Reference Screenshot\n[Equipment Manager Sidebar Screenshot](https://example.com/equipment-manager-sidebar.png)\n\n## Equipment Manager Sidebar Menus to Integrate\n- Dashboard: /equipment\n- Inventory: /equipment/inventory\n- Checkouts: /equipment/checkouts\n- Maintenance: /equipment/maintenance-schedules\n- Procurement: /equipment/procurement\n- Disposal: /equipment/disposal\n- Settings: /equipment/settings\n- View Site: /\n- Help: /equipment/help",
+        "mime": "text/markdown"
+      },
+      "details": {
+        "content": "# 16.B.15 Equipment Manager Sidebar Backend Integration - Implementation Details\n\n## Current Status\nEquipment Manager sidebar integration is partially complete. Card 16-2 exists for admin panel integration but focuses on backend API creation. This new card (16.B.15) focuses on full frontend-backend integration including real-time features.\n\n## Implementation Strategy\n\n### Phase 1: Backend API Assessment\n1. Review existing endpoints in `docs/backend/global-endpoint-matrix.md`\n2. Map equipment manager sidebar routes to backend APIs\n3. Identify gaps where APIs don't exist\n4. Create mock methods for missing APIs with TODO comments\n\n### Phase 2: Frontend Service Updates\n1. Remove all imports from `frontend/lib/services/mockDataService.ts`\n2. Update `frontend/lib/api.ts` and equipment manager service files\n3. Add proper TypeScript interfaces for all equipment manager data\n4. Implement error handling and loading states\n\n### Phase 3: Real-time Integration\n1. Connect equipment manager routes to socket events (`equipment-inventory-updated`, `equipment-checkout-updated`, etc.)\n2. Implement live notifications and message popups\n3. Add real-time dashboard updates\n\n### Phase 4: Testing & Validation\n1. E2e test suite for all equipment manager routes\n2. API integration tests with seeded data\n3. Performance testing for data-heavy routes\n4. RBAC validation for all equipment manager endpoints\n\n## Dependencies\n- Card 16-2 (Admin Panel Backend APIs)\n- `docs/backend/global-endpoint-matrix.md`\n- `frontend/components/equipment/equipment-sidebar.tsx`\n- Backend controllers for all equipment manager domains\n- Socket service for real-time updates\n\n## Files to Modify\n- `frontend/lib/services/equipmentManagerService.ts` (extend)\n- `frontend/lib/services/mockDataService.ts` (remove imports)\n- `frontend/app/equipment/*` routes (update to use real APIs)\n- Backend controllers (create mock methods where needed)\n- `backend/src/services/socketService.ts` (add equipment manager events)\n\n## Risk Mitigation\n- Create backend mock methods for missing APIs to avoid blocking frontend\n- Add TODO comments indicating temporary mocks\n- Implement proper error boundaries for API failures\n- Ensure backward compatibility during transition",
+        "mime": "text/markdown"
+      },
+      "id": "16.B.15",
+      "prio": 10,
+      "references": [
+        "16-2",
+        "docs/backend/global-endpoint-matrix.md",
+        "frontend/components/equipment/equipment-sidebar.tsx"
+      ],
+      "title": "16.B.15 Equipment manager sidebar backend integration",
+      "type": "task"
+    },
+    {
+      "assignedTo": {
+        "name": "Copilot Agent"
+      },
+      "category": "integration",
+      "creation_time": "2025-12-03T00:00:00.000Z",
+      "description": {
+        "content": "# 16.B.16 Security Staff Sidebar Backend Integration\n\n## Overview\nComplete full backend integration for all Security Staff sidebar menus defined in security-sidebar.tsx, replacing all mock services with backend API calls or creating backend mock methods where APIs don't exist yet.\n\n## Reference Screenshot\n[Security Staff Sidebar Screenshot](https://example.com/security-staff-sidebar.png)\n\n## Security Staff Sidebar Menus to Integrate\n- Dashboard: /security\n- Access Control: /security/access-control\n- Incident Reports: /security/incidents\n- Patrol Logs: /security/patrol-logs\n- Visitor Screening: /security/visitor-screening\n- Emergency Protocols: /security/emergency\n- Settings: /security/settings\n- View Site: /\n- Help: /security/help",
+        "mime": "text/markdown"
+      },
+      "details": {
+        "content": "# 16.B.16 Security Staff Sidebar Backend Integration - Implementation Details\n\n## Current Status\nSecurity Staff sidebar integration is partially complete. Card 16-2 exists for admin panel integration but focuses on backend API creation. This new card (16.B.16) focuses on full frontend-backend integration including real-time features.\n\n## Implementation Strategy\n\n### Phase 1: Backend API Assessment\n1. Review existing endpoints in `docs/backend/global-endpoint-matrix.md`\n2. Map security staff sidebar routes to backend APIs\n3. Identify gaps where APIs don't exist\n4. Create mock methods for missing APIs with TODO comments\n\n### Phase 2: Frontend Service Updates\n1. Remove all imports from `frontend/lib/services/mockDataService.ts`\n2. Update `frontend/lib/api.ts` and security staff service files\n3. Add proper TypeScript interfaces for all security staff data\n4. Implement error handling and loading states\n\n### Phase 3: Real-time Integration\n1. Connect security staff routes to socket events (`security-access-updated`, `security-incident-updated`, etc.)\n2. Implement live notifications and message popups\n3. Add real-time dashboard updates\n\n### Phase 4: Testing & Validation\n1. E2e test suite for all security staff routes\n2. API integration tests with seeded data\n3. Performance testing for data-heavy routes\n4. RBAC validation for all security staff endpoints\n\n## Dependencies\n- Card 16-2 (Admin Panel Backend APIs)\n- `docs/backend/global-endpoint-matrix.md`\n- `frontend/components/security/security-sidebar.tsx`\n- Backend controllers for all security staff domains\n- Socket service for real-time updates\n\n## Files to Modify\n- `frontend/lib/services/securityStaffService.ts` (extend)\n- `frontend/lib/services/mockDataService.ts` (remove imports)\n- `frontend/app/security/*` routes (update to use real APIs)\n- Backend controllers (create mock methods where needed)\n- `backend/src/services/socketService.ts` (add security staff events)\n\n## Risk Mitigation\n- Create backend mock methods for missing APIs to avoid blocking frontend\n- Add TODO comments indicating temporary mocks\n- Implement proper error boundaries for API failures\n- Ensure backward compatibility during transition",
+        "mime": "text/markdown"
+      },
+      "id": "16.B.16",
+      "prio": 10,
+      "references": [
+        "16-2",
+        "docs/backend/global-endpoint-matrix.md",
+        "frontend/components/security/security-sidebar.tsx"
+      ],
+      "title": "16.B.16 Security staff sidebar backend integration",
+      "type": "task"
+    },
+    {
+      "assignedTo": {
+        "name": "Copilot Agent"
+      },
+      "category": "integration",
+      "creation_time": "2025-12-03T00:00:00.000Z",
+      "description": {
+        "content": "# 16.B.17 Cleaning Staff Sidebar Backend Integration\n\n## Overview\nComplete full backend integration for all Cleaning Staff sidebar menus defined in cleaning-sidebar.tsx, replacing all mock services with backend API calls or creating backend mock methods where APIs don't exist yet.\n\n## Reference Screenshot\n[Cleaning Staff Sidebar Screenshot](https://example.com/cleaning-staff-sidebar.png)\n\n## Cleaning Staff Sidebar Menus to Integrate\n- Dashboard: /cleaning\n- Schedules: /cleaning/schedules\n- Supplies Inventory: /cleaning/supplies\n- Inspections: /cleaning/inspections\n- Staff Assignments: /cleaning/assignments\n- Quality Reports: /cleaning/reports\n- Settings: /cleaning/settings\n- View Site: /\n- Help: /cleaning/help",
+        "mime": "text/markdown"
+      },
+      "details": {
+        "content": "# 16.B.17 Cleaning Staff Sidebar Backend Integration - Implementation Details\n\n## Current Status\nCleaning Staff sidebar integration is partially complete. Card 16-2 exists for admin panel integration but focuses on backend API creation. This new card (16.B.17) focuses on full frontend-backend integration including real-time features.\n\n## Implementation Strategy\n\n### Phase 1: Backend API Assessment\n1. Review existing endpoints in `docs/backend/global-endpoint-matrix.md`\n2. Map cleaning staff sidebar routes to backend APIs\n3. Identify gaps where APIs don't exist\n4. Create mock methods for missing APIs with TODO comments\n\n### Phase 2: Frontend Service Updates\n1. Remove all imports from `frontend/lib/services/mockDataService.ts`\n2. Update `frontend/lib/api.ts` and cleaning staff service files\n3. Add proper TypeScript interfaces for all cleaning staff data\n4. Implement error handling and loading states\n\n### Phase 3: Real-time Integration\n1. Connect cleaning staff routes to socket events (`cleaning-schedule-updated`, `cleaning-supply-updated`, etc.)\n2. Implement live notifications and message popups\n3. Add real-time dashboard updates\n\n### Phase 4: Testing & Validation\n1. E2e test suite for all cleaning staff routes\n2. API integration tests with seeded data\n3. Performance testing for data-heavy routes\n4. RBAC validation for all cleaning staff endpoints\n\n## Dependencies\n- Card 16-2 (Admin Panel Backend APIs)\n- `docs/backend/global-endpoint-matrix.md`\n- `frontend/components/cleaning/cleaning-sidebar.tsx`\n- Backend controllers for all cleaning staff domains\n- Socket service for real-time updates\n\n## Files to Modify\n- `frontend/lib/services/cleaningStaffService.ts` (extend)\n- `frontend/lib/services/mockDataService.ts` (remove imports)\n- `frontend/app/cleaning/*` routes (update to use real APIs)\n- Backend controllers (create mock methods where needed)\n- `backend/src/services/socketService.ts` (add cleaning staff events)\n\n## Risk Mitigation\n- Create backend mock methods for missing APIs to avoid blocking frontend\n- Add TODO comments indicating temporary mocks\n- Implement proper error boundaries for API failures\n- Ensure backward compatibility during transition",
+        "mime": "text/markdown"
+      },
+      "id": "16.B.17",
+      "prio": 10,
+      "references": [
+        "16-2",
+        "docs/backend/global-endpoint-matrix.md",
+        "frontend/components/cleaning/cleaning-sidebar.tsx"
+      ],
+      "title": "16.B.17 Cleaning staff sidebar backend integration",
+      "type": "task"
+    },
+    {
+      "assignedTo": {
+        "name": "Copilot Agent"
+      },
+      "category": "integration",
+      "creation_time": "2025-12-03T00:00:00.000Z",
+      "description": {
+        "content": "# 16.B.18 Accountant Sidebar Backend Integration\n\n## Overview\nComplete full backend integration for all Accountant sidebar menus defined in accountant-sidebar.tsx, replacing all mock services with backend API calls or creating backend mock methods where APIs don't exist yet.\n\n## Reference Screenshot\n[Accountant Sidebar Screenshot](https://example.com/accountant-sidebar.png)\n\n## Accountant Sidebar Menus to Integrate\n- Dashboard: /accountant\n- Invoices: /accountant/invoices (All Invoices, Pending, Overdue)\n- Payments: /accountant/payments (Transactions, Refunds, Payouts)\n- Reports: /accountant/reports (Financial Summary, Revenue, Expenses, Tax Reports)\n- Billing: /accountant/billing\n- Statements: /accountant/statements\n- Settings: /accountant/settings\n- View Site: /\n- Help: /accountant/help",
+        "mime": "text/markdown"
+      },
+      "details": {
+        "content": "# 16.B.18 Accountant Sidebar Backend Integration - Implementation Details\n\n## Current Status\nAccountant sidebar integration is partially complete. Card 16-2 exists for admin panel integration but focuses on backend API creation. This new card (16.B.18) focuses on full frontend-backend integration including real-time features.\n\n## Implementation Strategy\n\n### Phase 1: Backend API Assessment\n1. Review existing endpoints in `docs/backend/global-endpoint-matrix.md`\n2. Map accountant sidebar routes to backend APIs\n3. Identify gaps where APIs don't exist\n4. Create mock methods for missing APIs with TODO comments\n\n### Phase 2: Frontend Service Updates\n1. Remove all imports from `frontend/lib/services/mockDataService.ts`\n2. Update `frontend/lib/api.ts` and accountant service files\n3. Add proper TypeScript interfaces for all accountant data\n4. Implement error handling and loading states\n\n### Phase 3: Real-time Integration\n1. Connect accountant routes to socket events (`accountant-invoice-updated`, `accountant-payment-updated`, etc.)\n2. Implement live notifications and message popups\n3. Add real-time dashboard updates\n\n### Phase 4: Testing & Validation\n1. E2e test suite for all accountant routes\n2. API integration tests with seeded data\n3. Performance testing for data-heavy routes\n4. RBAC validation for all accountant endpoints\n\n## Dependencies\n- Card 16-2 (Admin Panel Backend APIs)\n- `docs/backend/global-endpoint-matrix.md`\n- `frontend/components/accountant/accountant-sidebar.tsx`\n- Backend controllers for all accountant domains\n- Socket service for real-time updates\n\n## Files to Modify\n- `frontend/lib/services/accountantService.ts` (extend)\n- `frontend/lib/services/mockDataService.ts` (remove imports)\n- `frontend/app/accountant/*` routes (update to use real APIs)\n- Backend controllers (create mock methods where needed)\n- `backend/src/services/socketService.ts` (add accountant events)\n\n## Risk Mitigation\n- Create backend mock methods for missing APIs to avoid blocking frontend\n- Add TODO comments indicating temporary mocks\n- Implement proper error boundaries for API failures\n- Ensure backward compatibility during transition",
+        "mime": "text/markdown"
+      },
+      "id": "16.B.18",
+      "prio": 10,
+      "references": [
+        "16-2",
+        "docs/backend/global-endpoint-matrix.md",
+        "frontend/components/accountant/accountant-sidebar.tsx"
+      ],
+      "title": "16.B.18 Accountant sidebar backend integration",
+      "type": "task"
+    },
+    {
+      "assignedTo": {
+        "name": "Copilot Agent"
+      },
+      "category": "integration",
+      "creation_time": "2025-12-03T00:00:00.000Z",
+      "description": {
+        "content": "# 16.B.19 Front Desk Sidebar Backend Integration\n\n## Overview\nComplete full backend integration for all Front Desk sidebar menus defined in front-desk-sidebar.tsx, replacing all mock services with backend API calls or creating backend mock methods where APIs don't exist yet.\n\n## Reference Screenshot\n[Front Desk Sidebar Screenshot](https://example.com/front-desk-sidebar.png)\n\n## Front Desk Sidebar Menus to Integrate\n- Dashboard: /front-desk\n- Check-ins: /front-desk/check-ins\n- Schedule: /front-desk/schedule\n- Bookings: /front-desk/bookings\n- Inquiries: /front-desk/inquiries\n- Settings: /front-desk/settings\n- View Site: /\n- Help: /front-desk/help",
+        "mime": "text/markdown"
+      },
+      "details": {
+        "content": "# 16.B.19 Front Desk Sidebar Backend Integration - Implementation Details\n\n## Current Status\nFront Desk sidebar integration is partially complete. Card 16-2 exists for admin panel integration but focuses on backend API creation. This new card (16.B.19) focuses on full frontend-backend integration including real-time features.\n\n## Implementation Strategy\n\n### Phase 1: Backend API Assessment\n1. Review existing endpoints in `docs/backend/global-endpoint-matrix.md`\n2. Map front desk sidebar routes to backend APIs\n3. Identify gaps where APIs don't exist\n4. Create mock methods for missing APIs with TODO comments\n\n### Phase 2: Frontend Service Updates\n1. Remove all imports from `frontend/lib/services/mockDataService.ts`\n2. Update `frontend/lib/api.ts` and front desk service files\n3. Add proper TypeScript interfaces for all front desk data\n4. Implement error handling and loading states\n\n### Phase 3: Real-time Integration\n1. Connect front desk routes to socket events (`front-desk-checkin-updated`, `front-desk-booking-updated`, etc.)\n2. Implement live notifications and message popups\n3. Add real-time dashboard updates\n\n### Phase 4: Testing & Validation\n1. E2e test suite for all front desk routes\n2. API integration tests with seeded data\n3. Performance testing for data-heavy routes\n4. RBAC validation for all front desk endpoints\n\n## Dependencies\n- Card 16-2 (Admin Panel Backend APIs)\n- `docs/backend/global-endpoint-matrix.md`\n- `frontend/components/front-desk/front-desk-sidebar.tsx`\n- Backend controllers for all front desk domains\n- Socket service for real-time updates\n\n## Files to Modify\n- `frontend/lib/services/frontDeskService.ts` (extend)\n- `frontend/lib/services/mockDataService.ts` (remove imports)\n- `frontend/app/front-desk/*` routes (update to use real APIs)\n- Backend controllers (create mock methods where needed)\n- `backend/src/services/socketService.ts` (add front desk events)\n\n## Risk Mitigation\n- Create backend mock methods for missing APIs to avoid blocking frontend\n- Add TODO comments indicating temporary mocks\n- Implement proper error boundaries for API failures\n- Ensure backward compatibility during transition",
+        "mime": "text/markdown"
+      },
+      "id": "16.B.19",
+      "prio": 10,
+      "references": [
+        "16-2",
+        "docs/backend/global-endpoint-matrix.md",
+        "frontend/components/front-desk/front-desk-sidebar.tsx"
+      ],
+      "title": "16.B.19 Front desk sidebar backend integration",
+      "type": "task"
+    },
+    {
+      "assignedTo": {
+        "name": "Copilot Agent"
+      },
+      "category": "integration",
+      "creation_time": "2025-12-03T00:00:00.000Z",
+      "description": {
+        "content": "# 16.B.20 Content Manager Sidebar Backend Integration\n\n## Overview\nComplete full backend integration for all Content Manager sidebar menus defined in content-manager-sidebar.tsx, replacing all mock services with backend API calls or creating backend mock methods where APIs don't exist yet.\n\n## Reference Screenshot\n[Content Manager Sidebar Screenshot](https://example.com/content-manager-sidebar.png)\n\n## Content Manager Sidebar Menus to Integrate\n- Dashboard: /content-manager\n- Announcements: /content-manager/announcements\n- Media: /content-manager/media\n- Content: /content-manager/content\n- Settings: /content-manager/settings\n- View Site: /\n- Help: /content-manager/help",
+        "mime": "text/markdown"
+      },
+      "details": {
+        "content": "# 16.B.20 Content Manager Sidebar Backend Integration - Implementation Details\n\n## Current Status\nContent Manager sidebar integration is partially complete. Card 16-2 exists for admin panel integration but focuses on backend API creation. This new card (16.B.20) focuses on full frontend-backend integration including real-time features.\n\n## Implementation Strategy\n\n### Phase 1: Backend API Assessment\n1. Review existing endpoints in `docs/backend/global-endpoint-matrix.md`\n2. Map content manager sidebar routes to backend APIs\n3. Identify gaps where APIs don't exist\n4. Create mock methods for missing APIs with TODO comments\n\n### Phase 2: Frontend Service Updates\n1. Remove all imports from `frontend/lib/services/mockDataService.ts`\n2. Update `frontend/lib/api.ts` and content manager service files\n3. Add proper TypeScript interfaces for all content manager data\n4. Implement error handling and loading states\n\n### Phase 3: Real-time Integration\n1. Connect content manager routes to socket events (`content-manager-announcement-updated`, `content-manager-media-updated`, etc.)\n2. Implement live notifications and message popups\n3. Add real-time dashboard updates\n\n### Phase 4: Testing & Validation\n1. E2e test suite for all content manager routes\n2. API integration tests with seeded data\n3. Performance testing for data-heavy routes\n4. RBAC validation for all content manager endpoints\n\n## Dependencies\n- Card 16-2 (Admin Panel Backend APIs)\n- `docs/backend/global-endpoint-matrix.md`\n- `frontend/components/content-manager/content-manager-sidebar.tsx`\n- Backend controllers for all content manager domains\n- Socket service for real-time updates\n\n## Files to Modify\n- `frontend/lib/services/contentManagerService.ts` (extend)\n- `frontend/lib/services/mockDataService.ts` (remove imports)\n- `frontend/app/content-manager/*` routes (update to use real APIs)\n- Backend controllers (create mock methods where needed)\n- `backend/src/services/socketService.ts` (add content manager events)\n\n## Risk Mitigation\n- Create backend mock methods for missing APIs to avoid blocking frontend\n- Add TODO comments indicating temporary mocks\n- Implement proper error boundaries for API failures\n- Ensure backward compatibility during transition",
+        "mime": "text/markdown"
+      },
+      "id": "16.B.20",
+      "prio": 10,
+      "references": [
+        "16-2",
+        "docs/backend/global-endpoint-matrix.md",
+        "frontend/components/content-manager/content-manager-sidebar.tsx"
+      ],
+      "title": "16.B.20 Content manager sidebar backend integration",
+      "type": "task"
+    },
+    {
+      "assignedTo": {
+        "name": "Copilot Agent"
+      },
+      "category": "integration",
+      "creation_time": "2025-12-03T00:00:00.000Z",
+      "description": {
+        "content": "# 16.B.21 Medical Staff Sidebar Backend Integration\n\n## Overview\nComplete full backend integration for all Medical Staff sidebar menus defined in medical-sidebar.tsx, replacing all mock services with backend API calls or creating backend mock methods where APIs don't exist yet.\n\n## Reference Screenshot\n[Medical Staff Sidebar Screenshot](https://example.com/medical-staff-sidebar.png)\n\n## Medical Staff Sidebar Menus to Integrate\n- Dashboard: /medical\n- Health Records: /medical/health-records\n- Injuries: /medical/injuries\n- First Aid: /medical/first-aid\n- Settings: /medical/settings\n- View Site: /\n- Help: /medical/help",
+        "mime": "text/markdown"
+      },
+      "details": {
+        "content": "# 16.B.21 Medical Staff Sidebar Backend Integration - Implementation Details\n\n## Current Status\nMedical Staff sidebar integration is partially complete. Card 16-2 exists for admin panel integration but focuses on backend API creation. This new card (16.B.21) focuses on full frontend-backend integration including real-time features.\n\n## Implementation Strategy\n\n### Phase 1: Backend API Assessment\n1. Review existing endpoints in `docs/backend/global-endpoint-matrix.md`\n2. Map medical staff sidebar routes to backend APIs\n3. Identify gaps where APIs don't exist\n4. Create mock methods for missing APIs with TODO comments\n\n### Phase 2: Frontend Service Updates\n1. Remove all imports from `frontend/lib/services/mockDataService.ts`\n2. Update `frontend/lib/api.ts` and medical staff service files\n3. Add proper TypeScript interfaces for all medical staff data\n4. Implement error handling and loading states\n\n### Phase 3: Real-time Integration\n1. Connect medical staff routes to socket events (`medical-health-record-updated`, `medical-injury-updated`, etc.)\n2. Implement live notifications and message popups\n3. Add real-time dashboard updates\n\n### Phase 4: Testing & Validation\n1. E2e test suite for all medical staff routes\n2. API integration tests with seeded data\n3. Performance testing for data-heavy routes\n4. RBAC validation for all medical staff endpoints\n\n## Dependencies\n- Card 16-2 (Admin Panel Backend APIs)\n- `docs/backend/global-endpoint-matrix.md`\n- `frontend/components/medical/medical-sidebar.tsx`\n- Backend controllers for all medical staff domains\n- Socket service for real-time updates\n\n## Files to Modify\n- `frontend/lib/services/medicalStaffService.ts` (extend)\n- `frontend/lib/services/mockDataService.ts` (remove imports)\n- `frontend/app/medical/*` routes (update to use real APIs)\n- Backend controllers (create mock methods where needed)\n- `backend/src/services/socketService.ts` (add medical staff events)\n\n## Risk Mitigation\n- Create backend mock methods for missing APIs to avoid blocking frontend\n- Add TODO comments indicating temporary mocks\n- Implement proper error boundaries for API failures\n- Ensure backward compatibility during transition",
+        "mime": "text/markdown"
+      },
+      "id": "16.B.21",
+      "prio": 10,
+      "references": [
+        "16-2",
+        "docs/backend/global-endpoint-matrix.md",
+        "frontend/components/medical/medical-sidebar.tsx"
+      ],
+      "title": "16.B.21 Medical staff sidebar backend integration",
+      "type": "task"
+    },
+    {
+      "assignedTo": {
+        "name": "Copilot Agent"
+      },
+      "category": "integration",
+      "creation_time": "2025-12-03T00:00:00.000Z",
+      "description": {
+        "content": "# 16.B.22 Student Sidebar Backend Integration\n\n## Overview\nComplete full backend integration for all Student sidebar menus defined in student-sidebar.tsx, replacing all mock services with backend API calls or creating backend mock methods where APIs don't exist yet.\n\n## Reference Screenshot\n[Student Sidebar Screenshot](https://example.com/student-sidebar.png)\n\n## Student Sidebar Menus to Integrate\n- Dashboard: /student\n- My Schedule: /student/schedule\n- My Progress: /student/progress\n- Evaluations: /student/evaluations\n- Message Coach: /student/coaches\n- Settings: /student/settings\n- View Site: /\n- Help: /student/help",
+        "mime": "text/markdown"
+      },
+      "details": {
+        "content": "# 16.B.22 Student Sidebar Backend Integration - Implementation Details\n\n## Current Status\nStudent sidebar integration is partially complete. Card 16-2 exists for admin panel integration but focuses on backend API creation. This new card (16.B.22) focuses on full frontend-backend integration including real-time features.\n\n## Implementation Strategy\n\n### Phase 1: Backend API Assessment\n1. Review existing endpoints in `docs/backend/global-endpoint-matrix.md`\n2. Map student sidebar routes to backend APIs\n3. Identify gaps where APIs don't exist\n4. Create mock methods for missing APIs with TODO comments\n\n### Phase 2: Frontend Service Updates\n1. Remove all imports from `frontend/lib/services/mockDataService.ts`\n2. Update `frontend/lib/api.ts` and student service files\n3. Add proper TypeScript interfaces for all student data\n4. Implement error handling and loading states\n\n### Phase 3: Real-time Integration\n1. Connect student routes to socket events (`student-schedule-updated`, `student-progress-updated`, etc.)\n2. Implement live notifications and message popups\n3. Add real-time dashboard updates\n\n### Phase 4: Testing & Validation\n1. E2e test suite for all student routes\n2. API integration tests with seeded data\n3. Performance testing for data-heavy routes\n4. RBAC validation for all student endpoints\n\n## Dependencies\n- Card 16-2 (Admin Panel Backend APIs)\n- `docs/backend/global-endpoint-matrix.md`\n- `frontend/components/student/student-sidebar.tsx`\n- Backend controllers for all student domains\n- Socket service for real-time updates\n\n## Files to Modify\n- `frontend/lib/services/studentService.ts` (extend)\n- `frontend/lib/services/mockDataService.ts` (remove imports)\n- `frontend/app/student/*` routes (update to use real APIs)\n- Backend controllers (create mock methods where needed)\n- `backend/src/services/socketService.ts` (add student events)\n\n## Risk Mitigation\n- Create backend mock methods for missing APIs to avoid blocking frontend\n- Add TODO comments indicating temporary mocks\n- Implement proper error boundaries for API failures\n- Ensure backward compatibility during transition",
+        "mime": "text/markdown"
+      },
+      "id": "16.B.22",
+      "prio": 10,
+      "references": [
+        "16-2",
+        "docs/backend/global-endpoint-matrix.md",
+        "frontend/components/student/student-sidebar.tsx"
+      ],
+      "title": "16.B.22 Student sidebar backend integration",
+      "type": "task"
+    },
+    {
+      "assignedTo": {
+        "name": "Copilot Agent"
+      },
+      "category": "integration",
+      "creation_time": "2025-12-03T00:00:00.000Z",
+      "description": {
+        "content": "# 16.B.23 Super Admin Sidebar Backend Integration\n\n## Overview\nComplete full backend integration for all Super Admin sidebar menus defined in admin-sidebar.tsx, replacing all mock services with backend API calls or creating backend mock methods where APIs don't exist yet.\n\n## Reference Screenshot\n[Super Admin Sidebar Screenshot](https://example.com/super-admin-sidebar.png)\n\n## Super Admin Sidebar Menus to Integrate\n- Dashboard: /admin\n- User Management: /admin/users (All Users, Admins, Pending Approvals)\n- Roles & Permissions: /admin/roles (Manage Roles, Permissions)\n- Clubs: /admin/clubs (All Clubs, Pending Clubs, Club Analytics)\n- Coaches: /admin/coaches (All Coaches, Add Coach, Schedules)\n- Tools: /admin/tools\n- View Site: /\n- Help: /admin/help",
+        "mime": "text/markdown"
+      },
+      "details": {
+        "content": "# 16.B.23 Super Admin Sidebar Backend Integration - Implementation Details\n\n## Current Status\nSuper Admin sidebar integration is partially complete. Card 16-2 exists for admin panel integration but focuses on backend API creation. This new card (16.B.23) focuses on full frontend-backend integration including real-time features.\n\n## Implementation Strategy\n\n### Phase 1: Backend API Assessment\n1. Review existing endpoints in `docs/backend/global-endpoint-matrix.md`\n2. Map super admin sidebar routes to backend APIs\n3. Identify gaps where APIs don't exist\n4. Create mock methods for missing APIs with TODO comments\n\n### Phase 2: Frontend Service Updates\n1. Remove all imports from `frontend/lib/services/mockDataService.ts`\n2. Update `frontend/lib/api.ts` and super admin service files\n3. Add proper TypeScript interfaces for all super admin data\n4. Implement error handling and loading states\n\n### Phase 3: Real-time Integration\n1. Connect super admin routes to socket events (`super-admin-user-updated`, `super-admin-club-updated`, etc.)\n2. Implement live notifications and message popups\n3. Add real-time dashboard updates\n\n### Phase 4: Testing & Validation\n1. E2e test suite for all super admin routes\n2. API integration tests with seeded data\n3. Performance testing for data-heavy routes\n4. RBAC validation for all super admin endpoints\n\n## Dependencies\n- Card 16-2 (Admin Panel Backend APIs)\n- `docs/backend/global-endpoint-matrix.md`\n- `frontend/components/admin/admin-sidebar.tsx`\n- Backend controllers for all super admin domains\n- Socket service for real-time updates\n\n## Files to Modify\n- `frontend/lib/services/superAdminService.ts` (extend)\n- `frontend/lib/services/mockDataService.ts` (remove imports)\n- `frontend/app/admin/*` routes (update to use real APIs)\n- Backend controllers (create mock methods where needed)\n- `backend/src/services/socketService.ts` (add super admin events)\n\n## Risk Mitigation\n- Create backend mock methods for missing APIs to avoid blocking frontend\n- Add TODO comments indicating temporary mocks\n- Implement proper error boundaries for API failures\n- Ensure backward compatibility during transition",
+        "mime": "text/markdown"
+      },
+      "id": "16.B.23",
+      "prio": 10,
+      "references": [
+        "16-2",
+        "docs/backend/global-endpoint-matrix.md",
+        "frontend/components/admin/admin-sidebar.tsx"
+      ],
+      "title": "16.B.23 Super admin sidebar backend integration",
+      "type": "task"
+    },
+    {
+      "assignedTo": {
+        "name": "Copilot Agent"
+      },
+      "category": "integration",
+      "creation_time": "2025-12-03T00:00:00.000Z",
+      "description": {
+        "content": "# 16.B.6 Coach Sidebar Backend Integration\n\n## Overview\nComplete full backend integration for all Coach sidebar menus defined in coach-sidebar.tsx, replacing all mock services with backend API calls or creating backend mock methods where APIs don't exist yet.\n\n## Reference Screenshot\n[Coach Sidebar Screenshot](https://example.com/coach-sidebar.png)\n\n## Coach Sidebar Menus to Integrate\n- Dashboard: /coach\n- Schedule: /coach/schedule (My Schedule, Calendar View, Availability)\n- Students: /coach/students (All Students, Groups)\n- Attendance: /coach/attendance (Mark Attendance, History)\n- Progress: /coach/progress (Overview, Skills Matrix)\n- Evaluations: /coach/evaluations (Pending, Completed, Templates)\n- Reports: /coach/reports\n- Messages: /coach/messages\n- Notifications: /coach/notifications\n- My Profile: /coach/profile\n- Settings: /coach/settings\n- Help: /coach/help",
+        "mime": "text/markdown"
+      },
+      "details": {
+        "content": "# 16.B.6 Coach Sidebar Backend Integration - Implementation Details\n\n## Current Status\nCoach sidebar integration is partially complete. Card 16-2 exists for admin panel integration but focuses on backend API creation. This new card (16.B.6) focuses on full frontend-backend integration including real-time features.\n\n## Implementation Strategy\n\n### Phase 1: Backend API Assessment\n1. Review existing endpoints in `docs/backend/global-endpoint-matrix.md`\n2. Map coach sidebar routes to backend APIs\n3. Identify gaps where APIs don't exist\n4. Create mock methods for missing APIs with TODO comments\n\n### Phase 2: Frontend Service Updates\n1. Remove all imports from `frontend/lib/services/mockDataService.ts`\n2. Update `frontend/lib/api.ts` and coach service files\n3. Add proper TypeScript interfaces for all coach data\n4. Implement error handling and loading states\n\n### Phase 3: Real-time Integration\n1. Connect coach routes to socket events (`coach-schedule-updated`, `coach-student-updated`, etc.)\n2. Implement live notifications and message popups\n3. Add real-time dashboard updates\n\n### Phase 4: Testing & Validation\n1. E2e test suite for all coach routes\n2. API integration tests with seeded data\n3. Performance testing for data-heavy routes\n4. RBAC validation for all coach endpoints\n\n## Dependencies\n- Card 16-2 (Admin Panel Backend APIs)\n- `docs/backend/global-endpoint-matrix.md`\n- `frontend/components/coach/coach-sidebar.tsx`\n- Backend controllers for all coach domains\n- Socket service for real-time updates\n\n## Files to Modify\n- `frontend/lib/services/coachService.ts` (extend)\n- `frontend/lib/services/mockDataService.ts` (remove imports)\n- `frontend/app/coach/*` routes (update to use real APIs)\n- Backend controllers (create mock methods where needed)\n- `backend/src/services/socketService.ts` (add coach events)\n\n## Risk Mitigation\n- Create backend mock methods for missing APIs to avoid blocking frontend\n- Add TODO comments indicating temporary mocks\n- Implement proper error boundaries for API failures\n- Ensure backward compatibility during transition",
+        "mime": "text/markdown"
+      },
+      "id": "16.B.6",
+      "prio": 10,
+      "references": [
+        "16-2",
+        "docs/backend/global-endpoint-matrix.md",
+        "frontend/components/coach/coach-sidebar.tsx"
+      ],
+      "title": "16.B.6 Coach sidebar backend integration",
+      "type": "task"
+    },
+    {
+      "assignedTo": {
+        "name": "Copilot Agent"
+      },
+      "category": "integration",
+      "creation_time": "2025-12-03T00:00:00.000Z",
+      "description": {
+        "content": "# 16.B.7 Freelancer Sidebar Backend Integration\n\n## Overview\nComplete full backend integration for all Freelancer sidebar menus defined in freelancer-sidebar.tsx, replacing all mock services with backend API calls or creating backend mock methods where APIs don't exist yet.\n\n## Reference Screenshot\n[Freelancer Sidebar Screenshot](https://example.com/freelancer-sidebar.png)\n\n## Freelancer Sidebar Menus to Integrate\n- Dashboard: /freelancer\n- Bookings: /freelancer/bookings (All Bookings, Pending, Calendar)\n- Clients: /freelancer/clients (All Clients, Reviews)\n- Availability: /freelancer/availability\n- Earnings: /freelancer/earnings (Overview, Transactions, Payouts)\n- Reviews: /freelancer/reviews\n- Analytics: /freelancer/analytics\n- Messages: /freelancer/messages\n- Notifications: /freelancer/notifications\n- My Profile: /freelancer/profile\n- Settings: /freelancer/settings\n- Help: /freelancer/help",
+        "mime": "text/markdown"
+      },
+      "details": {
+        "content": "# 16.B.7 Freelancer Sidebar Backend Integration - Implementation Details\n\n## Current Status\nFreelancer sidebar integration is partially complete. Card 16-2 exists for admin panel integration but focuses on backend API creation. This new card (16.B.7) focuses on full frontend-backend integration including real-time features.\n\n## Implementation Strategy\n\n### Phase 1: Backend API Assessment\n1. Review existing endpoints in `docs/backend/global-endpoint-matrix.md`\n2. Map freelancer sidebar routes to backend APIs\n3. Identify gaps where APIs don't exist\n4. Create mock methods for missing APIs with TODO comments\n\n### Phase 2: Frontend Service Updates\n1. Remove all imports from `frontend/lib/services/mockDataService.ts`\n2. Update `frontend/lib/api.ts` and freelancer service files\n3. Add proper TypeScript interfaces for all freelancer data\n4. Implement error handling and loading states\n\n### Phase 3: Real-time Integration\n1. Connect freelancer routes to socket events (`freelancer-booking-updated`, `freelancer-client-updated`, etc.)\n2. Implement live notifications and message popups\n3. Add real-time dashboard updates\n\n### Phase 4: Testing & Validation\n1. E2e test suite for all freelancer routes\n2. API integration tests with seeded data\n3. Performance testing for data-heavy routes\n4. RBAC validation for all freelancer endpoints\n\n## Dependencies\n- Card 16-2 (Admin Panel Backend APIs)\n- `docs/backend/global-endpoint-matrix.md`\n- `frontend/components/freelancer/freelancer-sidebar.tsx`\n- Backend controllers for all freelancer domains\n- Socket service for real-time updates\n\n## Files to Modify\n- `frontend/lib/services/freelancerService.ts` (extend)\n- `frontend/lib/services/mockDataService.ts` (remove imports)\n- `frontend/app/freelancer/*` routes (update to use real APIs)\n- Backend controllers (create mock methods where needed)\n- `backend/src/services/socketService.ts` (add freelancer events)\n\n## Risk Mitigation\n- Create backend mock methods for missing APIs to avoid blocking frontend\n- Add TODO comments indicating temporary mocks\n- Implement proper error boundaries for API failures\n- Ensure backward compatibility during transition",
+        "mime": "text/markdown"
+      },
+      "id": "16.B.7",
+      "prio": 10,
+      "references": [
+        "16-2",
+        "docs/backend/global-endpoint-matrix.md",
+        "frontend/components/freelancer/freelancer-sidebar.tsx"
+      ],
+      "title": "16.B.7 Freelancer sidebar backend integration",
+      "type": "task"
+    },
+    {
+      "assignedTo": {
+        "name": "Copilot Agent"
+      },
+      "category": "integration",
+      "creation_time": "2025-12-03T00:00:00.000Z",
+      "description": {
+        "content": "# 16.B.8 Parent Sidebar Backend Integration\n\n## Overview\nComplete full backend integration for all Parent sidebar menus defined in parent-sidebar.tsx, replacing all mock services with backend API calls or creating backend mock methods where APIs don't exist yet.\n\n## Reference Screenshot\n[Parent Sidebar Screenshot](https://example.com/parent-sidebar.png)\n\n## Parent Sidebar Menus to Integrate\n- Dashboard: /parent\n- My Kids: /parent/kids (All Kids, Add Child)\n- Bookings: /parent/bookings (All Bookings, Book Session, Calendar)\n- Progress: /parent/progress (Overview, Evaluations, Reports)\n- Payments: /parent/payments (History, Subscriptions, Invoices)\n- Achievements: /parent/achievements\n- Messages: /parent/messages\n- Notifications: /parent/notifications\n- My Account: /parent/account\n- Settings: /parent/settings\n- Help: /parent/help",
+        "mime": "text/markdown"
+      },
+      "details": {
+        "content": "# 16.B.8 Parent Sidebar Backend Integration - Implementation Details\n\n## Current Status\nParent sidebar integration is partially complete. Card 16-2 exists for admin panel integration but focuses on backend API creation. This new card (16.B.8) focuses on full frontend-backend integration including real-time features.\n\n## Implementation Strategy\n\n### Phase 1: Backend API Assessment\n1. Review existing endpoints in `docs/backend/global-endpoint-matrix.md`\n2. Map parent sidebar routes to backend APIs\n3. Identify gaps where APIs don't exist\n4. Create mock methods for missing APIs with TODO comments\n\n### Phase 2: Frontend Service Updates\n1. Remove all imports from `frontend/lib/services/mockDataService.ts`\n2. Update `frontend/lib/api.ts` and parent service files\n3. Add proper TypeScript interfaces for all parent data\n4. Implement error handling and loading states\n\n### Phase 3: Real-time Integration\n1. Connect parent routes to socket events (`parent-kid-updated`, `parent-booking-updated`, etc.)\n2. Implement live notifications and message popups\n3. Add real-time dashboard updates\n\n### Phase 4: Testing & Validation\n1. E2e test suite for all parent routes\n2. API integration tests with seeded data\n3. Performance testing for data-heavy routes\n4. RBAC validation for all parent endpoints\n\n## Dependencies\n- Card 16-2 (Admin Panel Backend APIs)\n- `docs/backend/global-endpoint-matrix.md`\n- `frontend/components/parent/parent-sidebar.tsx`\n- Backend controllers for all parent domains\n- Socket service for real-time updates\n\n## Files to Modify\n- `frontend/lib/services/parentService.ts` (extend)\n- `frontend/lib/services/mockDataService.ts` (remove imports)\n- `frontend/app/parent/*` routes (update to use real APIs)\n- Backend controllers (create mock methods where needed)\n- `backend/src/services/socketService.ts` (add parent events)\n\n## Risk Mitigation\n- Create backend mock methods for missing APIs to avoid blocking frontend\n- Add TODO comments indicating temporary mocks\n- Implement proper error boundaries for API failures\n- Ensure backward compatibility during transition",
+        "mime": "text/markdown"
+      },
+      "id": "16.B.8",
+      "prio": 10,
+      "references": [
+        "16-2",
+        "docs/backend/global-endpoint-matrix.md",
+        "frontend/components/parent/parent-sidebar.tsx"
+      ],
+      "title": "16.B.8 Parent sidebar backend integration",
+      "type": "task"
+    },
+    {
+      "assignedTo": {
+        "name": "Copilot Agent"
+      },
+      "category": "integration",
+      "creation_time": "2025-12-03T00:00:00.000Z",
+      "description": {
+        "content": "# 16.B.9 Facility Manager Sidebar Backend Integration\n\n## Overview\nComplete full backend integration for all Facility Manager sidebar menus defined in facility-sidebar.tsx, replacing all mock services with backend API calls or creating backend mock methods where APIs don't exist yet.\n\n## Reference Screenshot\n[Facility Manager Sidebar Screenshot](https://example.com/facility-manager-sidebar.png)\n\n## Facility Manager Sidebar Menus to Integrate\n- Dashboard: /facility\n- Venues: /facility/venues (All Venues, Bookings)\n- Grounds: /facility/grounds (All Grounds, Conditions)\n- Staff: /facility/staff\n- Maintenance: /facility/maintenance\n- Equipment: /facility/equipment\n- Schedule: /facility/schedule\n- Settings: /facility/settings\n- View Site: /\n- Help: /facility/help",
+        "mime": "text/markdown"
+      },
+      "details": {
+        "content": "# 16.B.9 Facility Manager Sidebar Backend Integration - Implementation Details\n\n## Current Status\nFacility Manager sidebar integration is partially complete. Card 16-2 exists for admin panel integration but focuses on backend API creation. This new card (16.B.9) focuses on full frontend-backend integration including real-time features.\n\n## Implementation Strategy\n\n### Phase 1: Backend API Assessment\n1. Review existing endpoints in `docs/backend/global-endpoint-matrix.md`\n2. Map facility manager sidebar routes to backend APIs\n3. Identify gaps where APIs don't exist\n4. Create mock methods for missing APIs with TODO comments\n\n### Phase 2: Frontend Service Updates\n1. Remove all imports from `frontend/lib/services/mockDataService.ts`\n2. Update `frontend/lib/api.ts` and facility manager service files\n3. Add proper TypeScript interfaces for all facility manager data\n4. Implement error handling and loading states\n\n### Phase 3: Real-time Integration\n1. Connect facility manager routes to socket events (`facility-venue-updated`, `facility-ground-updated`, etc.)\n2. Implement live notifications and message popups\n3. Add real-time dashboard updates\n\n### Phase 4: Testing & Validation\n1. E2e test suite for all facility manager routes\n2. API integration tests with seeded data\n3. Performance testing for data-heavy routes\n4. RBAC validation for all facility manager endpoints\n\n## Dependencies\n- Card 16-2 (Admin Panel Backend APIs)\n- `docs/backend/global-endpoint-matrix.md`\n- `frontend/components/facility/facility-sidebar.tsx`\n- Backend controllers for all facility manager domains\n- Socket service for real-time updates\n\n## Files to Modify\n- `frontend/lib/services/facilityManagerService.ts` (extend)\n- `frontend/lib/services/mockDataService.ts` (remove imports)\n- `frontend/app/facility/*` routes (update to use real APIs)\n- Backend controllers (create mock methods where needed)\n- `backend/src/services/socketService.ts` (add facility manager events)\n\n## Risk Mitigation\n- Create backend mock methods for missing APIs to avoid blocking frontend\n- Add TODO comments indicating temporary mocks\n- Implement proper error boundaries for API failures\n- Ensure backward compatibility during transition",
+        "mime": "text/markdown"
+      },
+      "id": "16.B.9",
+      "prio": 10,
+      "references": [
+        "16-2",
+        "docs/backend/global-endpoint-matrix.md",
+        "frontend/components/facility/facility-sidebar.tsx"
+      ],
+      "title": "16.B.9 Facility manager sidebar backend integration",
+      "type": "task"
     }
   ],
   "in-progress": [
@@ -175,27 +458,125 @@
       "assignedTo": {
         "name": "Copilot Agent"
       },
-      "category": "frontend",
-      "creation_time": "2025-12-02T00:00:00.000Z",
+      "category": "integration",
+      "creation_time": "2025-12-03T00:00:00.000Z",
       "description": {
-        "content": "Complete full backend integration for all admin panel routes defined in admin-sidebar.tsx, replacing all mock services with backend API calls or creating backend mock methods where APIs don't exist yet.",
+        "content": "# 16.B.2 System Support Sidebar Backend Integration\n\n## Overview\nComplete full backend integration for all System Support sidebar menus defined in system-support-sidebar.tsx, replacing all mock services with backend API calls or creating backend mock methods where APIs don't exist yet.\n\n## Reference Screenshot\n[System Support Sidebar Screenshot](https://example.com/system-support-sidebar.png)\n\n## System Support Sidebar Menus to Integrate\n- Dashboard: /system-support\n- Support Tickets: /system-support/tickets (All Tickets, Open Tickets, Escalated)\n- Diagnostics: /system-support/diagnostics (System Status, Logs, Performance)\n- User Support: /system-support/users (Search Users, Password Resets, Account Issues)\n- Access Management: /system-support/access\n- Reports: /system-support/reports\n- Tools: /system-support/tools\n- View Site: /\n- Help: /system-support/help",
         "mime": "text/markdown"
       },
       "details": {
-        "content": "# 16-2 Admin Panel Full Integration\n\n## Context\n- Admin sidebar defines 20+ routes requiring backend integration\n- Current admin dashboard uses mock data from mockDataService\n- Need comprehensive integration plan covering all admin routes\n- Strict policy: no frontend mocks allowed - must use backend APIs or create backend mock methods\n\n## Admin Routes to Integrate\n\n### User Management\n- `/admin/users` - User CRUD, role assignment, status management\n- `/admin/roles` - Role management and permissions\n- `/admin/permissions` - Permission assignment and management\n\n### Club Management\n- `/admin/clubs` - Club CRUD, membership management\n\n### Staff Management\n- `/admin/coaches` - Coach management and assignments\n- `/admin/students` - Student management and enrollments\n\n### Operations\n- `/admin/sessions` - Session scheduling and management\n- `/admin/attendance` - Attendance tracking and reporting\n- `/admin/evaluations` - Performance evaluations\n- `/admin/bookings` - Booking management\n\n### Financial\n- `/admin/payments` - Payment processing and history\n\n### Infrastructure\n- `/admin/facilities` - Facility/venue/ground management\n\n### Analytics & Reporting\n- `/admin/analytics` - Platform analytics and metrics\n- `/admin/reports` - Custom reports and exports\n\n### System Administration\n- `/admin/settings` - System configuration\n- `/admin/notifications` - Notification management\n- `/admin/support` - Support ticket management\n- `/admin/audit-logs` - Audit trail viewing\n- `/admin/system-health` - System monitoring\n- `/admin/backups` - Backup management\n\n## Implementation Strategy\n\n### For Each Route:\n1. **Identify Required Backend APIs**\n   - Review existing endpoints in global-endpoint-matrix.md\n   - Map frontend data needs to backend contracts\n   - Identify gaps where APIs don't exist\n\n2. **Replace Mock Services**\n   - Remove imports from `frontend/lib/services/mockDataService.ts`\n   - Update components to use real API services\n   - Ensure proper error handling and loading states\n\n3. **Create Missing Backend APIs**\n   - For routes without backend support, create mock methods in backend controllers\n   - Add TODO comments indicating these are temporary mocks\n   - Follow existing controller patterns and RBAC\n\n4. **Update Frontend Services**\n   - Extend `frontend/lib/api.ts` and service files as needed\n   - Ensure consistent error handling and response formatting\n   - Add proper TypeScript interfaces\n\n## Acceptance Criteria\n- ✅ All admin routes successfully load without frontend mock data\n- ✅ All API calls use backend endpoints (real or mock methods)\n- ✅ No remaining imports from mockDataService in admin components\n- ✅ Successful e2e tests covering all admin routes\n- ✅ Proper error handling and loading states implemented\n- ✅ RBAC properly enforced on all admin endpoints\n\n## Testing Requirements\n- E2e test suite covering navigation to all admin routes\n- API integration tests for each route's data fetching\n- Error scenario testing (unauthorized access, network failures)\n- Performance testing for data-heavy routes\n\n## Dependencies\n- Card 16-1 (Admin Dashboard Integration)\n- `docs/backend/global-endpoint-matrix.md` for API mapping\n- `frontend/components/admin/admin-sidebar.tsx` for route definitions\n- Backend controllers for each domain",
+        "content": "# 16.B.2 System Support Sidebar Backend Integration - Implementation Details\n\n## Current Status\nSystem Support sidebar integration is partially complete. Card 16-2 exists for admin panel integration but focuses on backend API creation. This new card (16.B.2) focuses on full frontend-backend integration including real-time features.\n\n## Implementation Strategy\n\n### Phase 1: Backend API Assessment\n1. Review existing endpoints in `docs/backend/global-endpoint-matrix.md`\n2. Map system support sidebar routes to backend APIs\n3. Identify gaps where APIs don't exist\n4. Create mock methods for missing APIs with TODO comments\n\n### Phase 2: Frontend Service Updates\n1. Remove all imports from `frontend/lib/services/mockDataService.ts`\n2. Update `frontend/lib/api.ts` and system support service files\n3. Add proper TypeScript interfaces for all system support data\n4. Implement error handling and loading states\n\n### Phase 3: Real-time Integration\n1. Connect system support routes to socket events (`system-support-ticket-updated`, `system-support-user-updated`, etc.)\n2. Implement live notifications and message popups\n3. Add real-time dashboard updates\n\n### Phase 4: Testing & Validation\n1. E2e test suite for all system support routes\n2. API integration tests with seeded data\n3. Performance testing for data-heavy routes\n4. RBAC validation for all system support endpoints\n\n## Dependencies\n- Card 16-2 (Admin Panel Backend APIs)\n- `docs/backend/global-endpoint-matrix.md`\n- `frontend/components/system-support/system-support-sidebar.tsx`\n- Backend controllers for all system support domains\n- Socket service for real-time updates\n\n## Files to Modify\n- `frontend/lib/services/systemSupportService.ts` (extend)\n- `frontend/lib/services/mockDataService.ts` (remove imports)\n- `frontend/app/system-support/*` routes (update to use real APIs)\n- Backend controllers (create mock methods where needed)\n- `backend/src/services/socketService.ts` (add system support events)\n\n## Risk Mitigation\n- Create backend mock methods for missing APIs to avoid blocking frontend\n- Add TODO comments indicating temporary mocks\n- Implement proper error boundaries for API failures\n- Ensure backward compatibility during transition",
         "mime": "text/markdown"
       },
-      "id": "16-2",
+      "id": "16.B.2",
       "prio": 10,
       "references": [
-        "16-1",
+        "16-2",
+        "docs/backend/global-endpoint-matrix.md",
+        "frontend/components/system-support/system-support-sidebar.tsx"
+      ],
+      "title": "16.B.2 System support sidebar backend integration",
+      "type": "task"
+    },
+    {
+      "assignedTo": {
+        "name": "Copilot Agent"
+      },
+      "category": "integration",
+      "creation_time": "2025-12-03T00:00:00.000Z",
+      "description": {
+        "content": "# 16.B.3 Club Admin Sidebar Backend Integration\n\n## Overview\nComplete full backend integration for all Club Admin sidebar menus defined in admin-sidebar.tsx, replacing all mock services with backend API calls or creating backend mock methods where APIs don't exist yet.\n\n## Reference Screenshot\n[Club Admin Sidebar Screenshot](https://example.com/club-admin-sidebar.png)\n\n## Club Admin Sidebar Menus to Integrate\n- Dashboard: /admin\n- User Management: /admin/users (All Users, Admins, Pending Approvals)\n- Roles & Permissions: /admin/roles (Manage Roles, Permissions)\n- Clubs: /admin/clubs (All Clubs, Pending Clubs, Club Analytics)\n- Coaches: /admin/coaches (All Coaches, Add Coach, Schedules)\n- Tools: /admin/tools\n- View Site: /\n- Help: /admin/help",
+        "mime": "text/markdown"
+      },
+      "details": {
+        "content": "# 16.B.3 Club Admin Sidebar Backend Integration - Implementation Details\n\n## Current Status\nClub Admin sidebar integration is partially complete. Card 16-2 exists for admin panel integration but focuses on backend API creation. This new card (16.B.3) focuses on full frontend-backend integration including real-time features.\n\n## Implementation Strategy\n\n### Phase 1: Backend API Assessment\n1. Review existing endpoints in `docs/backend/global-endpoint-matrix.md`\n2. Map club admin sidebar routes to backend APIs\n3. Identify gaps where APIs don't exist\n4. Create mock methods for missing APIs with TODO comments\n\n### Phase 2: Frontend Service Updates\n1. Remove all imports from `frontend/lib/services/mockDataService.ts`\n2. Update `frontend/lib/api.ts` and club admin service files\n3. Add proper TypeScript interfaces for all club admin data\n4. Implement error handling and loading states\n\n### Phase 3: Real-time Integration\n1. Connect club admin routes to socket events (`club-admin-user-updated`, `club-admin-club-updated`, etc.)\n2. Implement live notifications and message popups\n3. Add real-time dashboard updates\n\n### Phase 4: Testing & Validation\n1. E2e test suite for all club admin routes\n2. API integration tests with seeded data\n3. Performance testing for data-heavy routes\n4. RBAC validation for all club admin endpoints\n\n## Dependencies\n- Card 16-2 (Admin Panel Backend APIs)\n- `docs/backend/global-endpoint-matrix.md`\n- `frontend/components/admin/admin-sidebar.tsx`\n- Backend controllers for all club admin domains\n- Socket service for real-time updates\n\n## Files to Modify\n- `frontend/lib/services/clubAdminService.ts` (extend)\n- `frontend/lib/services/mockDataService.ts` (remove imports)\n- `frontend/app/admin/*` routes (update to use real APIs)\n- Backend controllers (create mock methods where needed)\n- `backend/src/services/socketService.ts` (add club admin events)\n\n## Risk Mitigation\n- Create backend mock methods for missing APIs to avoid blocking frontend\n- Add TODO comments indicating temporary mocks\n- Implement proper error boundaries for API failures\n- Ensure backward compatibility during transition",
+        "mime": "text/markdown"
+      },
+      "id": "16.B.3",
+      "prio": 10,
+      "references": [
+        "16-2",
         "docs/backend/global-endpoint-matrix.md",
         "frontend/components/admin/admin-sidebar.tsx"
       ],
-      "title": "16-2 Admin panel full integration"
+      "title": "16.B.3 Club admin sidebar backend integration",
+      "type": "task"
+    },
+    {
+      "assignedTo": {
+        "name": "Copilot Agent"
+      },
+      "category": "integration",
+      "creation_time": "2025-12-03T00:00:00.000Z",
+      "description": {
+        "content": "# 16.B.4 Club Manager Sidebar Backend Integration\n\n## Overview\nComplete full backend integration for all Club Manager sidebar menus defined in club-sidebar.tsx, replacing all mock services with backend API calls or creating backend mock methods where APIs don't exist yet.\n\n## Reference Screenshot\n[Club Manager Sidebar Screenshot](https://example.com/club-manager-sidebar.png)\n\n## Club Manager Sidebar Menus to Integrate\n- Dashboard: /club\n- Coaches: /club/coaches (All Coaches, Add Coach, Schedules)\n- Members: /club/members (All Members, Add Member, Groups)\n- Sessions: /club/sessions (All Sessions, Create Session, Calendar View)\n- Attendance: /club/attendance\n- Progress: /club/progress (Overview, Evaluations, Reports)\n- Payments: /club/payments (Transactions, Memberships, Invoices)\n- Analytics: /club/analytics\n- Messages: /club/messages\n- Announcements: /club/announcements\n- Club Profile: /club/profile\n- Settings: /club/settings\n- Help: /club/help",
+        "mime": "text/markdown"
+      },
+      "details": {
+        "content": "# 16.B.4 Club Manager Sidebar Backend Integration - Implementation Details\n\n## Current Status\nClub Manager sidebar integration is partially complete. Card 16-2 exists for admin panel integration but focuses on backend API creation. This new card (16.B.4) focuses on full frontend-backend integration including real-time features.\n\n## Implementation Strategy\n\n### Phase 1: Backend API Assessment\n1. Review existing endpoints in `docs/backend/global-endpoint-matrix.md`\n2. Map club manager sidebar routes to backend APIs\n3. Identify gaps where APIs don't exist\n4. Create mock methods for missing APIs with TODO comments\n\n### Phase 2: Frontend Service Updates\n1. Remove all imports from `frontend/lib/services/mockDataService.ts`\n2. Update `frontend/lib/api.ts` and club manager service files\n3. Add proper TypeScript interfaces for all club manager data\n4. Implement error handling and loading states\n\n### Phase 3: Real-time Integration\n1. Connect club manager routes to socket events (`club-manager-coach-updated`, `club-manager-session-updated`, etc.)\n2. Implement live notifications and message popups\n3. Add real-time dashboard updates\n\n### Phase 4: Testing & Validation\n1. E2e test suite for all club manager routes\n2. API integration tests with seeded data\n3. Performance testing for data-heavy routes\n4. RBAC validation for all club manager endpoints\n\n## Dependencies\n- Card 16-2 (Admin Panel Backend APIs)\n- `docs/backend/global-endpoint-matrix.md`\n- `frontend/components/club/club-sidebar.tsx`\n- Backend controllers for all club manager domains\n- Socket service for real-time updates\n\n## Files to Modify\n- `frontend/lib/services/clubManagerService.ts` (extend)\n- `frontend/lib/services/mockDataService.ts` (remove imports)\n- `frontend/app/club/*` routes (update to use real APIs)\n- Backend controllers (create mock methods where needed)\n- `backend/src/services/socketService.ts` (add club manager events)\n\n## Risk Mitigation\n- Create backend mock methods for missing APIs to avoid blocking frontend\n- Add TODO comments indicating temporary mocks\n- Implement proper error boundaries for API failures\n- Ensure backward compatibility during transition",
+        "mime": "text/markdown"
+      },
+      "id": "16.B.4",
+      "prio": 10,
+      "references": [
+        "16-2",
+        "docs/backend/global-endpoint-matrix.md",
+        "frontend/components/club/club-sidebar.tsx"
+      ],
+      "title": "16.B.4 Club manager sidebar backend integration",
+      "type": "task"
+    },
+    {
+      "assignedTo": {
+        "name": "Copilot Agent"
+      },
+      "category": "integration",
+      "creation_time": "2025-12-03T00:00:00.000Z",
+      "description": {
+        "content": "# 16.B.5 Head Coach Sidebar Backend Integration\n\n## Overview\nComplete full backend integration for all Head Coach sidebar menus defined in head-coach-sidebar.tsx, replacing all mock services with backend API calls or creating backend mock methods where APIs don't exist yet.\n\n## Reference Screenshot\n[Head Coach Sidebar Screenshot](https://example.com/head-coach-sidebar.png)\n\n## Head Coach Sidebar Menus to Integrate\n- Dashboard: /head-coach\n- Team Management: /head-coach/teams\n- Training Plans: /head-coach/training-plans\n- Player Evaluations: /head-coach/evaluations\n- Match Analysis: /head-coach/match-analysis\n- Staff Coordination: /head-coach/staff\n- Settings: /head-coach/settings\n- View Site: /\n- Help: /head-coach/help",
+        "mime": "text/markdown"
+      },
+      "details": {
+        "content": "# 16.B.5 Head Coach Sidebar Backend Integration - Implementation Details\n\n## Current Status\nHead Coach sidebar integration is partially complete. Card 16-2 exists for admin panel integration but focuses on backend API creation. This new card (16.B.5) focuses on full frontend-backend integration including real-time features.\n\n## Implementation Strategy\n\n### Phase 1: Backend API Assessment\n1. Review existing endpoints in `docs/backend/global-endpoint-matrix.md`\n2. Map head coach sidebar routes to backend APIs\n3. Identify gaps where APIs don't exist\n4. Create mock methods for missing APIs with TODO comments\n\n### Phase 2: Frontend Service Updates\n1. Remove all imports from `frontend/lib/services/mockDataService.ts`\n2. Update `frontend/lib/api.ts` and head coach service files\n3. Add proper TypeScript interfaces for all head coach data\n4. Implement error handling and loading states\n\n### Phase 3: Real-time Integration\n1. Connect head coach routes to socket events (`head-coach-team-updated`, `head-coach-evaluation-updated`, etc.)\n2. Implement live notifications and message popups\n3. Add real-time dashboard updates\n\n### Phase 4: Testing & Validation\n1. E2e test suite for all head coach routes\n2. API integration tests with seeded data\n3. Performance testing for data-heavy routes\n4. RBAC validation for all head coach endpoints\n\n## Dependencies\n- Card 16-2 (Admin Panel Backend APIs)\n- `docs/backend/global-endpoint-matrix.md`\n- `frontend/components/head-coach/head-coach-sidebar.tsx`\n- Backend controllers for all head coach domains\n- Socket service for real-time updates\n\n## Files to Modify\n- `frontend/lib/services/headCoachService.ts` (extend)\n- `frontend/lib/services/mockDataService.ts` (remove imports)\n- `frontend/app/head-coach/*` routes (update to use real APIs)\n- Backend controllers (create mock methods where needed)\n- `backend/src/services/socketService.ts` (add head coach events)\n\n## Risk Mitigation\n- Create backend mock methods for missing APIs to avoid blocking frontend\n- Add TODO comments indicating temporary mocks\n- Implement proper error boundaries for API failures\n- Ensure backward compatibility during transition",
+        "mime": "text/markdown"
+      },
+      "id": "16.B.5",
+      "prio": 10,
+      "references": [
+        "16-2",
+        "docs/backend/global-endpoint-matrix.md",
+        "frontend/components/head-coach/head-coach-sidebar.tsx"
+      ],
+      "title": "16.B.5 Head coach sidebar backend integration",
+      "type": "task"
     }
   ],
-  "testing": [],
+  "testing": [
+    {
+      "assignedTo": {
+        "name": "Copilot Agent"
+      },
+      "category": "integration",
+      "creation_time": "2025-12-03T00:00:00.000Z",
+      "description": {
+        "content": "# 16.B.1 Admin Panel Full Integration\n\n## Overview\nComplete full backend integration for all admin sidebar menus defined in admin-sidebar.tsx, replacing all mock services with backend API calls or creating backend mock methods where APIs don't exist yet.\n\n## Reference Screenshot\n[Admin Sidebar Screenshot](https://example.com/admin-sidebar.png)\n\n## Admin Sidebar Menus to Integrate\n1. **User Management**\n   - `/admin/users` - User CRUD, role assignment, status management\n   - `/admin/roles` - Role management and permissions\n   - `/admin/permissions` - Permission assignment and management\n\n2. **Club Management**\n   - `/admin/clubs` - Club CRUD, membership management\n\n3. **Staff Management**\n   - `/admin/coaches` - Coach management and assignments\n   - `/admin/students` - Student management and enrollments\n\n4. **Operations**\n   - `/admin/sessions` - Session scheduling and management\n   - `/admin/attendance` - Attendance tracking and reporting\n   - `/admin/evaluations` - Performance evaluations\n   - `/admin/bookings` - Booking management\n\n5. **Financial**\n   - `/admin/payments` - Payment processing and history\n\n6. **Infrastructure**\n   - `/admin/facilities` - Facility/venue/ground management\n\n7. **Analytics & Reporting**\n   - `/admin/analytics` - Platform analytics and metrics\n   - `/admin/reports` - Custom reports and exports\n\n8. **System Administration**\n   - `/admin/settings` - System configuration\n   - `/admin/notifications` - Notification management\n   - `/admin/support` - Support ticket management\n   - `/admin/audit-logs` - Audit trail viewing\n   - `/admin/system-health` - System monitoring\n   - `/admin/backups` - Backup management\n\n## Technical Requirements\n- Replace all mock data services with real backend API calls\n- Implement real-time socket connections for live updates\n- Add message popups and notifications for admin actions\n- Ensure no frontend mocks - all data from backend APIs or mock methods\n- Create missing backend APIs as mock methods with TODO comments\n- Follow existing controller patterns and RBAC\n- Add proper error handling and loading states\n- Update frontend services to use real API endpoints\n\n## UI/UX Consistency\n- Maintain glassmorphism design theme\n- Use shadcn components for consistency\n- Implement proper loading states and error messages\n- Ensure responsive design across all admin routes\n- Follow established navigation patterns\n\n## Acceptance Criteria\n- ✅ All 10 admin sidebar menus fully integrated with backend\n- ✅ No remaining imports from mockDataService in admin components\n- ✅ Real-time updates via socket connections\n- ✅ Message popups and notifications implemented\n- ✅ All API calls use backend endpoints (real or mock methods)\n- ✅ Successful e2e tests covering all admin routes\n- ✅ Proper RBAC enforced on all admin endpoints\n- ✅ UI/UX consistent with existing design system\n- ✅ No frontend mocks - all business logic in backend",
+        "mime": "text/markdown"
+      },
+      "details": {
+        "content": "# 16.B.1 Admin Panel Full Integration - Implementation Details\n\n## Current Status\nAdmin sidebar integration is partially complete. Card 16-2 exists for admin panel integration but focuses on backend API creation. This new card (16.B.1) focuses on full frontend-backend integration including real-time features.\n\n## Implementation Strategy\n\n### Phase 1: Backend API Assessment\n1. Review existing endpoints in `docs/backend/global-endpoint-matrix.md`\n2. Map admin sidebar routes to backend APIs\n3. Identify gaps where APIs don't exist\n4. Create mock methods for missing APIs with TODO comments\n\n### Phase 2: Frontend Service Updates\n1. Remove all imports from `frontend/lib/services/mockDataService.ts`\n2. Update `frontend/lib/api.ts` and admin service files\n3. Add proper TypeScript interfaces for all admin data\n4. Implement error handling and loading states\n\n### Phase 3: Real-time Integration\n1. Connect admin routes to socket events (`admin-user-updated`, `admin-club-created`, etc.)\n2. Implement live notifications and message popups\n3. Add real-time dashboard updates\n\n### Phase 4: Testing & Validation\n1. E2e test suite for all admin routes\n2. API integration tests with seeded data\n3. Performance testing for data-heavy routes\n4. RBAC validation for all admin endpoints\n\n## Dependencies\n- Card 16-2 (Admin Panel Backend APIs)\n- `docs/backend/global-endpoint-matrix.md`\n- `frontend/components/admin/admin-sidebar.tsx`\n- Backend controllers for all admin domains\n- Socket service for real-time updates\n\n## Files to Modify\n- `frontend/lib/services/adminService.ts` (extend)\n- `frontend/lib/services/mockDataService.ts` (remove imports)\n- `frontend/app/admin/*` routes (update to use real APIs)\n- Backend controllers (create mock methods where needed)\n- `backend/src/services/socketService.ts` (add admin events)\n\n## Risk Mitigation\n- Create backend mock methods for missing APIs to avoid blocking frontend\n- Add TODO comments indicating temporary mocks\n- Implement proper error boundaries for API failures\n- Ensure backward compatibility during transition",
+        "mime": "text/markdown"
+      },
+      "id": "16.B.1",
+      "prio": 10,
+      "references": [
+        "16-2",
+        "docs/backend/global-endpoint-matrix.md",
+        "frontend/components/admin/admin-sidebar.tsx"
+      ],
+      "title": "16.B.1 Admin panel full integration",
+      "type": "task"
+    }
+  ],
   "done": [
     {
       "assignedTo": {
@@ -340,6 +721,178 @@
       ],
       "title": "19 - Facility/Venue/Ground metadata DTO expansion",
       "type": "note"
+    },
+    {
+      "assignedTo": {
+        "name": "Copilot Agent"
+      },
+      "category": "integration",
+      "creation_time": "2025-12-03T00:00:00.000Z",
+      "description": {
+        "content": "Complete full backend integration for coach, parent, and student dashboards covering session management, progress tracking, and family management.",
+        "mime": "text/markdown"
+      },
+      "details": {
+        "content": "# 1-1 Coach/Parent/Student Dashboard Integration\n\n## Context\n- Core user roles (HEAD_COACH, COACH, FREELANCER, PARENT, STUDENT) need dedicated dashboards\n- Current dashboards use mock data from mockDataService.ts\n- Need comprehensive integration plan covering coaching operations, family management, and student progress\n- Strict policy: no frontend mocks allowed - must use backend APIs or create backend mock methods\n\n## Dashboard Routes to Integrate\n\n### Coach Dashboard (`/coach/dashboard`)\n- **Mock Data Used**: `coachStats`, `coachTodaySessions`, `coachRecentStudents`, `coachPendingEvaluations`\n- **Required Backend APIs**:\n  - `GET /api/coaches/dashboard/stats` - Coach statistics (active students, sessions today, pending evaluations)\n  - `GET /api/sessions?coachId={id}&date={today}&status=SCHEDULED` - Today's scheduled sessions\n  - `GET /api/students?coachId={id}&limit=5&sort=recentActivity` - Recently active students\n  - `GET /api/evaluations?coachId={id}&status=PENDING&limit=10` - Pending evaluation requests\n\n### Parent Dashboard (`/parent/dashboard`)\n- **Mock Data Used**: `parentStats`, `parentKids`, `parentUpcomingSessions`, `parentRecentAchievements`\n- **Required Backend APIs**:\n  - `GET /api/parents/dashboard/stats` - Parent statistics (children count, upcoming sessions, recent achievements)\n  - `GET /api/students?familyId={id}` - Parent's children/student profiles\n  - `GET /api/sessions?studentIds={childrenIds}&status=SCHEDULED&upcoming=true` - Upcoming sessions for children\n  - `GET /api/achievements?studentIds={childrenIds}&limit=10&sort=recent` - Recent achievements by children\n\n### Student Dashboard (`/student/dashboard`)\n- **Mock Data Used**: `studentPageStats`, `studentPageUpcomingSessions`, `studentPageRecentEvaluations`, `studentPageAchievements`\n- **Required Backend APIs**:\n  - `GET /api/students/{id}/dashboard/stats` - Student statistics (sessions attended, evaluations completed, achievements earned)\n  - `GET /api/sessions?studentId={id}&status=SCHEDULED&upcoming=true` - Upcoming scheduled sessions\n  - `GET /api/evaluations?studentId={id}&limit=5&sort=recent` - Recent evaluation results\n  - `GET /api/achievements?studentId={id}&limit=10&sort=recent` - Student's recent achievements\n\n### Coach Students Sub-page (`/coach/students`)\n- **Mock Data Used**: `coachStudents`\n- **Required Backend APIs**:\n  - `GET /api/students?coachId={id}&include=progress,attendance,evaluations` - Coach's assigned students with progress data\n\n## Implementation Strategy\n\n### For Each Dashboard Route:\n1. **Identify Required Backend APIs**\n   - Review existing endpoints in `docs/backend/global-endpoint-matrix.md`\n   - Map frontend data needs to backend contracts with proper scoping (coach, parent, student)\n   - Identify gaps where APIs don't exist and create mock methods\n\n2. **Replace Mock Services**\n   - Remove imports from `frontend/lib/services/mockDataService.ts`\n   - Update dashboard components to use real API services\n   - Ensure proper error handling and loading states\n\n3. **Create Missing Backend APIs**\n   - For routes without backend support, create mock methods in respective controllers\n   - Add TODO comments indicating these are temporary mocks\n   - Follow existing controller patterns and RBAC with appropriate role scopes\n\n4. **Update Frontend Services**\n   - Extend `frontend/lib/api.ts` and create role-specific service files\n   - Ensure consistent error handling and response formatting\n   - Add proper TypeScript interfaces matching backend DTOs\n\n## Acceptance Criteria\n- ✅ All coach/parent/student dashboard routes load without frontend mock data\n- ✅ All API calls use backend endpoints (real or mock methods) with proper role scoping\n- ✅ No remaining imports from mockDataService in coach/parent/student components\n- ✅ Successful e2e tests covering all dashboard routes and sub-pages\n- ✅ Proper error handling and loading states implemented\n- ✅ RBAC properly enforced for HEAD_COACH/COACH/FREELANCER/PARENT/STUDENT roles\n\n## Testing Requirements\n- E2e test suite covering navigation to all dashboard routes\n- API integration tests for each route's data fetching with role scoping\n- Error scenario testing (unauthorized access, cross-scope access, network failures)\n- Performance testing for data-heavy routes (student lists, session histories)\n\n## Dependencies\n- Card 16-2 (Admin Panel Integration)\n- `docs/backend/global-endpoint-matrix.md` for API mapping\n- Frontend dashboard components (`app/(dashboard)/coach/page.tsx`, `app/(dashboard)/parent/page.tsx`, `app/(dashboard)/student/page.tsx`, `app/(dashboard)/coach/students/page.tsx`)\n- Backend controllers with role-based RBAC",
+        "mime": "text/markdown"
+      },
+      "id": "1-1",
+      "prio": 11,
+      "references": [
+        "16-2",
+        "docs/backend/global-endpoint-matrix.md"
+      ],
+      "title": "1-1 Coach/Parent/Student Dashboard Integration"
+    },
+    {
+      "assignedTo": {
+        "name": "Copilot Agent"
+      },
+      "category": "integration",
+      "creation_time": "2025-12-03T00:00:00.000Z",
+      "description": {
+        "content": "Complete full backend integration for coaching dashboards (HEAD_COACH, COACH, FREELANCER) covering session management, student progress, and coaching analytics.",
+        "mime": "text/markdown"
+      },
+      "details": {
+        "content": "# 16-1-2 Coaching Dashboard Integration\n\n## Context\n- Coaching roles (HEAD_COACH, COACH, FREELANCER) need dedicated dashboards\n- Current dashboards likely use mock data from mockDataService\n- Need comprehensive integration plan covering coaching operations and student management\n- Strict policy: no frontend mocks allowed - must use backend APIs or create backend mock methods\n\n## Coaching Routes to Integrate\n\n### Session Management\n- `/coach/dashboard` - Coach overview with assigned sessions and student progress\n- `/coach/sessions` - Session scheduling and management\n- `/coach/attendance` - Attendance tracking for coached sessions\n- `/coach/evaluations` - Student performance evaluations and feedback\n\n### Student Management\n- `/coach/students` - Assigned students and progress tracking\n- `/coach/progress` - Detailed student progress reports and analytics\n\n### Scheduling & Bookings\n- `/coach/schedule` - Personal coaching schedule management\n- `/coach/bookings` - Facility bookings for coaching sessions\n\n### Analytics & Reporting\n- `/coach/analytics` - Coaching performance metrics and student outcomes\n- `/coach/reports` - Custom reports for coaching activities\n\n## Implementation Strategy\n\n### For Each Route:\n1. **Identify Required Backend APIs**\n   - Review existing endpoints in global-endpoint-matrix.md\n   - Map frontend data needs to backend contracts with coach scoping\n   - Identify gaps where APIs don't exist\n\n2. **Replace Mock Services**\n   - Remove imports from `frontend/lib/services/mockDataService.ts`\n   - Update components to use real API services\n   - Ensure proper error handling and loading states\n\n3. **Create Missing Backend APIs**\n   - For routes without backend support, create mock methods in backend controllers\n   - Add TODO comments indicating these are temporary mocks\n   - Follow existing controller patterns and RBAC with appropriate coach roles\n\n4. **Update Frontend Services**\n   - Extend `frontend/lib/api.ts` and service files as needed\n   - Ensure consistent error handling and response formatting\n   - Add proper TypeScript interfaces\n\n## Acceptance Criteria\n- ✅ All coaching routes successfully load without frontend mock data\n- ✅ All API calls use backend endpoints (real or mock methods) with proper coach scoping\n- ✅ No remaining imports from mockDataService in coaching components\n- ✅ Successful e2e tests covering all coaching routes\n- ✅ Proper error handling and loading states implemented\n- ✅ RBAC properly enforced for HEAD_COACH/COACH/FREELANCER roles\n\n## Testing Requirements\n- E2e test suite covering navigation to all coaching routes\n- API integration tests for each route's data fetching with coach scoping\n- Error scenario testing (unauthorized access, network failures)\n- Performance testing for data-heavy routes\n\n## Dependencies\n- Card 16-2 (Admin Panel Integration)\n- `docs/backend/global-endpoint-matrix.md` for API mapping\n- Frontend coach dashboard components (likely in `app/(dashboard)/coach/`)\n- Backend controllers with coach role RBAC",
+        "mime": "text/markdown"
+      },
+      "id": "16-1-2",
+      "prio": 11,
+      "references": [
+        "16-2",
+        "docs/backend/global-endpoint-matrix.md"
+      ],
+      "title": "16-1-2 Coaching dashboard integration"
+    },
+    {
+      "assignedTo": {
+        "name": "Copilot Agent"
+      },
+      "category": "integration",
+      "creation_time": "2025-12-03T00:00:00.000Z",
+      "description": {
+        "content": "Complete full backend integration for facility operations dashboards covering facility management, maintenance, and operational workflows.",
+        "mime": "text/markdown"
+      },
+      "details": {
+        "content": "# 16-2-1 Facility Operations Dashboard Integration\n\n## Context\n- Facility operations roles (FACILITY_MANAGER, VENUE_MANAGER, GROUND_MANAGER, GROUNDSKEEPER, MAINTENANCE_TECH, EQUIPMENT_MANAGER, SECURITY_STAFF, CLEANING_STAFF) need dedicated dashboards\n- Current dashboards likely use mock data from mockDataService\n- Need comprehensive integration plan covering facility operations and maintenance\n- Strict policy: no frontend mocks allowed - must use backend APIs or create backend mock methods\n\n## Facility Operations Routes to Integrate\n\n### Facility Management\n- `/facility/dashboard` - Facility overview with status and maintenance alerts\n- `/facility/venues` - Venue management and scheduling\n- `/facility/grounds` - Ground maintenance and availability\n- `/facility/equipment` - Equipment inventory and maintenance tracking\n\n### Maintenance & Operations\n- `/facility/maintenance` - Maintenance schedules and work orders\n- `/facility/cleaning` - Cleaning schedules and assignments\n- `/facility/security` - Security logs and incident reporting\n\n### Scheduling & Bookings\n- `/facility/schedule` - Facility-wide scheduling and availability\n- `/facility/bookings` - Booking management and conflict resolution\n\n### Analytics & Reporting\n- `/facility/analytics` - Facility utilization and maintenance metrics\n- `/facility/reports` - Operational reports and compliance tracking\n\n## Implementation Strategy\n\n### For Each Route:\n1. **Identify Required Backend APIs**\n   - Review existing endpoints in global-endpoint-matrix.md\n   - Map frontend data needs to backend contracts with facility scoping\n   - Identify gaps where APIs don't exist\n\n2. **Replace Mock Services**\n   - Remove imports from `frontend/lib/services/mockDataService.ts`\n   - Update components to use real API services\n   - Ensure proper error handling and loading states\n\n3. **Create Missing Backend APIs**\n   - For routes without backend support, create mock methods in backend controllers\n   - Add TODO comments indicating these are temporary mocks\n   - Follow existing controller patterns and RBAC with FACILITY scope\n\n4. **Update Frontend Services**\n   - Extend `frontend/lib/api.ts` and service files as needed\n   - Ensure consistent error handling and response formatting\n   - Add proper TypeScript interfaces\n\n## Acceptance Criteria\n- ✅ All facility operations routes successfully load without frontend mock data\n- ✅ All API calls use backend endpoints (real or mock methods) with proper facility scoping\n- ✅ No remaining imports from mockDataService in facility components\n- ✅ Successful e2e tests covering all facility operations routes\n- ✅ Proper error handling and loading states implemented\n- ✅ RBAC properly enforced for facility operations roles\n\n## Testing Requirements\n- E2e test suite covering navigation to all facility operations routes\n- API integration tests for each route's data fetching with facility scoping\n- Error scenario testing (unauthorized access, network failures)\n- Performance testing for data-heavy routes\n\n## Dependencies\n- Card 16-2 (Admin Panel Integration)\n- `docs/backend/global-endpoint-matrix.md` for API mapping\n- Frontend facility dashboard components (likely in `app/(dashboard)/facility/`)\n- Backend controllers with facility role RBAC",
+        "mime": "text/markdown"
+      },
+      "id": "16-2-1",
+      "prio": 11,
+      "references": [
+        "16-2",
+        "docs/backend/global-endpoint-matrix.md"
+      ],
+      "title": "16-2-1 Facility operations dashboard integration"
+    },
+    {
+      "assignedTo": {
+        "name": "Copilot Agent"
+      },
+      "category": "integration",
+      "creation_time": "2025-12-03T00:00:00.000Z",
+      "description": {
+        "content": "Complete full backend integration for content and medical dashboards (CONTENT_MANAGER, MEDICAL_STAFF) covering content management and medical services.",
+        "mime": "text/markdown"
+      },
+      "details": {
+        "content": "# 16-2-3 Content & Medical Dashboard Integration\n\n## Context\n- Content and medical roles (CONTENT_MANAGER, MEDICAL_STAFF) need dedicated dashboards\n- Current dashboards likely use mock data from mockDataService\n- Need comprehensive integration plan covering content and medical operations\n- Strict policy: no frontend mocks allowed - must use backend APIs or create backend mock methods\n\n## Content & Medical Routes to Integrate\n\n### Content Management\n- `/content/dashboard` - Content overview and publishing status\n- `/content/articles` - Article creation and management\n- `/content/media` - Media library and asset management\n- `/content/publishing` - Content scheduling and publishing workflow\n\n### Medical Services\n- `/medical/dashboard` - Medical services overview and alerts\n- `/medical/incidents` - Medical incident tracking and reporting\n- `/medical/emergency` - Emergency response coordination\n- `/medical/health` - Health records and monitoring\n\n### Analytics & Reporting\n- `/content/analytics` - Content performance and engagement metrics\n- `/medical/reports` - Medical service reports and compliance\n\n## Implementation Strategy\n\n### For Each Route:\n1. **Identify Required Backend APIs**\n   - Review existing endpoints in global-endpoint-matrix.md\n   - Map frontend data needs to backend contracts\n   - Identify gaps where APIs don't exist\n\n2. **Replace Mock Services**\n   - Remove imports from `frontend/lib/services/mockDataService.ts`\n   - Update components to use real API services\n   - Ensure proper error handling and loading states\n\n3. **Create Missing Backend APIs**\n   - For routes without backend support, create mock methods in backend controllers\n   - Add TODO comments indicating these are temporary mocks\n   - Follow existing controller patterns and RBAC with appropriate roles\n\n4. **Update Frontend Services**\n   - Extend `frontend/lib/api.ts` and service files as needed\n   - Ensure consistent error handling and response formatting\n   - Add proper TypeScript interfaces\n\n## Acceptance Criteria\n- ✅ All content and medical routes successfully load without frontend mock data\n- ✅ All API calls use backend endpoints (real or mock methods)\n- ✅ No remaining imports from mockDataService in content/medical components\n- ✅ Successful e2e tests covering all content and medical routes\n- ✅ Proper error handling and loading states implemented\n- ✅ RBAC properly enforced for CONTENT_MANAGER/MEDICAL_STAFF roles\n\n## Testing Requirements\n- E2e test suite covering navigation to all content and medical routes\n- API integration tests for each route's data fetching\n- Error scenario testing (unauthorized access, network failures)\n- Performance testing for data-heavy routes\n\n## Dependencies\n- Card 16-2 (Admin Panel Integration)\n- `docs/backend/global-endpoint-matrix.md` for API mapping\n- Frontend content/medical dashboard components\n- Backend controllers with content/medical role RBAC",
+        "mime": "text/markdown"
+      },
+      "id": "16-2-3",
+      "prio": 11,
+      "references": [
+        "16-2",
+        "docs/backend/global-endpoint-matrix.md"
+      ],
+      "title": "16-2-3 Content & medical dashboard integration"
+    },
+    {
+      "assignedTo": {
+        "name": "Copilot Agent"
+      },
+      "category": "integration",
+      "creation_time": "2025-12-03T00:00:00.000Z",
+      "description": {
+        "content": "Complete full backend integration for user dashboards (PARENT, STUDENT) covering personal profiles, progress tracking, and family management.",
+        "mime": "text/markdown"
+      },
+      "details": {
+        "content": "# 16-2-4 User Dashboard Integration\n\n## Context\n- User roles (PARENT, STUDENT) need dedicated dashboards\n- Current dashboards likely use mock data from mockDataService\n- Need comprehensive integration plan covering user profiles and progress tracking\n- Strict policy: no frontend mocks allowed - must use backend APIs or create backend mock methods\n\n## User Routes to Integrate\n\n### Student Dashboard\n- `/student/dashboard` - Personal progress and upcoming sessions\n- `/student/sessions` - Session history and scheduling\n- `/student/progress` - Performance tracking and evaluations\n- `/student/achievements` - Awards and milestone tracking\n\n### Parent Dashboard\n- `/parent/dashboard` - Family overview and children's progress\n- `/parent/children` - Child profile management and enrollment\n- `/parent/payments` - Payment history and billing\n- `/parent/communication` - Messages and notifications from coaches\n\n### Profile Management\n- `/user/profile` - Personal profile settings and preferences\n- `/user/notifications` - Notification preferences and history\n- `/user/privacy` - Privacy settings and data management\n\n### Analytics & Reporting\n- `/user/analytics` - Personal performance analytics\n- `/user/reports` - Progress reports and certificates\n\n## Implementation Strategy\n\n### For Each Route:\n1. **Identify Required Backend APIs**\n   - Review existing endpoints in global-endpoint-matrix.md\n   - Map frontend data needs to backend contracts with user scoping\n   - Identify gaps where APIs don't exist\n\n2. **Replace Mock Services**\n   - Remove imports from `frontend/lib/services/mockDataService.ts`\n   - Update components to use real API services\n   - Ensure proper error handling and loading states\n\n3. **Create Missing Backend APIs**\n   - For routes without backend support, create mock methods in backend controllers\n   - Add TODO comments indicating these are temporary mocks\n   - Follow existing controller patterns and RBAC with USER scope\n\n4. **Update Frontend Services**\n   - Extend `frontend/lib/api.ts` and service files as needed\n   - Ensure consistent error handling and response formatting\n   - Add proper TypeScript interfaces\n\n## Acceptance Criteria\n- ✅ All user routes successfully load without frontend mock data\n- ✅ All API calls use backend endpoints (real or mock methods) with proper user scoping\n- ✅ No remaining imports from mockDataService in user components\n- ✅ Successful e2e tests covering all user routes\n- ✅ Proper error handling and loading states implemented\n- ✅ RBAC properly enforced for PARENT/STUDENT roles\n\n## Testing Requirements\n- E2e test suite covering navigation to all user routes\n- API integration tests for each route's data fetching with user scoping\n- Error scenario testing (unauthorized access, network failures)\n- Performance testing for data-heavy routes\n\n## Dependencies\n- Card 16-2 (Admin Panel Integration)\n- `docs/backend/global-endpoint-matrix.md` for API mapping\n- Frontend user dashboard components (likely in `app/(dashboard)/parent/`, `app/(dashboard)/student/`)\n- Backend controllers with user role RBAC",
+        "mime": "text/markdown"
+      },
+      "id": "16-2-4",
+      "prio": 11,
+      "references": [
+        "16-2",
+        "docs/backend/global-endpoint-matrix.md"
+      ],
+      "title": "16-2-4 User dashboard integration"
+    },
+    {
+      "assignedTo": {
+        "name": "Copilot Agent"
+      },
+      "category": "frontend",
+      "creation_time": "2025-12-02T00:00:00.000Z",
+      "description": {
+        "content": "Complete full backend integration for all admin panel routes defined in admin-sidebar.tsx, replacing all mock services with backend API calls or creating backend mock methods where APIs don't exist yet.",
+        "mime": "text/markdown"
+      },
+      "details": {
+        "content": "# 16-2 Admin Panel Full Integration\n\n## Context\n- Admin sidebar defines 20+ routes requiring backend integration\n- Current admin dashboard uses mock data from mockDataService\n- Need comprehensive integration plan covering all admin routes\n- Strict policy: no frontend mocks allowed - must use backend APIs or create backend mock methods\n\n## Admin Routes to Integrate\n\n### User Management\n- `/admin/users` - User CRUD, role assignment, status management\n- `/admin/roles` - Role management and permissions\n- `/admin/permissions` - Permission assignment and management\n\n### Club Management\n- `/admin/clubs` - Club CRUD, membership management\n\n### Staff Management\n- `/admin/coaches` - Coach management and assignments\n- `/admin/students` - Student management and enrollments\n\n### Operations\n- `/admin/sessions` - Session scheduling and management\n- `/admin/attendance` - Attendance tracking and reporting\n- `/admin/evaluations` - Performance evaluations\n- `/admin/bookings` - Booking management\n\n### Financial\n- `/admin/payments` - Payment processing and history\n\n### Infrastructure\n- `/admin/facilities` - Facility/venue/ground management\n\n### Analytics & Reporting\n- `/admin/analytics` - Platform analytics and metrics\n- `/admin/reports` - Custom reports and exports\n\n### System Administration\n- `/admin/settings` - System configuration\n- `/admin/notifications` - Notification management\n- `/admin/support` - Support ticket management\n- `/admin/audit-logs` - Audit trail viewing\n- `/admin/system-health` - System monitoring\n- `/admin/backups` - Backup management\n\n## Implementation Strategy\n\n### For Each Route:\n1. **Identify Required Backend APIs**\n   - Review existing endpoints in global-endpoint-matrix.md\n   - Map frontend data needs to backend contracts\n   - Identify gaps where APIs don't exist\n\n2. **Replace Mock Services**\n   - Remove imports from `frontend/lib/services/mockDataService.ts`\n   - Update components to use real API services\n   - Ensure proper error handling and loading states\n\n3. **Create Missing Backend APIs**\n   - For routes without backend support, create mock methods in backend controllers\n   - Add TODO comments indicating these are temporary mocks\n   - Follow existing controller patterns and RBAC\n\n4. **Update Frontend Services**\n   - Extend `frontend/lib/api.ts` and service files as needed\n   - Ensure consistent error handling and response formatting\n   - Add proper TypeScript interfaces\n\n## Acceptance Criteria\n- ✅ All admin routes successfully load without frontend mock data\n- ✅ All API calls use backend endpoints (real or mock methods)\n- ✅ No remaining imports from mockDataService in admin components\n- ✅ Successful e2e tests covering all admin routes\n- ✅ Proper error handling and loading states implemented\n- ✅ RBAC properly enforced on all admin endpoints\n\n## Testing Requirements\n- E2e test suite covering navigation to all admin routes\n- API integration tests for each route's data fetching\n- Error scenario testing (unauthorized access, network failures)\n- Performance testing for data-heavy routes\n\n## Dependencies\n- Card 16-1 (Admin Dashboard Integration)\n- `docs/backend/global-endpoint-matrix.md` for API mapping\n- `frontend/components/admin/admin-sidebar.tsx` for route definitions\n- Backend controllers for each domain",
+        "mime": "text/markdown"
+      },
+      "id": "16-2",
+      "prio": 10,
+      "references": [
+        "16-1",
+        "docs/backend/global-endpoint-matrix.md",
+        "frontend/components/admin/admin-sidebar.tsx"
+      ],
+      "title": "16-2 Admin panel full integration"
+    },
+    {
+      "assignedTo": {
+        "name": "Copilot Agent"
+      },
+      "category": "planning",
+      "creation_time": "2025-12-02T00:00:00.000Z",
+      "description": {
+        "content": "Create master card 'Backend integration (phase-2)' and break it into role-specific backend integration subtasks referencing OpenAPI/Postman assets.",
+        "mime": "text/markdown"
+      },
+      "details": {
+        "content": "# Task 7 - Backend Integration (Phase 2) Planning (Priority 10)\n\n## Deliverables\n1. Parent Kanban card titled \"Backend integration (phase-2)\" with summary, scope, timeline.\n2. 22 sub-cards (one per role or logical grouping) describing backend integration tasks, dependencies, APIs to consume, validation rules, and acceptance tests.\n3. Linking each sub-card to relevant OpenAPI sections, Postman requests, and Swagger docs for parameter alignment.\n4. Checklist covering request/response payload sync, error handling, and logging requirements.\n5. Communication plan with frontend owners for each role-based feature.\n\n## Notes\n- Include risk assessment + mitigation per role.\n- Highlight data migration or seeding needs for integration.\n- Outline testing strategy (unit, integration, UAT) for each subtask.",
+        "mime": "text/markdown"
+      },
+      "id": "17",
+      "prio": 10,
+      "references": [],
+      "title": "17 - Backend integration (phase-2) plan",
+      "type": "epic"
+    },
+    {
+      "assignedTo": {
+        "name": "Copilot Agent"
+      },
+      "category": "integration",
+      "creation_time": "2025-12-02T00:00:00.000Z",
+      "description": {
+        "content": "Ensure frontend has all necessary backend endpoints and author integration tests covering the full stack.",
+        "mime": "text/markdown"
+      },
+      "details": {
+        "content": "# Task 6 - Frontend ↔ Backend Gap Analysis & Integration Tests (Priority 9)\n\n## Steps\n1. Review frontend API calls/services to list required endpoints.\n2. Compare against backend routes to identify gaps/mismatches.\n3. Implement missing backend routes or adjust payloads.\n4. Create integration tests (Playwright, Cypress, or Pact) validating frontend modules against backend API with seeded data.\n5. Document API usage contract per screen.\n\n## Acceptance\n- Gap matrix signed off by frontend + backend leads.\n- All blocking backend endpoints implemented or scheduled.\n- Integration test suite added to CI with environment bootstrap instructions.",
+        "mime": "text/markdown"
+      },
+      "id": "16",
+      "prio": 9,
+      "references": [],
+      "title": "16 - Frontend/backend integration readiness"
     },
     {
       "assignedTo": {
