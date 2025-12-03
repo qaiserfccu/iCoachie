@@ -35,6 +35,7 @@ export {
   accountantService,
   getOperationsStatusColor
 } from './operationsService'
+export { default as systemSupportService } from './systemSupportService'
 
 // Export types from services
 export type { Student } from './studentService'
@@ -71,3 +72,18 @@ export type {
   FinancialStats,
   MonthlyCollectionProgress
 } from './operationsService'
+export type {
+  DashboardStat as SystemSupportStat,
+  Ticket,
+  TicketDetail,
+  SystemStatus,
+  DiagnosticsResponse,
+  LogEntry,
+  PerformanceMetrics,
+  SupportUser,
+  SupportUserDetail,
+  AccessRole,
+  Report,
+  AuditLog,
+  KnowledgeBaseArticle
+} from './systemSupportService'

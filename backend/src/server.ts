@@ -25,6 +25,7 @@ import facilityRoutes from './controllers/facilityController';
 import adminRoutes from './controllers/adminController';
 import settingsRoutes from './controllers/settingsController';
 import emailTemplateRoutes from './controllers/emailTemplateController';
+import systemSupportRoutes from './controllers/systemSupportController';
 import fileRoutes from './routes/fileRoutes';
 
 dotenv.config();
@@ -101,6 +102,7 @@ app.use('/api/facilities', facilityRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/admin/settings', settingsRoutes);
 app.use('/api/admin/email-templates', emailTemplateRoutes);
+app.use('/api/system-support', systemSupportRoutes);
 app.use('/api/files', fileRoutes);
 
 app.get('/api/health', (req, res) => {
