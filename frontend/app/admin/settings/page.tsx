@@ -108,18 +108,20 @@ export default function SettingsPage() {
   const loadSettings = async () => {
     try {
       const response = await adminService.getSettings()
-      const loaded = { ...defaultSettings }
+      const loaded: SettingsState = { ...defaultSettings }
       
-      // Flatten settings from response
+      // Flatten settings from response - type-safe update
       for (const category of Object.keys(response.settings || {})) {
         const categorySettings = response.settings[category]
         for (const key of Object.keys(categorySettings)) {
           const value = categorySettings[key]
-          if (key in loaded) {
-            if (typeof loaded[key as keyof SettingsState] === 'boolean') {
-              (loaded as Record<string, unknown>)[key] = value === 'true'
+          const settingKey = key as keyof SettingsState
+          if (settingKey in loaded) {
+            // Check if the setting should be a boolean
+            if (typeof defaultSettings[settingKey] === 'boolean') {
+              loaded[settingKey] = (value === 'true') as SettingsState[typeof settingKey] & boolean
             } else {
-              (loaded as Record<string, unknown>)[key] = value
+              loaded[settingKey] = value as SettingsState[typeof settingKey] & string
             }
           }
         }

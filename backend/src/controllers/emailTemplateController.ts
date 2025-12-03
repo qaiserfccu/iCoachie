@@ -466,7 +466,7 @@ router.post('/:id/duplicate', requireAuth, requireRole(ADMIN_ROLES), async (req:
  *                 type: object
  *     responses:
  *       200:
- *         description: Test email sent
+ *         description: Test email configuration validated (email sending not yet implemented)
  */
 router.post('/:id/test', requireAuth, requireRole(ADMIN_ROLES), async (req: Request, res: Response) => {
   try {
@@ -485,13 +485,14 @@ router.post('/:id/test', requireAuth, requireRole(ADMIN_ROLES), async (req: Requ
       return res.status(404).json({ message: 'Template not found' });
     }
     
-    // In a real implementation, you would:
-    // 1. Replace variables in subject and body with testData
-    // 2. Send the email using configured SMTP settings
+    // Note: Email sending functionality is not yet implemented.
+    // This endpoint validates the template exists and is ready for testing.
+    // To implement actual email sending, integrate with nodemailer or similar
+    // and configure SMTP settings in the system settings.
     
     res.json({
       success: true,
-      message: `Test email sent to ${testEmail} using template "${template.name}"`
+      message: `Template "${template.name}" validated for ${testEmail}. Note: Actual email sending is not yet implemented - please configure SMTP settings and integrate email service.`
     });
   } catch (error) {
     console.error('Error sending test email:', error);

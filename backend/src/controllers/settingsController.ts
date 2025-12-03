@@ -101,13 +101,19 @@ router.get('/', requireAuth, requireRole(ADMIN_ROLES), async (req: Request, res:
       if (!settingsObj[setting.category]) {
         settingsObj[setting.category] = {};
       }
-      // Don't expose encrypted values directly
-      settingsObj[setting.category][setting.key] = setting.isEncrypted && setting.value
+      // Don't expose encrypted values directly - always mask if field is encrypted
+      settingsObj[setting.category][setting.key] = setting.isEncrypted
         ? '********'
         : setting.value;
     }
     
-    res.json({ settings: settingsObj, raw: settings });
+    // Filter out encrypted values from raw response too
+    const safeRaw = settings.map(s => ({
+      ...s,
+      value: s.isEncrypted ? '********' : s.value
+    }));
+    
+    res.json({ settings: settingsObj, raw: safeRaw });
   } catch (error) {
     console.error('Error fetching settings:', error);
     res.status(500).json({ message: 'Internal error' });
@@ -198,7 +204,7 @@ router.put('/', requireAuth, requireRole(ADMIN_ROLES), async (req: Request, res:
  *                 type: string
  *     responses:
  *       200:
- *         description: Test email sent
+ *         description: Test email configuration validated (email sending not yet implemented)
  */
 router.post('/test-email', requireAuth, requireRole(ADMIN_ROLES), async (req: Request, res: Response) => {
   try {
@@ -215,19 +221,21 @@ router.post('/test-email', requireAuth, requireRole(ADMIN_ROLES), async (req: Re
     
     const smtpHost = emailSettings.find(s => s.key === 'smtp_host')?.value;
     const smtpPort = emailSettings.find(s => s.key === 'smtp_port')?.value;
-    const smtpUsername = emailSettings.find(s => s.key === 'smtp_username')?.value;
-    const smtpPassword = emailSettings.find(s => s.key === 'smtp_password')?.value;
     
     if (!smtpHost || !smtpPort) {
-      return res.status(400).json({ message: 'SMTP configuration incomplete' });
+      return res.status(400).json({ 
+        success: false,
+        message: 'SMTP configuration incomplete. Please configure SMTP host and port.' 
+      });
     }
     
-    // In a real implementation, you would send an actual test email here
-    // For now, we'll just validate the configuration exists
+    // Note: Email sending functionality is not yet implemented.
+    // This endpoint validates the SMTP configuration is present.
+    // To implement actual email sending, integrate with nodemailer or similar.
     
     res.json({ 
       success: true, 
-      message: `Test email would be sent to ${testEmail} using SMTP server ${smtpHost}:${smtpPort}`
+      message: `Configuration validated. SMTP server: ${smtpHost}:${smtpPort}. Note: Actual email sending is not yet implemented - this validates your configuration is saved.`
     });
   } catch (error) {
     console.error('Error testing email:', error);

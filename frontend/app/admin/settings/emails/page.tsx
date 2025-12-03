@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useMemo } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -30,6 +30,58 @@ import {
 import { Mail, Plus, Edit, Eye, Copy, Send, Trash2, Loader2 } from "lucide-react"
 import { toast } from "sonner"
 import { adminService, type EmailTemplate, type CreateEmailTemplateInput } from "@/lib/services/adminService"
+
+/**
+ * HTML sanitization for email template preview.
+ * 
+ * SECURITY NOTE: This is a basic sanitization for admin-only preview functionality.
+ * Email templates are created by trusted admin users (SUPER_ADMIN, SYSTEM_SUPPORT, CLUB_ADMIN).
+ * 
+ * For production use with untrusted content, consider using a dedicated library
+ * like DOMPurify for comprehensive XSS protection.
+ * 
+ * This function uses recursive replacement to handle nested/obfuscated attacks.
+ */
+function sanitizeHtml(html: string): string {
+  if (!html) return ''
+  
+  let sanitized = html
+  let iterations = 0
+  const maxIterations = 100 // Prevent infinite loops
+  let previousContent = ''
+  
+  // Keep replacing until no more changes (handles nested obfuscation)
+  while (sanitized !== previousContent && iterations < maxIterations) {
+    previousContent = sanitized
+    iterations++
+    
+    // Remove script tags - using multiple patterns to catch various formats
+    // Pattern matches <script>, <script attr>, <script\n>, etc.
+    sanitized = sanitized.replace(/<\s*script[\s\S]*?<\s*\/\s*script\s*>/gi, '')
+    sanitized = sanitized.replace(/<\s*script[^>]*>/gi, '')
+    
+    // Remove event handlers (onclick, onerror, onload, etc.)
+    // Handles onclick="...", onclick='...', onclick=value
+    sanitized = sanitized.replace(/\bon\w+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]*)/gi, '')
+    
+    // Remove dangerous URI schemes
+    sanitized = sanitized.replace(/javascript\s*:/gi, 'blocked:')
+    sanitized = sanitized.replace(/vbscript\s*:/gi, 'blocked:')
+    sanitized = sanitized.replace(/data\s*:\s*text\/html/gi, 'blocked:text/html')
+    
+    // Remove expression() used in IE for CSS XSS
+    sanitized = sanitized.replace(/expression\s*\(/gi, 'blocked(')
+    
+    // Remove iframe, object, embed, form tags
+    sanitized = sanitized.replace(/<\s*iframe[\s\S]*?<\s*\/\s*iframe\s*>/gi, '')
+    sanitized = sanitized.replace(/<\s*iframe[^>]*>/gi, '')
+    sanitized = sanitized.replace(/<\s*object[\s\S]*?<\s*\/\s*object\s*>/gi, '')
+    sanitized = sanitized.replace(/<\s*embed[^>]*>/gi, '')
+    sanitized = sanitized.replace(/<\s*form[\s\S]*?<\s*\/\s*form\s*>/gi, '')
+  }
+  
+  return sanitized
+}
 
 export default function EmailTemplatesPage() {
   const [templates, setTemplates] = useState<EmailTemplate[]>([])
@@ -325,7 +377,7 @@ export default function EmailTemplatesPage() {
             </DialogDescription>
           </DialogHeader>
           <div className="border border-white/20 rounded-lg p-4 bg-white/5 min-h-[300px] max-h-[500px] overflow-auto">
-            <div dangerouslySetInnerHTML={{ __html: selectedTemplate?.body || '' }} />
+            <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(selectedTemplate?.body || '') }} />
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsPreviewDialogOpen(false)} className="glass-subtle border-white/20">
