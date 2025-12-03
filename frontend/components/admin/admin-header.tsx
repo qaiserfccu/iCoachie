@@ -1,9 +1,10 @@
 "use client"
 
 import { useState } from "react"
-import { Bell, Search, Menu, Moon, Sun } from "lucide-react"
+import { Bell, Search, Menu, Moon, Sun, Wifi, WifiOff } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/lib/contexts/AuthContext"
+import { useAdminSocket } from "@/contexts/AdminSocketContext"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -15,19 +16,22 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { NotificationDrawer, useNotificationDrawer } from "@/components/ui/notification-drawer"
-import { mockUsers, getUnreadNotificationCount } from "@/lib/services/mockDataService"
+import { AdminNotificationDrawer } from "@/components/admin/admin-notification-drawer"
 
 export function AdminHeader() {
-  const { logout } = useAuth()
+  const { user: authUser, logout } = useAuth()
+  const { unreadCount, isConnected } = useAdminSocket()
   const router = useRouter()
   const handleLogout = async () => { try { await logout(); router.push('/login') } catch (_) { router.push('/login') } }
   const [isDark, setIsDark] = useState(false)
-  const notificationDrawer = useNotificationDrawer()
+  const [isNotificationDrawerOpen, setIsNotificationDrawerOpen] = useState(false)
   
-  // Get user data from centralized mock service
-  const user = mockUsers.admin
-  const unreadCount = getUnreadNotificationCount()
+  // Use authenticated user or fallback to default
+  const displayName = authUser?.firstName && authUser?.lastName 
+    ? `${authUser.firstName} ${authUser.lastName}` 
+    : authUser?.email?.split('@')[0] || 'Admin'
+  const userInitials = displayName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || 'SA'
+  const userEmail = authUser?.email || 'admin@icoachie.com'
 
   return (
     <>
@@ -47,6 +51,21 @@ export function AdminHeader() {
           </div>
 
           <div className="flex items-center gap-3">
+            {/* Connection status indicator */}
+            <div className="hidden sm:flex items-center gap-1.5 px-2 py-1 rounded-lg glass-subtle">
+              {isConnected ? (
+                <>
+                  <Wifi className="h-4 w-4 text-green-500" />
+                  <span className="text-xs text-green-500">Live</span>
+                </>
+              ) : (
+                <>
+                  <WifiOff className="h-4 w-4 text-yellow-500" />
+                  <span className="text-xs text-yellow-500">Offline</span>
+                </>
+              )}
+            </div>
+            
             <Button variant="ghost" size="icon" className="glass-subtle rounded-xl" onClick={() => setIsDark(!isDark)}>
               {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
             </Button>
@@ -55,12 +74,12 @@ export function AdminHeader() {
               variant="ghost" 
               size="icon" 
               className="glass-subtle rounded-xl relative"
-              onClick={notificationDrawer.open}
+              onClick={() => setIsNotificationDrawerOpen(true)}
             >
               <Bell className="h-5 w-5" />
               {unreadCount > 0 && (
                 <span className="absolute -top-1 -right-1 w-5 h-5 bg-destructive rounded-full text-xs text-white flex items-center justify-center">
-                  {unreadCount}
+                  {unreadCount > 9 ? '9+' : unreadCount}
                 </span>
               )}
             </Button>
@@ -71,12 +90,12 @@ export function AdminHeader() {
                   <Avatar className="h-8 w-8">
                     <AvatarImage src="" />
                     <AvatarFallback className="bg-gradient-to-br from-red-500 to-orange-500 text-white text-sm">
-                      {user.avatar}
+                      {userInitials}
                     </AvatarFallback>
                   </Avatar>
                   <div className="hidden md:block text-left">
-                    <p className="text-sm font-medium">{user.name}</p>
-                    <p className="text-xs text-muted-foreground">{user.email}</p>
+                    <p className="text-sm font-medium">{displayName}</p>
+                    <p className="text-xs text-muted-foreground">{userEmail}</p>
                   </div>
                 </Button>
               </DropdownMenuTrigger>
@@ -93,9 +112,9 @@ export function AdminHeader() {
         </div>
       </header>
       
-      <NotificationDrawer 
-        isOpen={notificationDrawer.isOpen} 
-        onClose={notificationDrawer.close} 
+      <AdminNotificationDrawer 
+        isOpen={isNotificationDrawerOpen} 
+        onClose={() => setIsNotificationDrawerOpen(false)} 
       />
     </>
   )
