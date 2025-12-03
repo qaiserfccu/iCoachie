@@ -8,66 +8,16 @@ import { Progress } from "@/components/ui/progress"
 import {
   BarChart3,
   TrendingUp,
-  TrendingDown,
   Users,
   Calendar,
   DollarSign,
   Target,
-  Activity,
-  Loader2,
-  AlertCircle,
-  Download,
-  RefreshCw,
-} from "lucide-react"
-import { clubAdminService, type ClubAnalytics, type ClubDashboardStats } from "@/lib/services"
-
-export default function AnalyticsPage() {
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [analytics, setAnalytics] = useState<ClubAnalytics | null>(null)
-  const [stats, setStats] = useState<ClubDashboardStats | null>(null)
-
-  useEffect(() => {
-    loadAnalyticsData()
-  }, [])
-
-  async function loadAnalyticsData() {
-    try {
-      setLoading(true)
-      setError(null)
-      
-      const [analyticsData, statsData] = await Promise.all([
-        clubAdminService.getAnalytics(),
-        clubAdminService.getDashboardStats()
-      ])
-      
-      setAnalytics(analyticsData)
-      setStats(statsData)
-    } catch (err) {
-      console.error('Error loading analytics data:', err)
-      setError('Failed to load analytics data. Please try again.')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
-    }).format(amount)
-  }
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
   ArrowUpRight,
   ArrowDownRight,
   Loader2,
   AlertCircle,
+  RefreshCw,
+  Download,
 } from "lucide-react"
 import clubDashboardService from "@/lib/services/clubDashboardService"
 import clubSessionsService, { SessionStats } from "@/lib/services/clubSessionsService"
@@ -92,33 +42,33 @@ export default function AnalyticsPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
-    async function fetchAnalyticsData() {
-      try {
-        setLoading(true)
-        setError(null)
+  async function fetchAnalyticsData() {
+    try {
+      setLoading(true)
+      setError(null)
 
-        const [clubStats, sessionStats, paymentStats, memberStats] = await Promise.all([
-          clubDashboardService.getClubStats(),
-          clubSessionsService.getSessionStats(),
-          clubPaymentsService.getPaymentStats(),
-          clubMembersService.getMemberStats(),
-        ])
+      const [clubStats, sessionStats, paymentStats, memberStats] = await Promise.all([
+        clubDashboardService.getClubStats(),
+        clubSessionsService.getSessionStats(),
+        clubPaymentsService.getPaymentStats(),
+        clubMembersService.getMemberStats(),
+      ])
 
-        setData({
-          clubStats,
-          sessionStats,
-          paymentStats,
-          memberStats,
-        })
-      } catch (err) {
-        console.error('Failed to fetch analytics data:', err)
-        setError('Failed to load analytics. Please try again.')
-      } finally {
-        setLoading(false)
-      }
+      setData({
+        clubStats,
+        sessionStats,
+        paymentStats,
+        memberStats,
+      })
+    } catch (err) {
+      console.error('Failed to fetch analytics data:', err)
+      setError('Failed to load analytics. Please try again.')
+    } finally {
+      setLoading(false)
     }
+  }
 
+  useEffect(() => {
     fetchAnalyticsData()
   }, [])
 
@@ -135,10 +85,6 @@ export default function AnalyticsPage() {
 
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
-        <AlertCircle className="w-12 h-12 text-red-500" />
-        <p className="text-muted-foreground">{error}</p>
-        <Button onClick={loadAnalyticsData}>Try Again</Button>
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="text-center">
           <AlertCircle className="w-8 h-8 text-red-500 mx-auto mb-4" />
@@ -149,14 +95,6 @@ export default function AnalyticsPage() {
     )
   }
 
-  // Calculate percentage for progress bars
-  const maxMemberGrowth = analytics?.memberGrowth?.length 
-    ? Math.max(...analytics.memberGrowth.map(m => m.count))
-    : 100
-
-  const maxRevenue = analytics?.revenueByMonth?.length
-    ? Math.max(...analytics.revenueByMonth.map(r => r.revenue))
-    : 100
   const { clubStats, sessionStats, paymentStats, memberStats } = data!
 
   // Calculate rates and percentages
@@ -175,19 +113,15 @@ export default function AnalyticsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Analytics</h1>
-          <p className="text-muted-foreground">View club performance metrics and insights</p>
+          <p className="text-muted-foreground">Track club performance and insights</p>
         </div>
         <div className="flex items-center gap-3">
-          <Button variant="outline" className="glass-subtle border-white/20 bg-transparent" onClick={loadAnalyticsData}>
+          <Button variant="outline" className="glass-subtle border-white/20 bg-transparent" onClick={fetchAnalyticsData}>
             <RefreshCw className="w-4 h-4 mr-2" />
             Refresh
           </Button>
           <Button variant="outline" className="glass-subtle border-white/20 bg-transparent">
             <Download className="w-4 h-4 mr-2" />
-          <p className="text-muted-foreground">Track club performance and insights</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <Button variant="outline" className="glass-subtle border-white/20 bg-transparent">
             Export Report
           </Button>
         </div>
@@ -200,10 +134,6 @@ export default function AnalyticsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Total Members</p>
-                <p className="text-2xl font-bold mt-1">{stats?.totalMembers || 0}</p>
-                <div className="flex items-center gap-1 mt-2">
-                  <TrendingUp className="w-4 h-4 text-green-500" />
-                  <span className="text-green-500 text-sm">{stats?.memberChange || '+0'}</span>
                 <p className="text-2xl font-bold mt-1">{memberStats.totalMembers}</p>
                 <div className="flex items-center gap-1 mt-2">
                   <Badge variant="outline" className="text-green-500 border-green-500/30">
@@ -222,15 +152,6 @@ export default function AnalyticsPage() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Attendance Rate</p>
-                <p className="text-2xl font-bold mt-1">{analytics?.attendanceRate || 0}%</p>
-                <div className="flex items-center gap-1 mt-2">
-                  <TrendingUp className="w-4 h-4 text-green-500" />
-                  <span className="text-green-500 text-sm">+2.5%</span>
-                </div>
-              </div>
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center">
-                <Target className="w-7 h-7 text-white" />
                 <p className="text-sm text-muted-foreground">Active Sessions</p>
                 <p className="text-2xl font-bold mt-1">{sessionStats.totalSessions}</p>
                 <div className="flex items-center gap-1 mt-2">
@@ -249,15 +170,6 @@ export default function AnalyticsPage() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Retention Rate</p>
-                <p className="text-2xl font-bold mt-1">{analytics?.retentionRate || 0}%</p>
-                <div className="flex items-center gap-1 mt-2">
-                  <TrendingUp className="w-4 h-4 text-green-500" />
-                  <span className="text-green-500 text-sm">+1.2%</span>
-                </div>
-              </div>
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center">
-                <Activity className="w-7 h-7 text-white" />
                 <p className="text-sm text-muted-foreground">Monthly Revenue</p>
                 <p className="text-2xl font-bold mt-1">${paymentStats.thisMonthRevenue.toLocaleString()}</p>
                 <div className="flex items-center gap-1 mt-2">
@@ -282,15 +194,6 @@ export default function AnalyticsPage() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Monthly Revenue</p>
-                <p className="text-2xl font-bold mt-1">{formatCurrency(stats?.monthlyRevenue || 0)}</p>
-                <div className="flex items-center gap-1 mt-2">
-                  <TrendingUp className="w-4 h-4 text-green-500" />
-                  <span className="text-green-500 text-sm">{stats?.revenueChange || '+0%'}</span>
-                </div>
-              </div>
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-yellow-500 to-orange-500 flex items-center justify-center">
-                <DollarSign className="w-7 h-7 text-white" />
                 <p className="text-sm text-muted-foreground">Session Utilization</p>
                 <p className="text-2xl font-bold mt-1">{sessionUtilization}%</p>
                 <div className="flex items-center gap-1 mt-2">
@@ -306,146 +209,6 @@ export default function AnalyticsPage() {
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Member Growth Chart */}
-        <Card className="glass-card border-white/20">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-lg font-semibold">Member Growth</CardTitle>
-            <Badge variant="outline" className="border-green-500/50 text-green-500">
-              <TrendingUp className="w-3 h-3 mr-1" />
-              Growing
-            </Badge>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {analytics?.memberGrowth && analytics.memberGrowth.length > 0 ? (
-              analytics.memberGrowth.map((item, index) => (
-                <div key={item.month} className="space-y-2">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">{item.month}</span>
-                    <span className="font-medium">{item.count} members</span>
-                  </div>
-                  <Progress value={(item.count / maxMemberGrowth) * 100} className="h-2" />
-                </div>
-              ))
-            ) : (
-              <p className="text-muted-foreground text-center py-4">No growth data available</p>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Revenue by Month */}
-        <Card className="glass-card border-white/20">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-lg font-semibold">Revenue by Month</CardTitle>
-            <Badge variant="outline" className="border-blue-500/50 text-blue-500">
-              <BarChart3 className="w-3 h-3 mr-1" />
-              Financial
-            </Badge>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {analytics?.revenueByMonth && analytics.revenueByMonth.length > 0 ? (
-              analytics.revenueByMonth.map((item, index) => (
-                <div key={item.month} className="space-y-2">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">{item.month}</span>
-                    <span className="font-medium text-green-500">{formatCurrency(item.revenue)}</span>
-                  </div>
-                  <Progress value={(item.revenue / maxRevenue) * 100} className="h-2" />
-                </div>
-              ))
-            ) : (
-              <p className="text-muted-foreground text-center py-4">No revenue data available</p>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Performance Summary */}
-      <Card className="glass-card border-white/20">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-lg font-semibold">Performance Summary</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="p-4 rounded-xl glass-subtle">
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-sm font-medium">Active Coaches</span>
-                <Users className="w-5 h-5 text-blue-500" />
-              </div>
-              <div className="text-3xl font-bold mb-2">{stats?.activeCoaches || 0}</div>
-              <p className="text-sm text-muted-foreground">Managing training sessions</p>
-            </div>
-            
-            <div className="p-4 rounded-xl glass-subtle">
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-sm font-medium">Sessions This Week</span>
-                <Calendar className="w-5 h-5 text-green-500" />
-              </div>
-              <div className="text-3xl font-bold mb-2">{stats?.sessionsToday || 0}</div>
-              <p className="text-sm text-muted-foreground">Scheduled training sessions</p>
-            </div>
-            
-            <div className="p-4 rounded-xl glass-subtle">
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-sm font-medium">Revenue Target</span>
-                <Target className="w-5 h-5 text-yellow-500" />
-              </div>
-              <div className="text-3xl font-bold mb-2">78%</div>
-              <Progress value={78} className="h-2 mt-2" />
-              <p className="text-sm text-muted-foreground mt-2">Monthly target progress</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Quick Insights */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="glass-card border-white/20 p-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-green-500/20 flex items-center justify-center">
-              <TrendingUp className="w-5 h-5 text-green-500" />
-            </div>
-            <div>
-              <p className="text-sm font-medium">New Sign-ups</p>
-              <p className="text-xs text-muted-foreground">+15 this week</p>
-            </div>
-          </div>
-        </Card>
-        
-        <Card className="glass-card border-white/20 p-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-blue-500/20 flex items-center justify-center">
-              <Calendar className="w-5 h-5 text-blue-500" />
-            </div>
-            <div>
-              <p className="text-sm font-medium">Upcoming Sessions</p>
-              <p className="text-xs text-muted-foreground">24 sessions planned</p>
-            </div>
-          </div>
-        </Card>
-        
-        <Card className="glass-card border-white/20 p-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-yellow-500/20 flex items-center justify-center">
-              <DollarSign className="w-5 h-5 text-yellow-500" />
-            </div>
-            <div>
-              <p className="text-sm font-medium">Pending Payments</p>
-              <p className="text-xs text-muted-foreground">8 invoices due</p>
-            </div>
-          </div>
-        </Card>
-        
-        <Card className="glass-card border-white/20 p-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-purple-500/20 flex items-center justify-center">
-              <Activity className="w-5 h-5 text-purple-500" />
-            </div>
-            <div>
-              <p className="text-sm font-medium">Engagement Score</p>
-              <p className="text-xs text-muted-foreground">92% average</p>
-            </div>
-          </div>
       {/* Performance Overview */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Member Growth */}
