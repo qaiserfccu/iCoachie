@@ -10,6 +10,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Eye, EyeOff, Mail, Lock } from "lucide-react"
+import RolePicker, { ROLE_OPTIONS } from "@/components/register/RolePicker"
+import { getMockUser } from "@/lib/services/mockDataService"
 import { authService } from "@/lib/auth"
 
 // Helper to get dashboard path based on role code
@@ -47,6 +49,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
+  const [selectedType, setSelectedType] = useState<string | undefined>(undefined)
   const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -63,6 +66,25 @@ export default function LoginPage() {
       setError(err instanceof Error ? err.message : "Login failed. Please check your credentials.")
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  // Auto-populate login fields in development when role selected
+  const isDev = process.env.NODE_ENV === "development"
+  function autoPopulateLogin(roleCode: string | undefined) {
+    if (!isDev || !roleCode) return
+    const option = ROLE_OPTIONS.find((o) => o.code === roleCode)
+    const sampleKey = option?.sampleUserKey
+    if (!sampleKey) return
+    try {
+      const sample = getMockUser(sampleKey)
+      if (sample) {
+        if (isDev) console.log('Auto populate login from', sampleKey, sample.email)
+        setEmail(sample.email || "")
+        setPassword("Password123!")
+      }
+    } catch (err) {
+      // noop
     }
   }
 
@@ -85,6 +107,24 @@ export default function LoginPage() {
             <h1 className="text-3xl font-bold text-foreground">Welcome back</h1>
             <p className="text-muted-foreground mt-2">Sign in to continue to your dashboard</p>
           </div>
+
+          {/* Dev-only role picker for quick login (auto fills and will stop wheel scroll on click) */}
+          {isDev && (
+            <div className="mt-4">
+              <RolePicker
+                value={selectedType}
+                onChange={(roleCode) => {
+                  setSelectedType(roleCode)
+                  autoPopulateLogin(roleCode)
+                }}
+                carousel={true}
+                navigationOnly={true}
+                disableWheelOnClick={true}
+                centerOnSelect={true}
+                theme="blue"
+              />
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
             {error && (

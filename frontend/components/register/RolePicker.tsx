@@ -38,15 +38,57 @@ export const ROLE_OPTIONS: RoleOption[] = [
   { code: "MEDICAL_STAFF", label: "Medical Staff", description: "Health & medical support", icon: Thermometer, sampleUserKey: "medical" },
 ]
 
-export function RolePicker({ value, onChange, devOnly = true, carousel = true }: { value?: string; onChange: (code: string) => void; devOnly?: boolean; carousel?: boolean }) {
+export function RolePicker({ value, onChange, devOnly = true, carousel = true, disableWheelOnClick = false, navigationOnly = false, centerOnSelect = true, theme = "green" }: { value?: string; onChange: (code: string) => void; devOnly?: boolean; carousel?: boolean; disableWheelOnClick?: boolean; navigationOnly?: boolean; centerOnSelect?: boolean; theme?: "green" | "blue" }) {
   const isDev = process.env.NODE_ENV === "development"
   const containerRef = useRef<HTMLDivElement | null>(null)
   const [isAuto, setIsAuto] = useState(true)
+  const [wheelDisabled, setWheelDisabled] = useState(false)
+  const [localValue, setLocalValue] = useState<string | undefined>(value)
+  const themeStyles = {
+    green: {
+      base: "glass-card bg-gradient-to-br from-emerald-400/30 via-emerald-500/20 to-emerald-600/30 border border-blue-400/40 backdrop-blur-2xl shadow-lg shadow-blue-500/10",
+      idle: "hover:border-blue-400/60 hover:bg-emerald-400/30",
+      selected: "scale-105 ring-2 ring-blue-400 shadow-xl shadow-blue-500/20 border-2 border-blue-400/80 bg-gradient-to-br from-emerald-400/50 via-emerald-500/30 to-emerald-600/50 backdrop-blur-3xl",
+      icon: "text-blue-300",
+    },
+    blue: {
+      base: "glass-card bg-gradient-to-br from-sky-400/30 via-sky-500/20 to-sky-600/30 border border-emerald-400/40 backdrop-blur-2xl shadow-lg shadow-emerald-500/10",
+      idle: "hover:border-emerald-400/60 hover:bg-sky-400/30",
+      selected: "scale-105 ring-2 ring-emerald-400 shadow-xl shadow-emerald-500/20 border-2 border-emerald-400/80 bg-gradient-to-br from-sky-400/50 via-sky-500/30 to-sky-600/50 backdrop-blur-3xl",
+      icon: "text-emerald-300",
+    },
+  } as const
+
+  const baseBgClass = themeStyles[theme].base
+  const idleClass = themeStyles[theme].idle
+  const selectedClass = themeStyles[theme].selected
+  const selectedIconColor = themeStyles[theme].icon
 
   // If dev-only and not in dev, render a minimal compact picker (empty)
   if (devOnly && !isDev) {
     return null
   }
+
+  useEffect(() => {
+    // Always auto-fill value with first role if not set
+    if (!value && ROLE_OPTIONS.length > 0) {
+      onChange(ROLE_OPTIONS[0].code)
+    }
+    setLocalValue(value || ROLE_OPTIONS[0]?.code)
+  }, [value, onChange])
+
+  // Keep local mirror of value for navigation and centering
+  useEffect(() => {
+    setLocalValue(value)
+  }, [value])
+
+  // If navigationOnly is enabled, default to disabling wheel
+  useEffect(() => {
+    if (navigationOnly) {
+      setWheelDisabled(true)
+      setIsAuto(false)
+    }
+  }, [navigationOnly])
 
   useEffect(() => {
     if (!carousel || !containerRef.current || !isDev) return
@@ -72,6 +114,23 @@ export function RolePicker({ value, onChange, devOnly = true, carousel = true }:
     return () => cancelAnimationFrame(rafId)
   }, [carousel, isAuto, isDev])
 
+  // Center selected card when value changes
+  useEffect(() => {
+    if (!centerOnSelect || !containerRef.current) return
+    const parent = containerRef.current
+    const activeKey = localValue || ROLE_OPTIONS[0]?.code
+    const targetEl = activeKey
+      ? (parent.querySelector(`[data-role="${activeKey}"]`) as HTMLElement | null)
+      : (parent.querySelector("button[data-role]") as HTMLElement | null)
+    if (!targetEl) return
+
+    // Use scrollIntoView for perfect centering
+    targetEl.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" })
+
+    setIsAuto(false)
+    if (disableWheelOnClick || navigationOnly) setWheelDisabled(true)
+  }, [localValue, centerOnSelect, disableWheelOnClick, navigationOnly])
+
   // Manual scroll helper
   function scrollBy(delta: number) {
     const el = containerRef.current
@@ -79,8 +138,50 @@ export function RolePicker({ value, onChange, devOnly = true, carousel = true }:
     el.scrollBy({ left: delta, behavior: "smooth" })
     // pause auto while user scrolls
     setIsAuto(false)
-    setTimeout(() => setIsAuto(true), 2000)
+    if (!navigationOnly) {
+      setTimeout(() => setIsAuto(true), 2000)
+    }
   }
+
+  // Navigate by delta (index) using data-role buttons
+  function navigateBy(delta: number) {
+    const parent = containerRef.current
+    if (!parent) return
+    const items = Array.from(parent.querySelectorAll("button[data-role]")) as HTMLElement[]
+    if (!items.length) return
+    const currentIndex = items.findIndex((it) => it.dataset.role === localValue)
+    let nextIndex = 0
+    if (currentIndex === -1) {
+      nextIndex = delta > 0 ? 0 : items.length - 1
+    } else {
+      nextIndex = (currentIndex + delta + items.length) % items.length
+    }
+    const next = items[nextIndex]
+    if (!next) return
+    const roleCode = next.dataset.role
+    if (roleCode) {
+      setLocalValue(roleCode)
+      onChange(roleCode)
+    }
+  }
+
+  // Wheel handler to optionally prevent default wheel scrolling when wheelDisabled
+  useEffect(() => {
+    if (!carousel || !containerRef.current) return
+    const el = containerRef.current
+    function onWheel(e: WheelEvent) {
+      if (wheelDisabled) {
+        // Prevent all wheel-driven scrolls (mouse wheel and trackpad)
+        e.preventDefault()
+        e.stopPropagation()
+      }
+    }
+    // Must set passive: false to allow preventDefault
+    el.addEventListener("wheel", onWheel as EventListener, { passive: false })
+    return () => {
+      el.removeEventListener("wheel", onWheel as EventListener)
+    }
+  }, [carousel, wheelDisabled])
 
   return (
     <div className="relative">
@@ -88,7 +189,7 @@ export function RolePicker({ value, onChange, devOnly = true, carousel = true }:
         <div className="flex items-center gap-3">
           <button
             type="button"
-            onClick={() => scrollBy(-180)}
+            onClick={() => navigateBy(-1)}
             aria-label="Previous roles"
             className="p-2 rounded-lg bg-white/6 hover:bg-white/10 text-muted-foreground focus:outline-none"
           >
@@ -96,26 +197,32 @@ export function RolePicker({ value, onChange, devOnly = true, carousel = true }:
           </button>
           <div
             ref={containerRef}
-            className="w-full overflow-x-auto flex gap-3 py-2 scroll-smooth snap-x snap-mandatory no-scrollbar px-1"
+            className={`w-full ${navigationOnly ? "overflow-hidden" : "overflow-x-auto"} flex gap-3 py-2 scroll-smooth snap-x snap-mandatory no-scrollbar px-1`}
             style={{ direction: "ltr" }}
           >
             {ROLE_OPTIONS.map((r) => {
               const Icon = r.icon ?? User
-              const selected = value === r.code
+              const selected = (localValue || value) === r.code
               return (
                 <button
                   type="button"
                   key={r.code}
-                  onClick={() => onChange(r.code)}
+                  onClick={() => {
+                    setLocalValue(r.code)
+                    onChange(r.code)
+                    setIsAuto(false)
+                    if (disableWheelOnClick) setWheelDisabled(true)
+                  }}
                   aria-pressed={selected}
+                  data-role={r.code}
                   aria-label={`Select role ${r.label}`}
-                  className={`snap-start flex-shrink-0 w-60 flex flex-col items-start gap-1 p-4 rounded-xl transition-transform transform ease-out duration-200 focus:outline-none ${
+                  className={`snap-center flex-shrink-0 w-60 flex flex-col items-start gap-1 p-4 rounded-xl transition-transform transform ease-out duration-200 focus:outline-none ${
                     selected
-                      ? "scale-105 ring-2 ring-emerald-400/40 shadow-lg"
-                      : "hover:scale-105"
-                  } bg-emerald-900/8 border border-emerald-300/10 backdrop-blur-md`}
+                      ? `${selectedClass} glass-card bg-gradient-to-br from-transparent via-${theme}-400/60 to-${theme}-600/60 border-2 border-${theme === "green" ? "blue" : "emerald"}-400/80 backdrop-blur-3xl`
+                      : `bg-white ${idleClass} ${baseBgClass}`
+                  }`}
                 >
-                  <Icon className={`w-6 h-6 mb-1 ${selected ? "text-emerald-500" : "text-muted-foreground"}`} />
+                  <Icon className={`w-6 h-6 mb-1 ${selected ? selectedIconColor : "text-muted-foreground"}`} />
                   <div className="text-sm font-semibold text-foreground">{r.label}</div>
                   <div className="text-xs text-muted-foreground">{r.description}</div>
                 </button>
@@ -124,7 +231,7 @@ export function RolePicker({ value, onChange, devOnly = true, carousel = true }:
           </div>
           <button
             type="button"
-            onClick={() => scrollBy(180)}
+            onClick={() => navigateBy(1)}
             aria-label="Next roles"
             className="p-2 rounded-lg bg-white/6 hover:bg-white/10 text-muted-foreground focus:outline-none"
           >
@@ -137,17 +244,17 @@ export function RolePicker({ value, onChange, devOnly = true, carousel = true }:
             const Icon = r.icon ?? User
             const selected = value === r.code
             return (
-              <button
+                <button
                 type="button"
                 key={r.code}
                 onClick={() => onChange(r.code)}
                 className={`flex flex-col items-start gap-1 p-3 rounded-lg text-left transition-all duration-200 ease-out transform hover:scale-105 focus:outline-none ${
-                  selected ? "bg-primary/6 ring-2 ring-primary/40 shadow-lg scale-105" : "bg-white/6 hover:bg-white/10"
+                  selected ? `${baseBgClass} ${selectedClass}` : `${baseBgClass} ${idleClass}`
                 }`}
                 aria-pressed={selected}
                 aria-label={`Select role ${r.label}`}
               >
-                <Icon className={`w-6 h-6 mb-1 ${selected ? "text-primary" : "text-muted-foreground"}`} />
+                <Icon className={`w-6 h-6 mb-1 ${selected ? selectedIconColor : "text-muted-foreground"}`} />
                 <div className="text-sm font-semibold text-foreground">{r.label}</div>
                 <div className="text-xs text-muted-foreground">{r.description}</div>
               </button>

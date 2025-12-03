@@ -120,6 +120,7 @@ export default function RegisterPage() {
     try {
       const sample = getMockUser(sampleKey)
       if (sample) {
+        if (isDev) console.log('Auto populate register from', sampleKey, sample.email)
         setFormData({ fullName: sample.name || "", email: sample.email || "", password: "Password123!" })
         setTermsAccepted(true)
       }
@@ -206,6 +207,10 @@ export default function RegisterPage() {
                       autoPopulateRole(roleCode)
                     }}
                     carousel={true}
+                    navigationOnly={true}
+                    disableWheelOnClick={true}
+                    centerOnSelect={true}
+                    theme="green"
                   />
                 ) : (
                   <div className="grid grid-cols-2 gap-3">

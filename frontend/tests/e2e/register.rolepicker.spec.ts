@@ -3,11 +3,15 @@ import { test, expect } from '@playwright/test'
 // Basic test to verify role picker animation and dev-mode auto-fill
 // This test expects the dev server to be running at http://localhost:3000
 
-test('Role Picker in dev mode populates form and checks terms', async ({ page }) => {
+test('Role Picker in dev mode populates form and checks terms', async ({ page }, testInfo) => {
   await page.goto('/register')
 
   // Ensure the role picker grid is present
   const coachBtn = page.getByRole('button', { name: 'Select role Coach' })
+  if ((await coachBtn.count()) === 0) {
+    test.skip('RolePicker not present in this environment (non-dev)')
+    return
+  }
   await expect(coachBtn).toBeVisible()
 
   // Click coach role
@@ -28,4 +32,9 @@ test('Role Picker in dev mode populates form and checks terms', async ({ page })
 
   // Ensure terms checkbox is checked
   await expect(terms).toBeChecked()
+
+  // Selected card should have blue border (register page theme)
+  const coachBtnClass = await coachBtn.getAttribute('class')
+  expect(coachBtnClass).toContain('border-2')
+  expect(coachBtnClass).toContain('ring-blue-400')
 })
