@@ -1,8 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Bell, Search, Menu, Loader2 } from "lucide-react"
-import { Search, Menu, Wifi, WifiOff } from "lucide-react"
+import { Bell, Search, Menu, Loader2, Wifi, WifiOff } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/lib/contexts/AuthContext"
 import { apiClient } from "@/lib/api"
@@ -48,6 +47,7 @@ export function FreelancerHeader() {
   const notificationDrawer = useNotificationDrawer()
   const { user, logout, isLoading: isAuthLoading } = useAuth()
   const router = useRouter()
+  const { isConnected } = useSocket()
   
   // State for unread message count from backend
   const [unreadCount, setUnreadCount] = useState(0)
@@ -90,9 +90,6 @@ export function FreelancerHeader() {
   const initials = user 
     ? `${user.firstName?.charAt(0) || ''}${user.lastName?.charAt(0) || ''}`.toUpperCase() || user.email?.charAt(0)?.toUpperCase() || 'F'
     : 'F'
-  const { logout } = useAuth()
-  const router = useRouter()
-  const { isConnected } = useSocket()
 
   const handleLogout = async () => {
     try {
@@ -132,6 +129,9 @@ export function FreelancerHeader() {
                 <span className="absolute -top-1 -right-1 w-5 h-5 bg-yellow-500 rounded-full text-xs text-white flex items-center justify-center">
                   {unreadCount > 99 ? '99+' : unreadCount}
                 </span>
+              )}
+            </Button>
+
             <div className="hidden sm:flex items-center gap-1.5 px-2 py-1 rounded-full bg-white/5 border border-white/10">
               {isConnected ? (
                 <>
@@ -169,12 +169,6 @@ export function FreelancerHeader() {
                         <p className="text-xs text-muted-foreground">{roleLabel}</p>
                       </>
                     )}
-                      FL
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="hidden md:block text-left">
-                    <p className="text-sm font-medium">Freelancer</p>
-                    <p className="text-xs text-muted-foreground">Independent</p>
                   </div>
                 </Button>
               </DropdownMenuTrigger>

@@ -27,8 +27,11 @@ import {
   UserCog,
   Briefcase,
   Baby,
+  CheckCircle,
 } from "lucide-react"
-import { adminService, type AdminUser, type RoleStat } from "@/lib/services/adminService"
+import adminService, { type AdminUser, type RoleStat } from "@/lib/services/adminService"
+import { UserDialog } from "@/components/admin/UserDialog"
+import { toast } from "sonner"
 
 // Icon mapping for dynamic icon rendering
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -45,6 +48,10 @@ export default function UsersPage() {
   const [roleStats, setRoleStats] = useState<RoleStat[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  
+  // Dialog state
+  const [dialogOpen, setDialogOpen] = useState(false)
+  const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null)
 
   useEffect(() => {
     fetchUsers()
@@ -62,6 +69,50 @@ export default function UsersPage() {
       setError('Failed to load users. Please try again.')
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  const handleCreateUser = () => {
+    setSelectedUser(null)
+    setDialogOpen(true)
+  }
+
+  const handleEditUser = (user: AdminUser) => {
+    setSelectedUser(user)
+    setDialogOpen(true)
+  }
+
+  const handleDeleteUser = async (userId: number) => {
+    if (!confirm('Are you sure you want to delete this user?')) return
+    try {
+      await adminService.deleteUser(userId)
+      toast.success('User deleted successfully')
+      fetchUsers()
+    } catch (error) {
+      console.error('Error deleting user:', error)
+      toast.error('Failed to delete user')
+    }
+  }
+
+  const handleSuspendUser = async (userId: number) => {
+    try {
+      await adminService.suspendUser(userId)
+      toast.success('User suspended successfully')
+      fetchUsers()
+    } catch (error) {
+      console.error('Error suspending user:', error)
+      toast.error('Failed to suspend user')
+    }
+  }
+
+  const handleActivateUser = async (userId: number) => {
+    try {
+      await adminService.activateUser(userId)
+      toast.success('User activated successfully')
+      fetchUsers()
+    } catch (error) {
+      console.error('Error activating user:', error)
+      toast.error('Failed to activate user')
     }
   }
 
@@ -89,7 +140,7 @@ export default function UsersPage() {
             <Download className="w-4 h-4 mr-2" />
             Export
           </Button>
-          <Button className="gradient-primary text-white">
+          <Button className="gradient-primary text-white" onClick={handleCreateUser}>
             <UserPlus className="w-4 h-4 mr-2" />
             Add User
           </Button>
@@ -234,7 +285,7 @@ export default function UsersPage() {
                                 <Eye className="w-4 h-4 mr-2" />
                                 View Profile
                               </DropdownMenuItem>
-                              <DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => handleEditUser(user)}>
                                 <Edit className="w-4 h-4 mr-2" />
                                 Edit User
                               </DropdownMenuItem>
@@ -246,11 +297,18 @@ export default function UsersPage() {
                                 <Shield className="w-4 h-4 mr-2" />
                                 Change Role
                               </DropdownMenuItem>
-                              <DropdownMenuItem className="text-yellow-600">
-                                <Ban className="w-4 h-4 mr-2" />
-                                Suspend User
-                              </DropdownMenuItem>
-                              <DropdownMenuItem className="text-destructive">
+                              {user.status === 'Active' ? (
+                                <DropdownMenuItem className="text-yellow-600" onClick={() => handleSuspendUser(user.id)}>
+                                  <Ban className="w-4 h-4 mr-2" />
+                                  Suspend User
+                                </DropdownMenuItem>
+                              ) : (
+                                <DropdownMenuItem className="text-green-600" onClick={() => handleActivateUser(user.id)}>
+                                  <CheckCircle className="w-4 h-4 mr-2" />
+                                  Activate User
+                                </DropdownMenuItem>
+                              )}
+                              <DropdownMenuItem className="text-destructive" onClick={() => handleDeleteUser(user.id)}>
                                 <Trash2 className="w-4 h-4 mr-2" />
                                 Delete User
                               </DropdownMenuItem>
@@ -266,6 +324,13 @@ export default function UsersPage() {
           )}
         </CardContent>
       </Card>
+
+      <UserDialog 
+        open={dialogOpen} 
+        onOpenChange={setDialogOpen} 
+        user={selectedUser} 
+        onSuccess={fetchUsers} 
+      />
     </div>
   )
 }

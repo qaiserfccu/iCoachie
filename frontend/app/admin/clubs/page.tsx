@@ -20,9 +20,14 @@ import {
   TrendingUp,
   Loader2,
   AlertTriangle,
+  Edit,
+  Ban,
+  Trash2,
 } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { adminService, type AdminClub, type ClubStats } from "@/lib/services/adminService"
+import adminService, { type AdminClub, type ClubStats } from "@/lib/services/adminService"
+import { ClubDialog } from "@/components/admin/ClubDialog"
+import { toast } from "sonner"
 
 export default function ClubsPage() {
   const [searchQuery, setSearchQuery] = useState("")
@@ -30,6 +35,10 @@ export default function ClubsPage() {
   const [stats, setStats] = useState<ClubStats>({ total: 0, verified: 0, pending: 0, totalRevenue: '$0K' })
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+
+  // Dialog state
+  const [dialogOpen, setDialogOpen] = useState(false)
+  const [selectedClub, setSelectedClub] = useState<AdminClub | null>(null)
 
   useEffect(() => {
     fetchClubs()
@@ -47,6 +56,50 @@ export default function ClubsPage() {
       setError('Failed to load clubs. Please try again.')
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  const handleCreateClub = () => {
+    setSelectedClub(null)
+    setDialogOpen(true)
+  }
+
+  const handleEditClub = (club: AdminClub) => {
+    setSelectedClub(club)
+    setDialogOpen(true)
+  }
+
+  const handleDeleteClub = async (clubId: number) => {
+    if (!confirm('Are you sure you want to delete this club?')) return
+    try {
+      await adminService.deleteClub(clubId)
+      toast.success('Club deleted successfully')
+      fetchClubs()
+    } catch (error) {
+      console.error('Error deleting club:', error)
+      toast.error('Failed to delete club')
+    }
+  }
+
+  const handleSuspendClub = async (clubId: number) => {
+    try {
+      await adminService.suspendClub(clubId)
+      toast.success('Club suspended successfully')
+      fetchClubs()
+    } catch (error) {
+      console.error('Error suspending club:', error)
+      toast.error('Failed to suspend club')
+    }
+  }
+
+  const handleVerifyClub = async (clubId: number) => {
+    try {
+      await adminService.verifyClub(clubId)
+      toast.success('Club verified successfully')
+      fetchClubs()
+    } catch (error) {
+      console.error('Error verifying club:', error)
+      toast.error('Failed to verify club')
     }
   }
 
@@ -73,7 +126,7 @@ export default function ClubsPage() {
           <Button variant="outline" className="glass-subtle border-white/20 bg-transparent">
             Export Data
           </Button>
-          <Button className="gradient-primary text-white">
+          <Button className="gradient-primary text-white" onClick={handleCreateClub}>
             <Building2 className="w-4 h-4 mr-2" />
             Add Club
           </Button>
@@ -171,8 +224,25 @@ export default function ClubsPage() {
                         <Eye className="w-4 h-4 mr-2" />
                         View Details
                       </DropdownMenuItem>
-                      <DropdownMenuItem>Edit Club</DropdownMenuItem>
-                      <DropdownMenuItem className="text-destructive">Suspend Club</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleEditClub(club)}>
+                        <Edit className="w-4 h-4 mr-2" />
+                        Edit Club
+                      </DropdownMenuItem>
+                      {club.status === 'Verified' ? (
+                        <DropdownMenuItem className="text-yellow-600" onClick={() => handleSuspendClub(club.id)}>
+                          <Ban className="w-4 h-4 mr-2" />
+                          Suspend Club
+                        </DropdownMenuItem>
+                      ) : (
+                        <DropdownMenuItem className="text-green-600" onClick={() => handleVerifyClub(club.id)}>
+                          <CheckCircle className="w-4 h-4 mr-2" />
+                          Verify Club
+                        </DropdownMenuItem>
+                      )}
+                      <DropdownMenuItem className="text-destructive" onClick={() => handleDeleteClub(club.id)}>
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        Delete Club
+                      </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
@@ -220,6 +290,13 @@ export default function ClubsPage() {
           ))}
         </div>
       )}
+
+      <ClubDialog 
+        open={dialogOpen} 
+        onOpenChange={setDialogOpen} 
+        club={selectedClub} 
+        onSuccess={fetchClubs} 
+      />
     </div>
   )
 }

@@ -280,6 +280,51 @@ class AdminService {
     }
   }
 
+  async createUser(userData: any): Promise<{ message: string; user: AdminUser }> {
+    try {
+      return await apiClient.post<{ message: string; user: AdminUser }>('/admin/users', userData)
+    } catch (error) {
+      console.error('Error creating user:', error)
+      throw error
+    }
+  }
+
+  async updateUser(id: number, userData: any): Promise<{ message: string; user: AdminUser }> {
+    try {
+      return await apiClient.put<{ message: string; user: AdminUser }>(`/admin/users/${id}`, userData)
+    } catch (error) {
+      console.error('Error updating user:', error)
+      throw error
+    }
+  }
+
+  async deleteUser(id: number): Promise<{ message: string }> {
+    try {
+      return await apiClient.delete<{ message: string }>(`/admin/users/${id}`)
+    } catch (error) {
+      console.error('Error deleting user:', error)
+      throw error
+    }
+  }
+
+  async suspendUser(id: number): Promise<{ message: string }> {
+    try {
+      return await apiClient.post<{ message: string }>(`/admin/users/${id}/suspend`, {})
+    } catch (error) {
+      console.error('Error suspending user:', error)
+      throw error
+    }
+  }
+
+  async activateUser(id: number): Promise<{ message: string }> {
+    try {
+      return await apiClient.post<{ message: string }>(`/admin/users/${id}/activate`, {})
+    } catch (error) {
+      console.error('Error activating user:', error)
+      throw error
+    }
+  }
+
   // Club Management
   async getClubs(params?: { page?: number; pageSize?: number; search?: string }): Promise<AdminClubsResponse> {
     try {
@@ -296,12 +341,84 @@ class AdminService {
     }
   }
 
+  async createClub(clubData: any): Promise<{ message: string; club: AdminClub }> {
+    try {
+      return await apiClient.post<{ message: string; club: AdminClub }>('/admin/clubs', clubData)
+    } catch (error) {
+      console.error('Error creating club:', error)
+      throw error
+    }
+  }
+
+  async updateClub(id: number, clubData: any): Promise<{ message: string; club: AdminClub }> {
+    try {
+      return await apiClient.put<{ message: string; club: AdminClub }>(`/admin/clubs/${id}`, clubData)
+    } catch (error) {
+      console.error('Error updating club:', error)
+      throw error
+    }
+  }
+
+  async deleteClub(id: number): Promise<{ message: string }> {
+    try {
+      return await apiClient.delete<{ message: string }>(`/admin/clubs/${id}`)
+    } catch (error) {
+      console.error('Error deleting club:', error)
+      throw error
+    }
+  }
+
+  async suspendClub(id: number): Promise<{ message: string }> {
+    try {
+      return await apiClient.post<{ message: string }>(`/admin/clubs/${id}/suspend`, {})
+    } catch (error) {
+      console.error('Error suspending club:', error)
+      throw error
+    }
+  }
+
+  async verifyClub(id: number): Promise<{ message: string }> {
+    try {
+      return await apiClient.post<{ message: string }>(`/admin/clubs/${id}/verify`, {})
+    } catch (error) {
+      console.error('Error verifying club:', error)
+      throw error
+    }
+  }
+
   // Roles & Permissions
   async getRoles(): Promise<AdminRolesResponse> {
     try {
       return await apiClient.get<AdminRolesResponse>('/admin/roles')
     } catch (error) {
       console.error('Error fetching admin roles:', error)
+      throw error
+    }
+  }
+
+  async createRole(roleData: any): Promise<{ message: string; role: AdminRole }> {
+    try {
+      return await apiClient.post<{ message: string; role: AdminRole }>('/admin/roles', roleData)
+    } catch (error) {
+      console.error('Error creating role:', error)
+      throw error
+    }
+  }
+
+  async updateRole(id: number, roleData: any): Promise<{ message: string; role: AdminRole }> {
+    try {
+      return await apiClient.put<{ message: string; role: AdminRole }>(`/admin/roles/${id}`, roleData)
+    } catch (error) {
+      console.error('Error updating role:', error)
+      throw error
+    }
+  }
+
+  async deleteRole(id: number): Promise<{ message: string }> {
+    try {
+      return await apiClient.delete<{ message: string }>(`/admin/roles/${id}`)
+    } catch (error) {
+      console.error('Error deleting role:', error)
       throw error
     }
   }

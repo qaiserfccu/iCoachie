@@ -18,8 +18,11 @@ import {
   Users,
   Baby,
   HeadphonesIcon,
+  Trash2,
 } from "lucide-react"
 import { adminService, type AdminRole, type PermissionMatrixRow } from "@/lib/services/adminService"
+import { RoleDialog } from "@/components/admin/RoleDialog"
+import { useToast } from "@/hooks/use-toast"
 
 // Icon mapping for dynamic icon rendering
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -37,6 +40,9 @@ export default function RolesPage() {
   const [permissionsMatrix, setPermissionsMatrix] = useState<PermissionMatrixRow[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
+  const [editingRole, setEditingRole] = useState<AdminRole | undefined>(undefined)
+  const { toast } = useToast()
 
   useEffect(() => {
     fetchRoles()
@@ -57,6 +63,68 @@ export default function RolesPage() {
     }
   }
 
+  const handleCreateRole = async (roleData: any) => {
+    try {
+      await adminService.createRole(roleData)
+      toast({
+        title: "Success",
+        description: "Role created successfully",
+      })
+      fetchRoles()
+      setIsCreateDialogOpen(false)
+    } catch (error) {
+      console.error('Error creating role:', error)
+      toast({
+        title: "Error",
+        description: "Failed to create role",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const handleUpdateRole = async (roleData: any) => {
+    if (!editingRole) return
+
+    try {
+      await adminService.updateRole(editingRole.id, roleData)
+      toast({
+        title: "Success",
+        description: "Role updated successfully",
+      })
+      fetchRoles()
+      setEditingRole(undefined)
+    } catch (error) {
+      console.error('Error updating role:', error)
+      toast({
+        title: "Error",
+        description: "Failed to update role",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const handleDeleteRole = async (roleId: number) => {
+    if (!confirm('Are you sure you want to delete this role? This action cannot be undone.')) return
+
+    try {
+      await adminService.deleteRole(roleId)
+      toast({
+        title: "Success",
+        description: "Role deleted successfully",
+      })
+      fetchRoles()
+    } catch (error) {
+      console.error('Error deleting role:', error)
+      toast({
+        title: "Error",
+        description: "Failed to delete role",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const availablePermissions = permissionsMatrix.map(row => row.permission)
+
   if (error) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -76,7 +144,10 @@ export default function RolesPage() {
           <h1 className="text-2xl font-bold text-foreground">Roles & Permissions</h1>
           <p className="text-muted-foreground">Manage user roles and access permissions</p>
         </div>
-        <Button className="gradient-primary text-white">
+        <Button 
+          className="gradient-primary text-white"
+          onClick={() => setIsCreateDialogOpen(true)}
+        >
           <Plus className="w-4 h-4 mr-2" />
           Create Role
         </Button>
@@ -101,9 +172,23 @@ export default function RolesPage() {
                       >
                         <IconComponent className="w-6 h-6 text-white" />
                       </div>
-                      <Button variant="ghost" size="icon">
-                        <Edit className="w-4 h-4" />
-                      </Button>
+                      <div className="flex gap-2">
+                        <Button 
+                          variant="ghost" 
+                          size="icon"
+                          onClick={() => setEditingRole(role)}
+                        >
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="icon"
+                          className="text-destructive hover:text-destructive"
+                          onClick={() => handleDeleteRole(role.id)}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
                     </div>
                     <CardTitle className="mt-3">{role.name}</CardTitle>
                     <CardDescription>{role.description}</CardDescription>
@@ -178,6 +263,21 @@ export default function RolesPage() {
               </div>
             </CardContent>
           </Card>
+
+          <RoleDialog 
+            isOpen={isCreateDialogOpen}
+            onClose={() => setIsCreateDialogOpen(false)}
+            onSave={handleCreateRole}
+            availablePermissions={availablePermissions}
+          />
+
+          <RoleDialog 
+            isOpen={!!editingRole}
+            onClose={() => setEditingRole(undefined)}
+            onSave={handleUpdateRole}
+            role={editingRole}
+            availablePermissions={availablePermissions}
+          />
         </>
       )}
     </div>
