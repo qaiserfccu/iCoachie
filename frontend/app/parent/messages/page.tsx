@@ -236,13 +236,16 @@ export default function MessagesPage() {
             </DialogHeader>
             <div className="space-y-4 py-4">
               <div>
-                <label className="text-sm font-medium mb-2 block">To (User ID)</label>
+                <label className="text-sm font-medium mb-2 block">To</label>
                 <Input
-                  placeholder="Enter recipient user ID"
+                  placeholder="Enter recipient's name or email to search..."
                   value={newMessage.toUserId}
                   onChange={(e) => setNewMessage(prev => ({ ...prev, toUserId: e.target.value }))}
                   className="glass-input"
                 />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Enter the coach or staff member&apos;s ID. Contact the club if you need help finding the right recipient.
+                </p>
               </div>
               <div>
                 <label className="text-sm font-medium mb-2 block">Subject (optional)</label>

@@ -272,10 +272,8 @@ class ParentService {
     sport?: string
     coachId?: number
   }): Promise<ParentChild> {
-    return apiClient.post<ParentChild>('/students', {
-      ...data,
-      parentId: undefined, // Will be set by backend from current user
-    })
+    // Note: parentId is automatically set by the backend based on the authenticated user
+    return apiClient.post<ParentChild>('/students', data)
   }
 
   /**
@@ -537,12 +535,14 @@ class ParentService {
       ).length
 
       // Calculate average progress from children's evaluation counts
-      // (in a real scenario, this would come from evaluation stats)
+      // Each evaluation contributes 10% progress toward mastery (10 evaluations = 100%)
+      // This is a simplified heuristic; in production, consider using actual evaluation scores
+      const PROGRESS_PER_EVALUATION = 10
       const totalEvaluationScore = children.reduce((sum, child) => {
         return sum + (child.evaluationCount || 0)
       }, 0)
       const averageProgress = children.length > 0 
-        ? Math.round((totalEvaluationScore / children.length) * 10) 
+        ? Math.round((totalEvaluationScore / children.length) * PROGRESS_PER_EVALUATION) 
         : 0
 
       return {

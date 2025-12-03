@@ -2,18 +2,32 @@
  * Parent Notifications Page
  * 
  * Backend Integration:
- * - Uses NotificationService for real-time notifications via Socket.IO
- * - Notification events come from backend/src/services/socketService.ts
+ * - Real-time notifications via Socket.IO (backend/src/services/socketService.ts)
  * - Parents receive booking updates, message notifications, and payment alerts
+ * - Notifications are pushed from the server when events occur (no REST polling)
+ * 
+ * Note: This page primarily uses Socket.IO for real-time updates.
+ * Notifications are stored locally and persist for the browser session.
  */
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Bell, Check, CheckCheck, Calendar, MessageSquare, CreditCard, Users, Loader2, AlertCircle, Info } from "lucide-react"
-import { notificationService, type Notification } from "@/lib/services/notificationService"
+import { Bell, Check, CheckCheck, Calendar, MessageSquare, CreditCard, Users, Loader2, Info } from "lucide-react"
+import { io, Socket } from 'socket.io-client'
+
+// Notification type for parent context
+interface ParentNotification {
+  id: string
+  title: string
+  message: string
+  type: 'info' | 'success' | 'warning' | 'error'
+  category: string
+  read: boolean
+  createdAt: string
+}
 
 // Get icon based on notification category
 function getNotificationIcon(category: string) {
@@ -66,75 +80,137 @@ function formatTimeAgo(dateStr: string): string {
   }
 }
 
+// Local storage key for persisting notifications
+const NOTIFICATIONS_STORAGE_KEY = 'parent_notifications'
+
+// Load notifications from local storage
+function loadStoredNotifications(): ParentNotification[] {
+  if (typeof window === 'undefined') return []
+  try {
+    const stored = localStorage.getItem(NOTIFICATIONS_STORAGE_KEY)
+    return stored ? JSON.parse(stored) : []
+  } catch {
+    return []
+  }
+}
+
+// Save notifications to local storage
+function saveNotifications(notifications: ParentNotification[]) {
+  if (typeof window === 'undefined') return
+  try {
+    localStorage.setItem(NOTIFICATIONS_STORAGE_KEY, JSON.stringify(notifications))
+  } catch {
+    // Ignore storage errors
+  }
+}
+
 export default function NotificationsPage() {
   const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [notifications, setNotifications] = useState<Notification[]>([])
+  const [notifications, setNotifications] = useState<ParentNotification[]>([])
   const [filter, setFilter] = useState<'all' | 'unread'>('all')
   const [isConnected, setIsConnected] = useState(false)
+  const [socket, setSocket] = useState<Socket | null>(null)
 
-  // Initialize notification service and fetch notifications
+  // Initialize Socket.IO connection for real-time notifications
+  // Backend source: backend/src/services/socketService.ts
   useEffect(() => {
-    const loadNotifications = async () => {
-      setIsLoading(true)
-      setError(null)
-      
-      try {
-        // Connect to real-time notifications
-        notificationService.connect()
-        
-        // Get initial notifications from REST API
-        const initialNotifications = await notificationService.getNotifications({ limit: 50 })
-        setNotifications(initialNotifications)
-      } catch (err) {
-        console.error('Error loading notifications:', err)
-        // Don't show error, just start with empty state
-        setNotifications([])
-      } finally {
-        setIsLoading(false)
+    // Load stored notifications
+    const stored = loadStoredNotifications()
+    setNotifications(stored)
+    setIsLoading(false)
+
+    // Connect to Socket.IO for real-time updates
+    const token = localStorage.getItem('authToken')
+    if (!token) return
+
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'
+    
+    const socketConnection = io(API_URL, {
+      auth: { token: token.replace('Bearer ', '') },
+      transports: ['websocket', 'polling'],
+      timeout: 20000,
+    })
+
+    socketConnection.on('connect', () => {
+      setIsConnected(true)
+    })
+
+    socketConnection.on('disconnect', () => {
+      setIsConnected(false)
+    })
+
+    // Listen for parent-relevant notification events
+    const handleNotification = (data: any, category: string, type: 'info' | 'success' | 'warning' | 'error' = 'info') => {
+      const notification: ParentNotification = {
+        id: `${category}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        title: data.title || `${category.charAt(0).toUpperCase() + category.slice(1)} Update`,
+        message: data.message || data.name || JSON.stringify(data),
+        type,
+        category,
+        read: false,
+        createdAt: new Date().toISOString()
       }
+      setNotifications(prev => {
+        const updated = [notification, ...prev]
+        saveNotifications(updated)
+        return updated
+      })
     }
 
-    loadNotifications()
+    // Booking-related events
+    socketConnection.on('booking-updated', (data) => handleNotification(
+      { title: 'Booking Updated', message: `Booking status changed to ${data.status}` },
+      'booking',
+      'info'
+    ))
 
-    // Subscribe to connection changes
-    const unsubConnection = notificationService.onConnectionChange((connected) => {
-      setIsConnected(connected)
-    })
+    // Session-related events
+    socketConnection.on('session-reminder', (data) => handleNotification(
+      { title: 'Session Reminder', message: `Upcoming session: ${data.title || 'Training session'}` },
+      'session',
+      'info'
+    ))
 
-    // Subscribe to new notifications
-    const unsubNotification = notificationService.onNotification((notification) => {
-      setNotifications(prev => [notification, ...prev])
-    })
+    // Payment-related events
+    socketConnection.on('payment-received', (data) => handleNotification(
+      { title: 'Payment Confirmed', message: `Payment of ${data.amount} received` },
+      'payment',
+      'success'
+    ))
+
+    // Message-related events
+    socketConnection.on('message:new', (data) => handleNotification(
+      { title: 'New Message', message: `You have a new message from ${data.senderName || 'Coach'}` },
+      'message',
+      'info'
+    ))
+
+    setSocket(socketConnection)
 
     return () => {
-      unsubConnection()
-      unsubNotification()
-      notificationService.disconnect()
+      socketConnection.disconnect()
     }
   }, [])
 
-  // Mark notification as read
-  const handleMarkAsRead = async (id: string) => {
-    try {
-      await notificationService.markNotificationAsRead(id)
-      setNotifications(prev => prev.map(n => 
+  // Mark notification as read (local state only)
+  const handleMarkAsRead = useCallback((id: string) => {
+    setNotifications(prev => {
+      const updated = prev.map(n => 
         n.id === id ? { ...n, read: true } : n
-      ))
-    } catch (err) {
-      console.error('Error marking notification as read:', err)
-    }
-  }
+      )
+      saveNotifications(updated)
+      return updated
+    })
+  }, [])
 
-  // Mark all as read
-  const handleMarkAllAsRead = async () => {
-    try {
-      await notificationService.markAllAsRead()
-      setNotifications(prev => prev.map(n => ({ ...n, read: true })))
-    } catch (err) {
-      console.error('Error marking all as read:', err)
-    }
-  }
+  // Mark all as read (local state only)
+  const handleMarkAllAsRead = useCallback(() => {
+    setNotifications(prev => {
+      const updated = prev.map(n => ({ ...n, read: true }))
+      saveNotifications(updated)
+      return updated
+    })
+  }, [])
 
   // Filter notifications
   const filteredNotifications = filter === 'all' 
