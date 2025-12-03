@@ -16,6 +16,8 @@ import {
   HelpCircle,
   Wrench,
   Globe,
+  Book,
+  Shield,
 } from "lucide-react"
 import LogoutButton from '@/components/ui/LogoutButton'
 
@@ -55,6 +57,16 @@ const menuItems = [
     icon: Key,
     label: "Access Management",
     href: "/system-support/access",
+  },
+  {
+    icon: Shield,
+    label: "Audit Logs",
+    href: "/system-support/audit-logs",
+  },
+  {
+    icon: Book,
+    label: "Knowledge Base",
+    href: "/system-support/knowledge-base",
   },
   {
     icon: FileText,
