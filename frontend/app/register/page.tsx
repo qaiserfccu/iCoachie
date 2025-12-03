@@ -10,13 +10,43 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Eye, EyeOff, Mail, Lock, User, Building2, Users, Briefcase, Baby } from "lucide-react"
+import { authService } from "@/lib/auth"
 
 const userTypes = [
-  { id: "club", label: "Club", icon: Building2, description: "Sports club or organization" },
-  { id: "coach", label: "Coach", icon: Users, description: "Professional coach" },
-  { id: "freelancer", label: "Freelancer", icon: Briefcase, description: "Independent trainer" },
-  { id: "parent", label: "Parent/Kid", icon: Baby, description: "Parent or young athlete" },
+  { id: "CLUB_ADMIN", label: "Club", icon: Building2, description: "Sports club or organization" },
+  { id: "COACH", label: "Coach", icon: Users, description: "Professional coach" },
+  { id: "FREELANCER", label: "Freelancer", icon: Briefcase, description: "Independent trainer" },
+  { id: "PARENT", label: "Parent/Kid", icon: Baby, description: "Parent or young athlete" },
 ]
+
+// Helper to get dashboard path based on role code
+function getDashboardPath(roleCode: string): string {
+  const rolePathMap: Record<string, string> = {
+    'SUPER_ADMIN': '/admin',
+    'SYSTEM_SUPPORT': '/system-support',
+    'CLUB_ADMIN': '/club',
+    'CLUB_MANAGER': '/club',
+    'HEAD_COACH': '/head-coach',
+    'COACH': '/coach',
+    'FREELANCER': '/freelancer',
+    'PARENT': '/parent',
+    'FACILITY_MANAGER': '/facility',
+    'BOOKINGS_COORDINATOR': '/bookings-coordinator',
+    'VENUE_MANAGER': '/venue',
+    'GROUND_MANAGER': '/ground',
+    'GROUNDSKEEPER': '/groundskeeper',
+    'MAINTENANCE_TECH': '/maintenance',
+    'EQUIPMENT_MANAGER': '/equipment',
+    'SECURITY_STAFF': '/security',
+    'CLEANING_STAFF': '/cleaning',
+    'ACCOUNTANT': '/accountant',
+    'FRONT_DESK': '/front-desk',
+    'CONTENT_MANAGER': '/content-manager',
+    'MEDICAL_STAFF': '/medical',
+    'STUDENT': '/student',
+  }
+  return rolePathMap[roleCode] || '/dashboard'
+}
 
 export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false)
@@ -26,11 +56,48 @@ export default function RegisterPage() {
     email: "",
     password: "",
   })
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState("")
   const router = useRouter()
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    router.push("/dashboard")
+    setIsLoading(true)
+    setError("")
+
+    if (!selectedType) {
+      setError("Please select an account type")
+      setIsLoading(false)
+      return
+    }
+
+    if (formData.password.length < 8) {
+      setError("Password must be at least 8 characters")
+      setIsLoading(false)
+      return
+    }
+
+    // Split full name into first and last name
+    const nameParts = formData.fullName.trim().split(' ')
+    const firstName = nameParts[0] || ''
+    const lastName = nameParts.slice(1).join(' ') || ''
+
+    try {
+      const { user } = await authService.register({
+        email: formData.email,
+        password: formData.password,
+        firstName,
+        lastName,
+        role: selectedType,
+      })
+      // Redirect to the appropriate dashboard based on user role
+      const dashboardPath = getDashboardPath(user.role.code)
+      router.push(dashboardPath)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Registration failed. Please try again.")
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -92,6 +159,12 @@ export default function RegisterPage() {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
+            {error && (
+              <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-sm" data-testid="error-message">
+                {error}
+              </div>
+            )}
+
             {/* User Type Selection */}
             <div className="space-y-3">
               <Label className="text-foreground">I am a</Label>
@@ -195,9 +268,10 @@ export default function RegisterPage() {
 
             <Button
               type="submit"
+              disabled={isLoading}
               className="w-full h-12 gradient-primary text-white hover:opacity-90 text-base font-semibold shadow-lg shadow-primary/25"
             >
-              Create Account
+              {isLoading ? "Creating Account..." : "Create Account"}
             </Button>
           </form>
 
