@@ -3,7 +3,8 @@ import { useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
-import { LayoutDashboard, FileText, Megaphone, Image, Edit, ChevronLeft, LogOut, HelpCircle, Settings, Globe } from "lucide-react"
+import { LayoutDashboard, FileText, Megaphone, Image, Edit, ChevronLeft, HelpCircle, Settings, Globe } from "lucide-react"
+import LogoutButton from "@/components/ui/LogoutButton"
 const menuItems = [{ icon: LayoutDashboard, label: "Dashboard", href: "/content-manager" }, { icon: Megaphone, label: "Announcements", href: "/content-manager/announcements" }, { icon: Image, label: "Media", href: "/content-manager/media" }, { icon: FileText, label: "Content", href: "/content-manager/content" }]
 const bottomItems = [{ icon: Settings, label: "Settings", href: "/content-manager/settings" }, { icon: Globe, label: "View Site", href: "/" }, { icon: HelpCircle, label: "Help", href: "/content-manager/help" }]
 export function ContentManagerSidebar() {

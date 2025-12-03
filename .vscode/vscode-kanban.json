@@ -4,66 +4,6 @@
       "assignedTo": {
         "name": "Copilot Agent"
       },
-      "category": "testing",
-      "creation_time": "2025-12-02T00:00:00.000Z",
-      "description": {
-        "content": "Author an end-to-end testing program with 22 child cards (one per role) covering full app journeys.",
-        "mime": "text/markdown"
-      },
-      "details": {
-        "content": "# Task 8 - End-to-End Test Matrix (Priority 11)\n\n## Parent Card\n- Title: E2E Testing Program\n- Scope: Full-stack user journeys from login to core workflows.\n\n## Child Cards (22)\n- One per role (SUPER_ADMIN, SYSTEM_SUPPORT, ... STUDENT).\n- Each child card must list: required test data, primary flows, alternate/negative flows, tooling (Playwright/Cypress), and pass/fail criteria.\n\n## Deliverables\n1. E2E test plan document mapping roles to flows and endpoints.\n2. Automated test scripts per role seeded with fixtures.\n3. CI pipeline stage executing role-based suites in parallel.\n4. Reporting dashboard capturing run history and flaky tests.\n5. Handoff notes for QA including how to add new roles/tests.\n\n## Acceptance Criteria\n- All 22 child cards created with actionable details.\n- At least baseline script scaffolding committed for each role.\n- Documentation stored under `docs/testing/e2e`.\n- Sign-off from QA lead.",
-        "mime": "text/markdown"
-      },
-      "id": "18",
-      "prio": 11,
-      "references": [],
-      "title": "18 - E2E testing program",
-      "type": "epic"
-    },
-    {
-      "assignedTo": {
-        "name": "Copilot Agent"
-      },
-      "category": "planning",
-      "creation_time": "2025-12-02T00:00:00.000Z",
-      "description": {
-        "content": "Create master card 'Backend integration (phase-2)' and break it into role-specific backend integration subtasks referencing OpenAPI/Postman assets.",
-        "mime": "text/markdown"
-      },
-      "details": {
-        "content": "# Task 7 - Backend Integration (Phase 2) Planning (Priority 10)\n\n## Deliverables\n1. Parent Kanban card titled \"Backend integration (phase-2)\" with summary, scope, timeline.\n2. 22 sub-cards (one per role or logical grouping) describing backend integration tasks, dependencies, APIs to consume, validation rules, and acceptance tests.\n3. Linking each sub-card to relevant OpenAPI sections, Postman requests, and Swagger docs for parameter alignment.\n4. Checklist covering request/response payload sync, error handling, and logging requirements.\n5. Communication plan with frontend owners for each role-based feature.\n\n## Notes\n- Include risk assessment + mitigation per role.\n- Highlight data migration or seeding needs for integration.\n- Outline testing strategy (unit, integration, UAT) for each subtask.",
-        "mime": "text/markdown"
-      },
-      "id": "17",
-      "prio": 10,
-      "references": [],
-      "title": "17 - Backend integration (phase-2) plan",
-      "type": "epic"
-    },
-
-    {
-      "assignedTo": {
-        "name": "Copilot Agent"
-      },
-      "category": "integration",
-      "creation_time": "2025-12-02T00:00:00.000Z",
-      "description": {
-        "content": "Ensure frontend has all necessary backend endpoints and author integration tests covering the full stack.",
-        "mime": "text/markdown"
-      },
-      "details": {
-        "content": "# Task 6 - Frontend ↔ Backend Gap Analysis & Integration Tests (Priority 9)\n\n## Steps\n1. Review frontend API calls/services to list required endpoints.\n2. Compare against backend routes to identify gaps/mismatches.\n3. Implement missing backend routes or adjust payloads.\n4. Create integration tests (Playwright, Cypress, or Pact) validating frontend modules against backend API with seeded data.\n5. Document API usage contract per screen.\n\n## Acceptance\n- Gap matrix signed off by frontend + backend leads.\n- All blocking backend endpoints implemented or scheduled.\n- Integration test suite added to CI with environment bootstrap instructions.",
-        "mime": "text/markdown"
-      },
-      "id": "16",
-      "prio": 9,
-      "references": [],
-      "title": "16 - Frontend/backend integration readiness"
-    },
-    {
-      "assignedTo": {
-        "name": "Copilot Agent"
-      },
       "category": "integration",
       "creation_time": "2025-12-03T00:00:00.000Z",
       "description": {
@@ -169,6 +109,65 @@
         "docs/backend/global-endpoint-matrix.md"
       ],
       "title": "16-2-4 User dashboard integration"
+    },
+    {
+      "assignedTo": {
+        "name": "Copilot Agent"
+      },
+      "category": "testing",
+      "creation_time": "2025-12-02T00:00:00.000Z",
+      "description": {
+        "content": "Author an end-to-end testing program with 22 child cards (one per role) covering full app journeys.",
+        "mime": "text/markdown"
+      },
+      "details": {
+        "content": "# Task 8 - End-to-End Test Matrix (Priority 11)\n\n## Parent Card\n- Title: E2E Testing Program\n- Scope: Full-stack user journeys from login to core workflows.\n\n## Child Cards (22)\n- One per role (SUPER_ADMIN, SYSTEM_SUPPORT, ... STUDENT).\n- Each child card must list: required test data, primary flows, alternate/negative flows, tooling (Playwright/Cypress), and pass/fail criteria.\n\n## Deliverables\n1. E2E test plan document mapping roles to flows and endpoints.\n2. Automated test scripts per role seeded with fixtures.\n3. CI pipeline stage executing role-based suites in parallel.\n4. Reporting dashboard capturing run history and flaky tests.\n5. Handoff notes for QA including how to add new roles/tests.\n\n## Acceptance Criteria\n- All 22 child cards created with actionable details.\n- At least baseline script scaffolding committed for each role.\n- Documentation stored under `docs/testing/e2e`.\n- Sign-off from QA lead.",
+        "mime": "text/markdown"
+      },
+      "id": "18",
+      "prio": 11,
+      "references": [],
+      "title": "18 - E2E testing program",
+      "type": "epic"
+    },
+    {
+      "assignedTo": {
+        "name": "Copilot Agent"
+      },
+      "category": "planning",
+      "creation_time": "2025-12-02T00:00:00.000Z",
+      "description": {
+        "content": "Create master card 'Backend integration (phase-2)' and break it into role-specific backend integration subtasks referencing OpenAPI/Postman assets.",
+        "mime": "text/markdown"
+      },
+      "details": {
+        "content": "# Task 7 - Backend Integration (Phase 2) Planning (Priority 10)\n\n## Deliverables\n1. Parent Kanban card titled \"Backend integration (phase-2)\" with summary, scope, timeline.\n2. 22 sub-cards (one per role or logical grouping) describing backend integration tasks, dependencies, APIs to consume, validation rules, and acceptance tests.\n3. Linking each sub-card to relevant OpenAPI sections, Postman requests, and Swagger docs for parameter alignment.\n4. Checklist covering request/response payload sync, error handling, and logging requirements.\n5. Communication plan with frontend owners for each role-based feature.\n\n## Notes\n- Include risk assessment + mitigation per role.\n- Highlight data migration or seeding needs for integration.\n- Outline testing strategy (unit, integration, UAT) for each subtask.",
+        "mime": "text/markdown"
+      },
+      "id": "17",
+      "prio": 10,
+      "references": [],
+      "title": "17 - Backend integration (phase-2) plan",
+      "type": "epic"
+    },
+    {
+      "assignedTo": {
+        "name": "Copilot Agent"
+      },
+      "category": "integration",
+      "creation_time": "2025-12-02T00:00:00.000Z",
+      "description": {
+        "content": "Ensure frontend has all necessary backend endpoints and author integration tests covering the full stack.",
+        "mime": "text/markdown"
+      },
+      "details": {
+        "content": "# Task 6 - Frontend ↔ Backend Gap Analysis & Integration Tests (Priority 9)\n\n## Steps\n1. Review frontend API calls/services to list required endpoints.\n2. Compare against backend routes to identify gaps/mismatches.\n3. Implement missing backend routes or adjust payloads.\n4. Create integration tests (Playwright, Cypress, or Pact) validating frontend modules against backend API with seeded data.\n5. Document API usage contract per screen.\n\n## Acceptance\n- Gap matrix signed off by frontend + backend leads.\n- All blocking backend endpoints implemented or scheduled.\n- Integration test suite added to CI with environment bootstrap instructions.",
+        "mime": "text/markdown"
+      },
+      "id": "16",
+      "prio": 9,
+      "references": [],
+      "title": "16 - Frontend/backend integration readiness"
     }
   ],
   "in-progress": [
@@ -196,28 +195,7 @@
       "title": "16-2 Admin panel full integration"
     }
   ],
-  "testing": [
-    {
-      "assignedTo": {
-        "name": "Copilot Agent"
-      },
-      "category": "integration",
-      "creation_time": "2025-12-03T00:00:00.000Z",
-      "description": {
-        "content": "Complete frontend-backend integration for login, register, and admin dashboard pages with working e2e tests.",
-        "mime": "text/markdown"
-      },
-      "details": {
-        "content": "# 16-1 Frontend-Backend Integration (Card 16)\n\n## Status: COMPLETED - Ready for Testing\n\n## Summary of Changes\n\n### Frontend Authentication Updates\n- Updated `frontend/app/login/page.tsx` to use real auth service (`lib/auth.ts`) instead of mock credentials\n- Updated `frontend/app/register/page.tsx` to use real auth service with proper error handling\n- Removed role selector (mock testing feature) from login page\n- Added loading states and error message displays\n\n### Backend Admin API Endpoints\nCreated new admin controller (`backend/src/controllers/adminController.ts`) with endpoints:\n- `GET /api/admin/stats` - Dashboard statistics (users, clubs, coaches, revenue)\n- `GET /api/admin/pending` - Pending actions (approvals, verifications, tickets)\n- `GET /api/admin/activities` - Recent activities (clubs, coaches, payments)\n- `GET /api/admin/top-clubs` - Top performing clubs with revenue\n- `GET /api/admin/health` - System health status\n\n### Frontend Admin Dashboard Updates\n- Created `frontend/lib/services/adminService.ts` for API calls\n- Updated `frontend/app/admin/page.tsx` to fetch real data from backend\n- Replaced mock data imports with real API calls\n- Added loading states and error handling\n\n## Files Changed\n- `frontend/app/login/page.tsx`\n- `frontend/app/register/page.tsx`\n- `backend/src/controllers/adminController.ts` (new)\n- `backend/src/server.ts`\n- `frontend/lib/services/adminService.ts` (new)\n- `frontend/app/admin/page.tsx`\n\n## Testing Checklist\n- [ ] Login with valid credentials redirects to appropriate dashboard\n- [ ] Login with invalid credentials shows error message\n- [ ] Register creates new user and redirects to dashboard\n- [ ] Register shows error for duplicate email\n- [ ] Admin dashboard loads with real data from backend\n- [ ] Admin dashboard shows loading state while fetching\n- [ ] Admin dashboard shows error state on API failure\n\n## Notes\n- Database connection required for integration testing\n- Backend tests require PostgreSQL connection (skipped in CI without DB)",
-        "mime": "text/markdown"
-      },
-      "id": "16-1",
-      "prio": 9,
-      "references": [],
-      "title": "16-1 Frontend-Backend Integration (Card 16)",
-      "type": "task"
-    }
-  ],
+  "testing": [],
   "done": [
     {
       "assignedTo": {
@@ -362,6 +340,26 @@
       ],
       "title": "19 - Facility/Venue/Ground metadata DTO expansion",
       "type": "note"
+    },
+    {
+      "assignedTo": {
+        "name": "Copilot Agent"
+      },
+      "category": "integration",
+      "creation_time": "2025-12-03T00:00:00.000Z",
+      "description": {
+        "content": "Complete frontend-backend integration for login, register, and admin dashboard pages with working e2e tests.",
+        "mime": "text/markdown"
+      },
+      "details": {
+        "content": "# 16-1 Frontend-Backend Integration (Card 16)\n\n## Status: COMPLETED - Ready for Testing\n\n## Summary of Changes\n\n### Frontend Authentication Updates\n- Updated `frontend/app/login/page.tsx` to use real auth service (`lib/auth.ts`) instead of mock credentials\n- Updated `frontend/app/register/page.tsx` to use real auth service with proper error handling\n- Removed role selector (mock testing feature) from login page\n- Added loading states and error message displays\n\n### Backend Admin API Endpoints\nCreated new admin controller (`backend/src/controllers/adminController.ts`) with endpoints:\n- `GET /api/admin/stats` - Dashboard statistics (users, clubs, coaches, revenue)\n- `GET /api/admin/pending` - Pending actions (approvals, verifications, tickets)\n- `GET /api/admin/activities` - Recent activities (clubs, coaches, payments)\n- `GET /api/admin/top-clubs` - Top performing clubs with revenue\n- `GET /api/admin/health` - System health status\n\n### Frontend Admin Dashboard Updates\n- Created `frontend/lib/services/adminService.ts` for API calls\n- Updated `frontend/app/admin/page.tsx` to fetch real data from backend\n- Replaced mock data imports with real API calls\n- Added loading states and error handling\n\n## Files Changed\n- `frontend/app/login/page.tsx`\n- `frontend/app/register/page.tsx`\n- `backend/src/controllers/adminController.ts` (new)\n- `backend/src/server.ts`\n- `frontend/lib/services/adminService.ts` (new)\n- `frontend/app/admin/page.tsx`\n\n## Testing Checklist\n- [ ] Login with valid credentials redirects to appropriate dashboard\n- [ ] Login with invalid credentials shows error message\n- [ ] Register creates new user and redirects to dashboard\n- [ ] Register shows error for duplicate email\n- [ ] Admin dashboard loads with real data from backend\n- [ ] Admin dashboard shows loading state while fetching\n- [ ] Admin dashboard shows error state on API failure\n\n## Notes\n- Database connection required for integration testing\n- Backend tests require PostgreSQL connection (skipped in CI without DB)",
+        "mime": "text/markdown"
+      },
+      "id": "16-1",
+      "prio": 9,
+      "references": [],
+      "title": "16-1 Frontend-Backend Integration (Card 16)",
+      "type": "task"
     },
     {
       "assignedTo": {

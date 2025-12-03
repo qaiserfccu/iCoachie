@@ -205,6 +205,7 @@ export default function RegisterPage() {
                       setSelectedType(roleCode)
                       autoPopulateRole(roleCode)
                     }}
+                    carousel={true}
                   />
                 ) : (
                   <div className="grid grid-cols-2 gap-3">

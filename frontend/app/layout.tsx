@@ -5,6 +5,8 @@ import "@fontsource/inter/500.css"
 import "@fontsource/inter/600.css"
 import "@fontsource/inter/700.css"
 import "./globals.css"
+import GlobalLogoutBinder from "@/components/ui/GlobalLogoutBinder"
+import { AuthProvider } from '@/lib/contexts/AuthContext'
 
 export const metadata: Metadata = {
   title: "iCoachie - All-in-One Coaching Platform",
@@ -20,7 +22,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="antialiased">
-      <body className="font-sans">{children}</body>
+      <body className="font-sans">
+        <AuthProvider>
+          <GlobalLogoutBinder />
+          {children}
+        </AuthProvider>
+      </body>
     </html>
   )
 }

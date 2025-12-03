@@ -294,9 +294,9 @@ describe('Lookups Utilities', () => {
       const result = await getAllSessionStatuses();
 
       expect(result).toEqual(mockStatuses);
-    });
-  });
-
+      expect(mockPrisma.sessionStatus.findMany).toHaveBeenCalledWith({
+        where: { isActive: true },
+        select: { id: true, code: true, name: true },
   describe('getAllAttendanceStatuses', () => {
     it('should return all attendance statuses', async () => {
       const mockStatuses = [
@@ -308,9 +308,9 @@ describe('Lookups Utilities', () => {
       const result = await getAllAttendanceStatuses();
 
       expect(result).toEqual(mockStatuses);
-    });
-  });
-
+      expect(mockPrisma.attendanceStatus.findMany).toHaveBeenCalledWith({
+        where: { isActive: true },
+        select: { id: true, code: true, name: true },
   describe('getAllPaymentStatuses', () => {
     it('should return all payment statuses', async () => {
       const mockStatuses = [
@@ -322,7 +322,27 @@ describe('Lookups Utilities', () => {
       const result = await getAllPaymentStatuses();
 
       expect(result).toEqual(mockStatuses);
+      expect(mockPrisma.paymentStatus.findMany).toHaveBeenCalledWith({
+        where: { isActive: true },
+        select: { id: true, code: true, name: true },
+  describe('getAllBookingStatuses', () => {
+    it('should return all booking statuses', async () => {
+      const mockStatuses = [
+        { id: 1, code: 'PENDING', name: 'Pending' },
+        { id: 2, code: 'CONFIRMED', name: 'Confirmed' },
+      ];
+      (mockPrisma.bookingStatus.findMany as jest.Mock).mockResolvedValue(mockStatuses);
+
+      const result = await getAllBookingStatuses();
+
+      expect(result).toEqual(mockStatuses);
+      expect(mockPrisma.bookingStatus.findMany).toHaveBeenCalledWith({
+        where: { isActive: true },
+        select: { id: true, code: true, name: true },
+        orderBy: { sortOrder: 'asc' },
+      });
     });
+  });
   });
 
   describe('getAllBookingStatuses', () => {

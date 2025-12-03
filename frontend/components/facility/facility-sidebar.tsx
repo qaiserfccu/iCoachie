@@ -5,6 +5,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { LayoutDashboard, Building2, MapPin, Users, Wrench, Package, Calendar, ChevronLeft, ChevronDown, LogOut, HelpCircle, Settings, Globe } from "lucide-react"
+import LogoutButton from '@/components/ui/LogoutButton'
 
 const menuItems = [
   { icon: LayoutDashboard, label: "Dashboard", href: "/facility" },
@@ -64,7 +65,7 @@ export function FacilitySidebar() {
         </nav>
         <div className="p-3 border-t border-white/20 space-y-1">
           {bottomItems.map((item) => (<Link key={item.label} href={item.href} className={cn("flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium text-muted-foreground hover:bg-white/20 hover:text-foreground transition-colors", collapsed && "justify-center px-2")}><item.icon className="w-5 h-5 flex-shrink-0" />{!collapsed && <span>{item.label}</span>}</Link>))}
-          <button className={cn("w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors", collapsed && "justify-center px-2")}><LogOut className="w-5 h-5 flex-shrink-0" />{!collapsed && <span>Log out</span>}</button>
+          <LogoutButton collapsed={collapsed} />
         </div>
       </aside>
       <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 glass border-t border-white/20">
