@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Request, Response } from 'express';
 import prisma from '../db';
 import { requireAuth } from '../middleware/jwtAuth';
 import { requireRole } from '../middleware';
@@ -522,5 +522,702 @@ function getTimeAgo(date: Date): string {
   if (diffDays < 2) return '1 day ago';
   return `${diffDays} days ago`;
 }
+
+// Helper function to format date
+function formatDate(date: Date): string {
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffDays = Math.floor(diffMs / (24 * 60 * 60 * 1000));
+  
+  if (diffDays === 0) return 'Today';
+  if (diffDays === 1) return 'Yesterday';
+  if (diffDays < 7) return `${diffDays} days ago`;
+  
+  return date.toLocaleDateString('en-US', { 
+    month: 'short', 
+    day: 'numeric', 
+    year: 'numeric' 
+  });
+}
+
+// Helper function to get initials from a name
+function getInitials(name: string): string {
+  return name
+    .split(' ')
+    .map(word => word[0])
+    .join('')
+    .substring(0, 2)
+    .toUpperCase();
+}
+
+/**
+ * @swagger
+ * /api/admin/users:
+ *   get:
+ *     summary: Get admin users list
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *         description: Page number
+ *       - in: query
+ *         name: pageSize
+ *         schema:
+ *           type: integer
+ *         description: Number of items per page
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         description: Search query
+ *     responses:
+ *       200:
+ *         description: Users list
+ */
+router.get('/users', requireAuth, requireRole(ADMIN_ROLES), async (req: Request, res: Response) => {
+  try {
+    const page = parseInt(req.query.page as string) || 1;
+    const pageSize = parseInt(req.query.pageSize as string) || 10;
+    const search = req.query.search as string;
+
+    const where: any = { deletedAt: null };
+    if (search) {
+      where.OR = [
+        { name: { contains: search, mode: 'insensitive' } },
+        { email: { contains: search, mode: 'insensitive' } }
+      ];
+    }
+
+    const [users, total] = await Promise.all([
+      prisma.user.findMany({
+        where,
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          primaryRole: { select: { code: true, name: true } },
+          status: { select: { code: true, name: true } }
+        }
+      }),
+      prisma.user.count({ where })
+    ]);
+
+    // Get role stats using explicit counts
+    const [clubAdminCount, coachCount, headCoachCount, freelancerCount, parentCount, studentCount] = await Promise.all([
+      prisma.user.count({ where: { deletedAt: null, primaryRole: { code: 'CLUB_ADMIN' } } }),
+      prisma.user.count({ where: { deletedAt: null, primaryRole: { code: 'COACH' } } }),
+      prisma.user.count({ where: { deletedAt: null, primaryRole: { code: 'HEAD_COACH' } } }),
+      prisma.user.count({ where: { deletedAt: null, primaryRole: { code: 'FREELANCER' } } }),
+      prisma.user.count({ where: { deletedAt: null, primaryRole: { code: 'PARENT' } } }),
+      prisma.user.count({ where: { deletedAt: null, primaryRole: { code: 'STUDENT' } } })
+    ]);
+
+    const roleStatsFormatted = [
+      { 
+        role: 'Club Admins', 
+        count: clubAdminCount,
+        icon: 'Building2',
+        color: 'from-blue-500 to-blue-600'
+      },
+      { 
+        role: 'Coaches', 
+        count: coachCount + headCoachCount,
+        icon: 'UserCog',
+        color: 'from-teal-500 to-teal-600'
+      },
+      { 
+        role: 'Freelancers', 
+        count: freelancerCount,
+        icon: 'Briefcase',
+        color: 'from-yellow-500 to-orange-500'
+      },
+      { 
+        role: 'Parents & Kids', 
+        count: parentCount + studentCount,
+        icon: 'Baby',
+        color: 'from-green-500 to-green-600'
+      }
+    ];
+
+    res.json({
+      users: users.map(user => ({
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.primaryRole?.name || 'Unknown',
+        status: user.status?.name || 'Active',
+        joined: formatDate(user.createdAt),
+        avatar: getInitials(user.name)
+      })),
+      roleStats: roleStatsFormatted,
+      pageInfo: {
+        page,
+        pageSize,
+        total,
+        totalPages: Math.ceil(total / pageSize)
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching admin users:', error);
+    res.status(500).json({ message: 'Internal error' });
+  }
+});
+
+/**
+ * @swagger
+ * /api/admin/clubs:
+ *   get:
+ *     summary: Get admin clubs list
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Clubs list
+ */
+router.get('/clubs', requireAuth, requireRole(ADMIN_ROLES), async (req: Request, res: Response) => {
+  try {
+    const page = parseInt(req.query.page as string) || 1;
+    const pageSize = parseInt(req.query.pageSize as string) || 10;
+    const search = req.query.search as string;
+
+    const where: any = { deletedAt: null };
+    if (search) {
+      where.OR = [
+        { name: { contains: search, mode: 'insensitive' } },
+        { location: { contains: search, mode: 'insensitive' } }
+      ];
+    }
+
+    const [clubs, total, pendingCount] = await Promise.all([
+      prisma.club.findMany({
+        where,
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+        orderBy: { createdAt: 'desc' }
+      }),
+      prisma.club.count({ where }),
+      prisma.club.count({ where: { createdAt: { gte: new Date(Date.now() - THIRTY_DAYS_MS) }, deletedAt: null } })
+    ]);
+
+    // Get member counts for each club
+    const clubsWithStats = await Promise.all(clubs.map(async (club) => {
+      const [userCount, studentCount, clubPayments] = await Promise.all([
+        prisma.user.count({ where: { clubId: club.id, deletedAt: null } }),
+        prisma.student.count({ where: { clubId: club.id, deletedAt: null } }),
+        prisma.payment.aggregate({
+          where: {
+            user: { clubId: club.id },
+            status: { code: 'COMPLETED' }
+          },
+          _sum: { amount: true }
+        })
+      ]);
+
+      const revenue = Number(clubPayments._sum.amount || 0) / 100;
+      const members = userCount + studentCount;
+
+      return {
+        id: club.id,
+        name: club.name,
+        logo: getInitials(club.name),
+        location: club.location || 'Unknown',
+        members,
+        coaches: userCount,
+        rating: 4.5, // TODO: Calculate from reviews
+        status: 'Verified',
+        revenue: `$${revenue.toLocaleString()}`,
+        plan: 'Standard' // TODO: Implement subscription plans
+      };
+    }));
+
+    // Calculate total revenue
+    const totalRevenue = await prisma.payment.aggregate({
+      where: { status: { code: 'COMPLETED' } },
+      _sum: { amount: true }
+    });
+
+    res.json({
+      clubs: clubsWithStats,
+      stats: {
+        total,
+        verified: total, // Using total as verified count approximation
+        pending: pendingCount,
+        totalRevenue: `$${Math.round((Number(totalRevenue._sum.amount) || 0) / 100000)}K`
+      },
+      pageInfo: {
+        page,
+        pageSize,
+        total,
+        totalPages: Math.ceil(total / pageSize)
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching admin clubs:', error);
+    res.status(500).json({ message: 'Internal error' });
+  }
+});
+
+/**
+ * @swagger
+ * /api/admin/roles:
+ *   get:
+ *     summary: Get roles with permissions
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Roles with permissions
+ */
+router.get('/roles', requireAuth, requireRole(ADMIN_ROLES), async (req: Request, res: Response) => {
+  try {
+    const roles = await prisma.role.findMany({
+      where: { isActive: true },
+      orderBy: { sortOrder: 'asc' }
+    });
+
+    // Get user counts per role using explicit queries
+    const roleCounts = await Promise.all(
+      roles.map(async (role) => {
+        const count = await prisma.user.count({
+          where: { deletedAt: null, primaryRoleId: role.id }
+        });
+        return { roleId: role.id, count };
+      })
+    );
+
+    // Create a map for easy lookup
+    const roleCountMap = new Map(roleCounts.map(rc => [rc.roleId, rc.count]));
+
+    // Icon and color mapping based on role code
+    const roleStyles: Record<string, { icon: string; color: string }> = {
+      'SUPER_ADMIN': { icon: 'Shield', color: 'from-red-500 to-orange-500' },
+      'SYSTEM_SUPPORT': { icon: 'HeadphonesIcon', color: 'from-purple-500 to-purple-600' },
+      'CLUB_ADMIN': { icon: 'Building2', color: 'from-blue-500 to-blue-600' },
+      'CLUB_MANAGER': { icon: 'Building2', color: 'from-blue-400 to-blue-500' },
+      'HEAD_COACH': { icon: 'UserCog', color: 'from-teal-500 to-teal-600' },
+      'COACH': { icon: 'UserCog', color: 'from-teal-400 to-teal-500' },
+      'FREELANCER': { icon: 'Briefcase', color: 'from-yellow-500 to-orange-500' },
+      'PARENT': { icon: 'Users', color: 'from-green-500 to-green-600' },
+      'STUDENT': { icon: 'Baby', color: 'from-purple-500 to-purple-600' }
+    };
+
+    const rolesWithPermissions = roles.map(role => {
+      const style = roleStyles[role.code] || { icon: 'Users', color: 'from-gray-500 to-gray-600' };
+      let permissions: string[] = ['Basic Access'];
+      
+      if (role.permissions) {
+        try {
+          const permObj = typeof role.permissions === 'string' 
+            ? JSON.parse(role.permissions) 
+            : role.permissions;
+          const permList = Object.keys(permObj).filter(key => permObj[key] === true);
+          if (permList.length > 0) permissions = permList;
+        } catch (e) {
+          // Keep default permissions if parsing fails
+        }
+      }
+
+      return {
+        id: role.id,
+        name: role.name,
+        code: role.code,
+        icon: style.icon,
+        color: style.color,
+        description: role.description || `${role.name} role`,
+        users: roleCountMap.get(role.id) || 0,
+        permissions
+      };
+    });
+
+    // Generate permission matrix
+    const permissionKeys = ['Manage Users', 'View Dashboard', 'Manage Sessions', 'Process Payments', 'View Reports', 'Manage Evaluations'];
+    const permissionsMatrix = permissionKeys.map(permission => {
+      const row: Record<string, boolean | string> = { permission };
+      roles.forEach(role => {
+        let rolePermissions: Record<string, boolean> = {};
+        if (role.permissions) {
+          try {
+            rolePermissions = typeof role.permissions === 'string' 
+              ? JSON.parse(role.permissions) 
+              : role.permissions as Record<string, boolean>;
+          } catch (e) {
+            // Keep empty permissions if parsing fails
+          }
+        }
+        // Super Admin has all permissions
+        if (role.code === 'SUPER_ADMIN') {
+          row[role.code.toLowerCase()] = true;
+        } else {
+          // Map permission names to permission keys in the database
+          const permKey = permission.toLowerCase().replace(/ /g, '_');
+          row[role.code.toLowerCase()] = rolePermissions[permKey] === true;
+        }
+      });
+      return row;
+    });
+
+    res.json({
+      roles: rolesWithPermissions,
+      permissionsMatrix
+    });
+  } catch (error) {
+    console.error('Error fetching admin roles:', error);
+    res.status(500).json({ message: 'Internal error' });
+  }
+});
+
+/**
+ * @swagger
+ * /api/admin/coaches:
+ *   get:
+ *     summary: Get coaches list for admin
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Coaches list
+ */
+router.get('/coaches', requireAuth, requireRole(ADMIN_ROLES), async (req: Request, res: Response) => {
+  try {
+    const page = parseInt(req.query.page as string) || 1;
+    const pageSize = parseInt(req.query.pageSize as string) || 10;
+    const search = req.query.search as string;
+
+    const where: any = {
+      deletedAt: null,
+      primaryRole: {
+        code: { in: ['COACH', 'HEAD_COACH'] }
+      }
+    };
+    
+    if (search) {
+      where.OR = [
+        { name: { contains: search, mode: 'insensitive' } },
+        { email: { contains: search, mode: 'insensitive' } }
+      ];
+    }
+
+    const [coaches, total] = await Promise.all([
+      prisma.user.findMany({
+        where,
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+        orderBy: { createdAt: 'desc' }
+      }),
+      prisma.user.count({ where })
+    ]);
+
+    // Get stats for each coach
+    const coachesWithStats = await Promise.all(coaches.map(async (coach) => {
+      const [students, sessions, reviews] = await Promise.all([
+        prisma.student.count({
+          where: {
+            clubId: coach.clubId ?? undefined,
+            deletedAt: null
+          }
+        }),
+        prisma.session.count({
+          where: { coachId: coach.id }
+        }),
+        prisma.review.aggregate({
+          where: { revieweeId: coach.id },
+          _avg: { rating: true }
+        })
+      ]);
+
+      return {
+        id: coach.id,
+        name: coach.name,
+        email: coach.email,
+        avatar: getInitials(coach.name),
+        specialty: 'General', // TODO: Add specialty field to User model
+        rating: reviews._avg.rating || 4.5,
+        students,
+        sessions,
+        status: 'Verified' // TODO: Add verification status
+      };
+    }));
+
+    res.json({
+      coaches: coachesWithStats,
+      pageInfo: {
+        page,
+        pageSize,
+        total,
+        totalPages: Math.ceil(total / pageSize)
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching admin coaches:', error);
+    res.status(500).json({ message: 'Internal error' });
+  }
+});
+
+/**
+ * @swagger
+ * /api/admin/freelancers:
+ *   get:
+ *     summary: Get freelancers list for admin
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Freelancers list
+ */
+router.get('/freelancers', requireAuth, requireRole(ADMIN_ROLES), async (req: Request, res: Response) => {
+  try {
+    const page = parseInt(req.query.page as string) || 1;
+    const pageSize = parseInt(req.query.pageSize as string) || 10;
+    const search = req.query.search as string;
+
+    const where: any = {
+      deletedAt: null,
+      primaryRole: {
+        code: 'FREELANCER'
+      }
+    };
+    
+    if (search) {
+      where.OR = [
+        { name: { contains: search, mode: 'insensitive' } },
+        { email: { contains: search, mode: 'insensitive' } }
+      ];
+    }
+
+    const [freelancers, total] = await Promise.all([
+      prisma.user.findMany({
+        where,
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+        orderBy: { createdAt: 'desc' }
+      }),
+      prisma.user.count({ where })
+    ]);
+
+    // Get stats for each freelancer
+    const freelancersWithStats = await Promise.all(freelancers.map(async (freelancer) => {
+      const [bookings, reviews, earnings] = await Promise.all([
+        prisma.booking.count({
+          where: { freelancerId: freelancer.id }
+        }),
+        prisma.review.aggregate({
+          where: { revieweeId: freelancer.id },
+          _avg: { rating: true }
+        }),
+        prisma.payment.aggregate({
+          where: {
+            userId: freelancer.id,
+            status: { code: 'COMPLETED' }
+          },
+          _sum: { amount: true }
+        })
+      ]);
+
+      return {
+        id: freelancer.id,
+        name: freelancer.name,
+        email: freelancer.email,
+        avatar: getInitials(freelancer.name),
+        specialty: 'Personal Training', // TODO: Add specialty field
+        rating: reviews._avg.rating || 4.5,
+        bookings,
+        earnings: `$${((Number(earnings._sum.amount) || 0) / 100).toLocaleString()}`,
+        status: 'Active' // TODO: Add status field
+      };
+    }));
+
+    res.json({
+      freelancers: freelancersWithStats,
+      pageInfo: {
+        page,
+        pageSize,
+        total,
+        totalPages: Math.ceil(total / pageSize)
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching admin freelancers:', error);
+    res.status(500).json({ message: 'Internal error' });
+  }
+});
+
+/**
+ * @swagger
+ * /api/admin/families:
+ *   get:
+ *     summary: Get families (parents and kids) list for admin
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Families list
+ */
+router.get('/families', requireAuth, requireRole(ADMIN_ROLES), async (req: Request, res: Response) => {
+  try {
+    const page = parseInt(req.query.page as string) || 1;
+    const pageSize = parseInt(req.query.pageSize as string) || 10;
+    const search = req.query.search as string;
+
+    const where: any = {
+      deletedAt: null,
+      primaryRole: {
+        code: 'PARENT'
+      }
+    };
+    
+    if (search) {
+      where.OR = [
+        { name: { contains: search, mode: 'insensitive' } },
+        { email: { contains: search, mode: 'insensitive' } }
+      ];
+    }
+
+    const [parents, total] = await Promise.all([
+      prisma.user.findMany({
+        where,
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+        orderBy: { createdAt: 'desc' }
+      }),
+      prisma.user.count({ where })
+    ]);
+
+    // Get stats for each parent
+    const familiesWithStats = await Promise.all(parents.map(async (parent) => {
+      const [kids, totalSpent] = await Promise.all([
+        prisma.student.count({
+          where: { parentId: parent.id, deletedAt: null }
+        }),
+        prisma.payment.aggregate({
+          where: {
+            userId: parent.id,
+            status: { code: 'COMPLETED' }
+          },
+          _sum: { amount: true }
+        })
+      ]);
+
+      // Get session count for students of this parent
+      const sessions = await prisma.sessionEnrollment.count({
+        where: {
+          student: { parentId: parent.id }
+        }
+      });
+
+      return {
+        id: parent.id,
+        parentName: parent.name,
+        email: parent.email,
+        avatar: getInitials(parent.name),
+        kids,
+        activeSessions: sessions,
+        totalSpent: `$${((Number(totalSpent._sum.amount) || 0) / 100).toLocaleString()}`,
+        joined: formatDate(parent.createdAt)
+      };
+    }));
+
+    res.json({
+      families: familiesWithStats,
+      pageInfo: {
+        page,
+        pageSize,
+        total,
+        totalPages: Math.ceil(total / pageSize)
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching admin families:', error);
+    res.status(500).json({ message: 'Internal error' });
+  }
+});
+
+/**
+ * @swagger
+ * /api/admin/transactions:
+ *   get:
+ *     summary: Get transactions list for admin
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Transactions list
+ */
+router.get('/transactions', requireAuth, requireRole(ADMIN_ROLES), async (req: Request, res: Response) => {
+  try {
+    const page = parseInt(req.query.page as string) || 1;
+    const pageSize = parseInt(req.query.pageSize as string) || 10;
+    const search = req.query.search as string;
+
+    const where: any = {};
+    if (search) {
+      where.OR = [
+        { user: { name: { contains: search, mode: 'insensitive' } } }
+      ];
+    }
+
+    const startOfMonth = new Date();
+    startOfMonth.setDate(1);
+    startOfMonth.setHours(0, 0, 0, 0);
+
+    const [transactions, total, totalRevenue, transactionCount] = await Promise.all([
+      prisma.payment.findMany({
+        where,
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          user: { select: { name: true } },
+          status: { select: { code: true, name: true } }
+        }
+      }),
+      prisma.payment.count({ where }),
+      prisma.payment.aggregate({
+        where: { status: { code: 'COMPLETED' } },
+        _sum: { amount: true }
+      }),
+      prisma.payment.count({
+        where: { status: { code: 'COMPLETED' } }
+      })
+    ]);
+
+    const totalRevenueAmount = (Number(totalRevenue._sum.amount) || 0) / 100;
+    const avgTransaction = transactionCount > 0 ? totalRevenueAmount / transactionCount : 0;
+
+    res.json({
+      transactions: transactions.map((txn) => ({
+        id: `TXN-${String(txn.id).padStart(3, '0')}`,
+        user: txn.user?.name || 'Unknown',
+        type: 'Payment', // TODO: Add payment type field
+        amount: `$${(Number(txn.amount) / 100).toFixed(2)}`,
+        status: txn.status?.name || 'Unknown',
+        date: formatDate(txn.createdAt)
+      })),
+      stats: {
+        totalRevenue: `$${totalRevenueAmount.toLocaleString()}`,
+        transactionCount: transactionCount.toLocaleString(),
+        avgTransaction: `$${avgTransaction.toFixed(2)}`
+      },
+      pageInfo: {
+        page,
+        pageSize,
+        total,
+        totalPages: Math.ceil(total / pageSize)
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching admin transactions:', error);
+    res.status(500).json({ message: 'Internal error' });
+  }
+});
 
 export default router;
