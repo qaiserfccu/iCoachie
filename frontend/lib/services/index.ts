@@ -37,6 +37,7 @@ export {
   getOperationsStatusColor
 } from './operationsService'
 export { default as systemSupportService } from './systemSupportService'
+export { default as parentService } from './parentService'
 
 // Export types from services
 export type { Student } from './studentService'
@@ -102,3 +103,15 @@ export type {
   AuditLog,
   KnowledgeBaseArticle
 } from './systemSupportService'
+
+// Parent types
+export type {
+  ParentChild,
+  ParentBooking,
+  ParentPayment,
+  ParentEvaluation,
+  EvaluationStats,
+  ParentMessage,
+  ParentProfile,
+  ParentDashboardStats
+} from './parentService'
