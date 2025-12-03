@@ -29,6 +29,12 @@ export { freelancerEarningsService } from './freelancerEarningsService'
 export { freelancerProfileService } from './freelancerProfileService'
 export { default as facilityService } from './facilityService'
 export { DASHBOARD_STATS_CONFIG } from './facilityService'
+export { 
+  bookingsCoordinatorService, 
+  frontDeskService, 
+  accountantService,
+  getOperationsStatusColor
+} from './operationsService'
 
 // Export types from services
 export type { Student } from './studentService'
@@ -52,3 +58,16 @@ export type {
   PaginatedResponse,
   PageInfo
 } from './facilityService'
+export type {
+  OperationsBooking,
+  BookingsCoordinatorStats,
+  BookingTask,
+  FrontDeskStats,
+  FrontDeskSession,
+  FrontDeskCheckin,
+  AccountantStats,
+  AccountantTransaction,
+  AccountantInvoice,
+  FinancialStats,
+  MonthlyCollectionProgress
+} from './operationsService'
