@@ -58,6 +58,161 @@ export interface AdminHealthResponse {
   systems: SystemHealth[]
 }
 
+export interface PageInfo {
+  page: number
+  pageSize: number
+  total: number
+  totalPages: number
+}
+
+// User Management Types
+export interface AdminUser {
+  id: number
+  name: string
+  email: string
+  role: string
+  status: string
+  joined: string
+  avatar: string
+}
+
+export interface RoleStat {
+  role: string
+  count: number
+  icon: string
+  color: string
+}
+
+export interface AdminUsersResponse {
+  users: AdminUser[]
+  roleStats: RoleStat[]
+  pageInfo: PageInfo
+}
+
+// Club Management Types
+export interface AdminClub {
+  id: number
+  name: string
+  logo: string
+  location: string
+  members: number
+  coaches: number
+  rating: number
+  status: string
+  revenue: string
+  plan: string
+}
+
+export interface ClubStats {
+  total: number
+  verified: number
+  pending: number
+  totalRevenue: string
+}
+
+export interface AdminClubsResponse {
+  clubs: AdminClub[]
+  stats: ClubStats
+  pageInfo: PageInfo
+}
+
+// Roles & Permissions Types
+export interface AdminRole {
+  id: number
+  name: string
+  code: string
+  icon: string
+  color: string
+  description: string
+  users: number
+  permissions: string[]
+}
+
+export interface PermissionMatrixRow {
+  permission: string
+  [roleCode: string]: boolean | string
+}
+
+export interface AdminRolesResponse {
+  roles: AdminRole[]
+  permissionsMatrix: PermissionMatrixRow[]
+}
+
+// Coach Types
+export interface AdminCoach {
+  id: number
+  name: string
+  email: string
+  avatar: string
+  specialty: string
+  rating: number
+  students: number
+  sessions: number
+  status: string
+}
+
+export interface AdminCoachesResponse {
+  coaches: AdminCoach[]
+  pageInfo: PageInfo
+}
+
+// Freelancer Types
+export interface AdminFreelancer {
+  id: number
+  name: string
+  email: string
+  avatar: string
+  specialty: string
+  rating: number
+  bookings: number
+  earnings: string
+  status: string
+}
+
+export interface AdminFreelancersResponse {
+  freelancers: AdminFreelancer[]
+  pageInfo: PageInfo
+}
+
+// Families Types
+export interface AdminFamily {
+  id: number
+  parentName: string
+  email: string
+  avatar: string
+  kids: number
+  activeSessions: number
+  totalSpent: string
+  joined: string
+}
+
+export interface AdminFamiliesResponse {
+  families: AdminFamily[]
+  pageInfo: PageInfo
+}
+
+// Transactions Types
+export interface AdminTransaction {
+  id: string
+  user: string
+  type: string
+  amount: string
+  status: string
+  date: string
+}
+
+export interface TransactionStats {
+  totalRevenue: string
+  transactionCount: string
+  avgTransaction: string
+}
+
+export interface AdminTransactionsResponse {
+  transactions: AdminTransaction[]
+  stats: TransactionStats
+  pageInfo: PageInfo
+}
+
 class AdminService {
   async getStats(): Promise<AdminStat[]> {
     try {
@@ -105,6 +260,112 @@ class AdminService {
       return response
     } catch (error) {
       console.error('Error fetching system health:', error)
+      throw error
+    }
+  }
+
+  // User Management
+  async getUsers(params?: { page?: number; pageSize?: number; search?: string }): Promise<AdminUsersResponse> {
+    try {
+      const queryParams = new URLSearchParams()
+      if (params?.page) queryParams.append('page', params.page.toString())
+      if (params?.pageSize) queryParams.append('pageSize', params.pageSize.toString())
+      if (params?.search) queryParams.append('search', params.search)
+      
+      const url = queryParams.toString() ? `/admin/users?${queryParams}` : '/admin/users'
+      return await apiClient.get<AdminUsersResponse>(url)
+    } catch (error) {
+      console.error('Error fetching admin users:', error)
+      throw error
+    }
+  }
+
+  // Club Management
+  async getClubs(params?: { page?: number; pageSize?: number; search?: string }): Promise<AdminClubsResponse> {
+    try {
+      const queryParams = new URLSearchParams()
+      if (params?.page) queryParams.append('page', params.page.toString())
+      if (params?.pageSize) queryParams.append('pageSize', params.pageSize.toString())
+      if (params?.search) queryParams.append('search', params.search)
+      
+      const url = queryParams.toString() ? `/admin/clubs?${queryParams}` : '/admin/clubs'
+      return await apiClient.get<AdminClubsResponse>(url)
+    } catch (error) {
+      console.error('Error fetching admin clubs:', error)
+      throw error
+    }
+  }
+
+  // Roles & Permissions
+  async getRoles(): Promise<AdminRolesResponse> {
+    try {
+      return await apiClient.get<AdminRolesResponse>('/admin/roles')
+    } catch (error) {
+      console.error('Error fetching admin roles:', error)
+      throw error
+    }
+  }
+
+  // Coaches
+  async getCoaches(params?: { page?: number; pageSize?: number; search?: string }): Promise<AdminCoachesResponse> {
+    try {
+      const queryParams = new URLSearchParams()
+      if (params?.page) queryParams.append('page', params.page.toString())
+      if (params?.pageSize) queryParams.append('pageSize', params.pageSize.toString())
+      if (params?.search) queryParams.append('search', params.search)
+      
+      const url = queryParams.toString() ? `/admin/coaches?${queryParams}` : '/admin/coaches'
+      return await apiClient.get<AdminCoachesResponse>(url)
+    } catch (error) {
+      console.error('Error fetching admin coaches:', error)
+      throw error
+    }
+  }
+
+  // Freelancers
+  async getFreelancers(params?: { page?: number; pageSize?: number; search?: string }): Promise<AdminFreelancersResponse> {
+    try {
+      const queryParams = new URLSearchParams()
+      if (params?.page) queryParams.append('page', params.page.toString())
+      if (params?.pageSize) queryParams.append('pageSize', params.pageSize.toString())
+      if (params?.search) queryParams.append('search', params.search)
+      
+      const url = queryParams.toString() ? `/admin/freelancers?${queryParams}` : '/admin/freelancers'
+      return await apiClient.get<AdminFreelancersResponse>(url)
+    } catch (error) {
+      console.error('Error fetching admin freelancers:', error)
+      throw error
+    }
+  }
+
+  // Families
+  async getFamilies(params?: { page?: number; pageSize?: number; search?: string }): Promise<AdminFamiliesResponse> {
+    try {
+      const queryParams = new URLSearchParams()
+      if (params?.page) queryParams.append('page', params.page.toString())
+      if (params?.pageSize) queryParams.append('pageSize', params.pageSize.toString())
+      if (params?.search) queryParams.append('search', params.search)
+      
+      const url = queryParams.toString() ? `/admin/families?${queryParams}` : '/admin/families'
+      return await apiClient.get<AdminFamiliesResponse>(url)
+    } catch (error) {
+      console.error('Error fetching admin families:', error)
+      throw error
+    }
+  }
+
+  // Transactions
+  async getTransactions(params?: { page?: number; pageSize?: number; search?: string }): Promise<AdminTransactionsResponse> {
+    try {
+      const queryParams = new URLSearchParams()
+      if (params?.page) queryParams.append('page', params.page.toString())
+      if (params?.pageSize) queryParams.append('pageSize', params.pageSize.toString())
+      if (params?.search) queryParams.append('search', params.search)
+      
+      const url = queryParams.toString() ? `/admin/transactions?${queryParams}` : '/admin/transactions'
+      return await apiClient.get<AdminTransactionsResponse>(url)
+    } catch (error) {
+      console.error('Error fetching admin transactions:', error)
       throw error
     }
   }
