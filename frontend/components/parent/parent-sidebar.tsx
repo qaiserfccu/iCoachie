@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
@@ -18,8 +18,18 @@ import {
   Bell,
   Heart,
   Trophy,
+  Loader2,
 } from "lucide-react"
 import LogoutButton from '@/components/ui/LogoutButton'
+import authService from '@/lib/auth'
+
+/**
+ * Parent Sidebar Component
+ * 
+ * Backend Integration:
+ * - User profile data: GET /api/users/me (backend/src/controllers/userController.ts)
+ * - Uses authenticated user's name and role from JWT token
+ */
 
 const menuItems = [
   { icon: LayoutDashboard, label: "Dashboard", href: "/parent" },
@@ -76,7 +86,31 @@ const bottomItems = [
 export function ParentSidebar() {
   const [collapsed, setCollapsed] = useState(false)
   const [openMenus, setOpenMenus] = useState<string[]>([])
+  const [userName, setUserName] = useState<string>('Parent')
+  const [isLoading, setIsLoading] = useState(true)
   const pathname = usePathname()
+
+  // Fetch user profile data from backend
+  // Backend source: GET /api/users/me (backend/src/controllers/userController.ts)
+  useEffect(() => {
+    const loadUserProfile = () => {
+      try {
+        const user = authService.getCurrentUser()
+        if (user) {
+          const displayName = user.firstName && user.lastName 
+            ? `${user.firstName} ${user.lastName}`.trim()
+            : user.email?.split('@')[0] || 'Parent'
+          setUserName(displayName)
+        }
+      } catch (error) {
+        console.error('Error loading user profile:', error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    loadUserProfile()
+  }, [])
 
   const toggleMenu = (label: string) => {
     setOpenMenus((prev) => (prev.includes(label) ? prev.filter((l) => l !== label) : [...prev, label]))
@@ -99,8 +133,17 @@ export function ParentSidebar() {
             </div>
             {!collapsed && (
               <div>
-                <span className="text-lg font-bold text-foreground">Sarah Thompson</span>
-                <span className="block text-xs text-muted-foreground">Parent Account</span>
+                {isLoading ? (
+                  <div className="flex items-center gap-2">
+                    <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+                    <span className="text-sm text-muted-foreground">Loading...</span>
+                  </div>
+                ) : (
+                  <>
+                    <span className="text-lg font-bold text-foreground">{userName}</span>
+                    <span className="block text-xs text-muted-foreground">Parent Account</span>
+                  </>
+                )}
               </div>
             )}
           </Link>
