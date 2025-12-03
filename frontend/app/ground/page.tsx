@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Leaf, ArrowRight, Plus, Building2, CheckCircle, ClipboardList, Droplets, AlertTriangle } from "lucide-react"
-import { facilityService, type Ground, type GroundDashboardStats } from "@/lib/services"
+import { facilityService, DASHBOARD_STATS_CONFIG, type Ground, type GroundDashboardStats } from "@/lib/services"
 import { getStatusColor } from "@/lib/services/mockDataService"
 
 // Loading skeleton component
@@ -70,13 +70,14 @@ export default function GroundDashboard() {
 
         setStats(dashboardStats)
 
-        // Load grounds from all facilities
+        // Load grounds from facilities (limited to avoid too many requests)
         const allGrounds: Ground[] = []
-        for (const facility of facilitiesResponse.data.slice(0, 3)) {
-          const groundsResponse = await facilityService.getGrounds(facility.id, { pageSize: 5 })
+        const facilitiesToLoad = facilitiesResponse.data.slice(0, DASHBOARD_STATS_CONFIG.MAX_FACILITIES_TO_LOAD)
+        for (const facility of facilitiesToLoad) {
+          const groundsResponse = await facilityService.getGrounds(facility.id, { pageSize: DASHBOARD_STATS_CONFIG.DEFAULT_PAGE_SIZE })
           allGrounds.push(...groundsResponse.data)
         }
-        setGrounds(allGrounds.slice(0, 5))
+        setGrounds(allGrounds.slice(0, DASHBOARD_STATS_CONFIG.DEFAULT_PAGE_SIZE))
       } catch (err) {
         console.error("Failed to load ground data:", err)
         setError("Failed to load ground data. Please try again.")

@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { MapPin, ArrowRight, Plus, Building2, Calendar, Users, DollarSign, AlertTriangle } from "lucide-react"
-import { facilityService, type Venue, type VenueDashboardStats } from "@/lib/services"
+import { facilityService, DASHBOARD_STATS_CONFIG, type Venue, type VenueDashboardStats } from "@/lib/services"
 import { getStatusColor } from "@/lib/services/mockDataService"
 
 // Loading skeleton component
@@ -70,13 +70,14 @@ export default function VenueDashboard() {
 
         setStats(dashboardStats)
 
-        // Load venues from all facilities
+        // Load venues from facilities (limited to avoid too many requests)
         const allVenues: Venue[] = []
-        for (const facility of facilitiesResponse.data.slice(0, 3)) {
-          const venuesResponse = await facilityService.getVenues(facility.id, { pageSize: 5 })
+        const facilitiesToLoad = facilitiesResponse.data.slice(0, DASHBOARD_STATS_CONFIG.MAX_FACILITIES_TO_LOAD)
+        for (const facility of facilitiesToLoad) {
+          const venuesResponse = await facilityService.getVenues(facility.id, { pageSize: DASHBOARD_STATS_CONFIG.DEFAULT_PAGE_SIZE })
           allVenues.push(...venuesResponse.data)
         }
-        setVenues(allVenues.slice(0, 5))
+        setVenues(allVenues.slice(0, DASHBOARD_STATS_CONFIG.DEFAULT_PAGE_SIZE))
       } catch (err) {
         console.error("Failed to load venue data:", err)
         setError("Failed to load venue data. Please try again.")

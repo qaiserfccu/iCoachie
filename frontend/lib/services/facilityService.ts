@@ -240,6 +240,53 @@ export interface GroundskeeperDashboardStats {
   weatherAlert: string
 }
 
+// Ground update payload type
+interface UpdateGroundPayload {
+  name?: string
+  groundType?: string
+  surfaceType?: string
+  dimensions?: string
+  capacity?: number
+  isAvailable?: boolean
+}
+
+// =============================================================================
+// Constants
+// =============================================================================
+
+// Default configuration for dashboard stats estimation
+const DASHBOARD_STATS_CONFIG = {
+  // Estimated percentage of venues/grounds that are available when real data not available
+  DEFAULT_AVAILABILITY_RATIO: 0.8,
+  // Maximum facilities to load per dashboard request
+  MAX_FACILITIES_PER_REQUEST: 100,
+  // Maximum facilities to iterate for venues/grounds loading in dashboard
+  MAX_FACILITIES_TO_LOAD: 3,
+  // Default page size for list requests
+  DEFAULT_PAGE_SIZE: 5
+}
+
+// Placeholder values for stats that will be replaced by real API calls
+const PLACEHOLDER_STATS = {
+  totalBookings: 24,
+  maintenanceRequests: 3,
+  utilizationPercent: 78,
+  eventsToday: 5,
+  capacityUsedPercent: 72,
+  revenueToday: 4200,
+  tasksToday: 8,
+  tasksCompleted: 5,
+  fieldsStatus: 'Good',
+  irrigationZones: 6,
+  weatherAlert: 'Clear',
+  averageCondition: 'Good',
+  irrigationStatus: 'Active',
+  openWorkOrders: 12,
+  completedToday: 5,
+  equipmentIssues: 4,
+  scheduledTasks: 8
+}
+
 // =============================================================================
 // Service Class
 // =============================================================================
@@ -402,7 +449,7 @@ class FacilityService {
   }
 
   async updateGround(id: number, data: UpdateGroundData): Promise<Ground> {
-    const payload: Record<string, any> = { ...data }
+    const payload: UpdateGroundPayload = { ...data }
     if (data.type) payload.groundType = data.type
     if (data.surface) payload.surfaceType = data.surface
     return apiClient.put<Ground>(`${this.baseUrl}/grounds/${id}`, payload)
@@ -453,7 +500,7 @@ class FacilityService {
 
   async getFacilityDashboardStats(): Promise<FacilityDashboardStats> {
     try {
-      const facilitiesResponse = await this.getFacilities({ pageSize: 100 })
+      const facilitiesResponse = await this.getFacilities({ pageSize: DASHBOARD_STATS_CONFIG.MAX_FACILITIES_PER_REQUEST })
       const facilities = facilitiesResponse.data
       
       let totalVenues = 0
@@ -465,16 +512,15 @@ class FacilityService {
         totalGrounds += facility.groundCount || 0
       }
       
-      // TODO: These should come from dedicated backend endpoints for accurate counts
-      // For now, we compute estimates based on available data
+      // TODO: Replace placeholder values with actual API calls when endpoints are available
       return {
         totalVenues,
         totalGrounds,
-        availableVenues: Math.floor(totalVenues * 0.8), // Estimated 80% available
-        availableGrounds: Math.floor(totalGrounds * 0.8),
-        totalBookings: 24, // TODO: Get from bookings API
-        maintenanceRequests: 3, // TODO: Get from maintenance API
-        utilizationPercent: 78 // TODO: Calculate from actual usage data
+        availableVenues: Math.floor(totalVenues * DASHBOARD_STATS_CONFIG.DEFAULT_AVAILABILITY_RATIO),
+        availableGrounds: Math.floor(totalGrounds * DASHBOARD_STATS_CONFIG.DEFAULT_AVAILABILITY_RATIO),
+        totalBookings: PLACEHOLDER_STATS.totalBookings,
+        maintenanceRequests: PLACEHOLDER_STATS.maintenanceRequests,
+        utilizationPercent: PLACEHOLDER_STATS.utilizationPercent
       }
     } catch {
       // Return default stats on error
@@ -492,18 +538,19 @@ class FacilityService {
 
   async getVenueDashboardStats(): Promise<VenueDashboardStats> {
     try {
-      const facilitiesResponse = await this.getFacilities({ pageSize: 100 })
+      const facilitiesResponse = await this.getFacilities({ pageSize: DASHBOARD_STATS_CONFIG.MAX_FACILITIES_PER_REQUEST })
       let totalVenues = 0
       
       for (const facility of facilitiesResponse.data) {
         totalVenues += facility.venueCount || 0
       }
       
+      // TODO: Replace placeholder values with actual API calls when endpoints are available
       return {
         totalVenues,
-        eventsToday: 5, // TODO: Get from events/bookings API
-        capacityUsedPercent: 72, // TODO: Calculate from actual usage
-        revenueToday: 4200 // TODO: Get from payments API
+        eventsToday: PLACEHOLDER_STATS.eventsToday,
+        capacityUsedPercent: PLACEHOLDER_STATS.capacityUsedPercent,
+        revenueToday: PLACEHOLDER_STATS.revenueToday
       }
     } catch {
       return {
@@ -517,18 +564,19 @@ class FacilityService {
 
   async getGroundDashboardStats(): Promise<GroundDashboardStats> {
     try {
-      const facilitiesResponse = await this.getFacilities({ pageSize: 100 })
+      const facilitiesResponse = await this.getFacilities({ pageSize: DASHBOARD_STATS_CONFIG.MAX_FACILITIES_PER_REQUEST })
       let totalGrounds = 0
       
       for (const facility of facilitiesResponse.data) {
         totalGrounds += facility.groundCount || 0
       }
       
+      // TODO: Replace placeholder values with actual API calls when endpoints are available
       return {
         totalGrounds,
-        averageCondition: 'Good', // TODO: Get from ground conditions API
-        tasksToday: 8, // TODO: Get from tasks API
-        irrigationStatus: 'Active' // TODO: Get from irrigation system
+        averageCondition: PLACEHOLDER_STATS.averageCondition,
+        tasksToday: PLACEHOLDER_STATS.tasksToday,
+        irrigationStatus: PLACEHOLDER_STATS.irrigationStatus
       }
     } catch {
       return {
@@ -541,26 +589,29 @@ class FacilityService {
   }
 
   async getMaintenanceDashboardStats(): Promise<MaintenanceDashboardStats> {
-    // TODO: Implement when maintenance/work order endpoints are available
+    // TODO: Replace with actual API calls when maintenance/work order endpoints are available
     return {
-      openWorkOrders: 12,
-      completedToday: 5,
-      equipmentIssues: 4,
-      scheduledTasks: 8
+      openWorkOrders: PLACEHOLDER_STATS.openWorkOrders,
+      completedToday: PLACEHOLDER_STATS.completedToday,
+      equipmentIssues: PLACEHOLDER_STATS.equipmentIssues,
+      scheduledTasks: PLACEHOLDER_STATS.scheduledTasks
     }
   }
 
   async getGroundskeeperDashboardStats(): Promise<GroundskeeperDashboardStats> {
-    // TODO: Implement when groundskeeper-specific endpoints are available
+    // TODO: Replace with actual API calls when groundskeeper-specific endpoints are available
     return {
-      tasksToday: 12,
-      tasksCompleted: 5,
-      fieldsStatus: 'Good',
-      irrigationZones: 6,
-      weatherAlert: 'Clear'
+      tasksToday: PLACEHOLDER_STATS.tasksToday,
+      tasksCompleted: PLACEHOLDER_STATS.tasksCompleted,
+      fieldsStatus: PLACEHOLDER_STATS.fieldsStatus,
+      irrigationZones: PLACEHOLDER_STATS.irrigationZones,
+      weatherAlert: PLACEHOLDER_STATS.weatherAlert
     }
   }
 }
+
+// Export the config for use in dashboard components
+export { DASHBOARD_STATS_CONFIG }
 
 export const facilityService = new FacilityService()
 export default facilityService

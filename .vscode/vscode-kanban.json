@@ -213,7 +213,9 @@
         "frontend/components/admin/admin-sidebar.tsx"
       ],
       "title": "16-2 Admin panel full integration"
-    },
+    }
+  ],
+  "testing": [
     {
       "assignedTo": {
         "name": "Copilot Agent"
@@ -237,7 +239,6 @@
       "title": "16-2-1 Facility operations dashboard integration"
     }
   ],
-  "testing": [],
   "done": [
     {
       "assignedTo": {

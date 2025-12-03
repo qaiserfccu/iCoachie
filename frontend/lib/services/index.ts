@@ -28,6 +28,7 @@ export { freelancerClientsService } from './freelancerClientsService'
 export { freelancerEarningsService } from './freelancerEarningsService'
 export { freelancerProfileService } from './freelancerProfileService'
 export { default as facilityService } from './facilityService'
+export { DASHBOARD_STATS_CONFIG } from './facilityService'
 
 // Export types from services
 export type { Student } from './studentService'
