@@ -252,15 +252,16 @@ test.describe('Freelancer Sidebar', () => {
       
       await page.waitForURL('**/freelancer**', { timeout: 15000 });
       
+      // Store locator once and reuse it
+      const allBookingsLink = page.locator('aside').locator('a:has-text("All Bookings")');
+      
       // Initially submenu should be collapsed
-      let allBookingsLink = page.locator('aside a:has-text("All Bookings")');
       await expect(allBookingsLink).not.toBeVisible();
       
       // Click to expand
       await page.click('aside button:has-text("Bookings")');
       
       // Now submenu should be visible
-      allBookingsLink = page.locator('aside a:has-text("All Bookings")');
       await expect(allBookingsLink).toBeVisible();
       
       // Should see all submenu items

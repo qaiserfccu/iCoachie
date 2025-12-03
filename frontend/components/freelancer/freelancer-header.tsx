@@ -19,6 +19,17 @@ import {
 import { NotificationDrawer, useNotificationDrawer } from "@/components/ui/notification-drawer"
 
 /**
+ * API Response Types
+ * Defines the shape of responses from backend endpoints
+ */
+interface UnreadCountResponse {
+  success: boolean
+  data: {
+    unreadCount: number
+  }
+}
+
+/**
  * FreelancerHeader Component
  * 
  * Displays the header for freelancer users with notifications and user menu.
@@ -45,7 +56,7 @@ export function FreelancerHeader() {
       try {
         setIsLoadingUnread(true)
         // GET /api/messages/unread-count
-        const response = await apiClient.get<{ success: boolean; data: { unreadCount: number } }>('/messages/unread-count')
+        const response = await apiClient.get<UnreadCountResponse>('/messages/unread-count')
         if (response.success) {
           setUnreadCount(response.data.unreadCount)
         }

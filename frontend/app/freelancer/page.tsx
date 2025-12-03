@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { useToast } from "@/hooks/use-toast"
 import {
   CreditCard,
   Star,
@@ -38,6 +39,16 @@ import { useAuth } from "@/lib/contexts/AuthContext"
  *   See: backend/src/controllers/reviewController.ts
  */
 
+/**
+ * API Response Types
+ */
+interface PaginationInfo {
+  page: number
+  limit: number
+  total: number
+  pages: number
+}
+
 interface Booking {
   id: number
   sessionDate: string
@@ -51,6 +62,14 @@ interface Booking {
   freelancer: { id: number; name: string; email: string }
 }
 
+interface BookingsResponse {
+  success: boolean
+  data: {
+    bookings: Booking[]
+    pagination: PaginationInfo
+  }
+}
+
 interface Review {
   id: number
   rating: number
@@ -59,9 +78,22 @@ interface Review {
   reviewer: { id: number; name: string }
 }
 
+interface ReviewsResponse {
+  success: boolean
+  data: {
+    reviews: Review[]
+    pagination: PaginationInfo
+  }
+}
+
 interface ReviewStats {
   totalReviews: number
   averageRating: number
+}
+
+interface ReviewStatsResponse {
+  success: boolean
+  data: ReviewStats
 }
 
 interface DashboardStats {
@@ -74,6 +106,7 @@ interface DashboardStats {
 export default function FreelancerDashboard() {
   const router = useRouter()
   const { user, isLoading: isAuthLoading } = useAuth()
+  const { toast } = useToast()
   
   // Dashboard data state
   const [bookings, setBookings] = useState<Booking[]>([])
@@ -98,10 +131,7 @@ export default function FreelancerDashboard() {
         
         // Fetch bookings (as freelancer)
         // GET /api/bookings?type=as_freelancer
-        const bookingsResponse = await apiClient.get<{
-          success: boolean
-          data: { bookings: Booking[]; pagination: any }
-        }>('/bookings?type=as_freelancer&limit=10')
+        const bookingsResponse = await apiClient.get<BookingsResponse>('/bookings?type=as_freelancer&limit=10')
         
         if (bookingsResponse.success) {
           setBookings(bookingsResponse.data.bookings)
@@ -136,10 +166,7 @@ export default function FreelancerDashboard() {
         // Fetch reviews (received by current user)
         // GET /api/reviews
         try {
-          const reviewsResponse = await apiClient.get<{
-            success: boolean
-            data: { reviews: Review[]; pagination: any }
-          }>('/reviews?type=received&limit=5')
+          const reviewsResponse = await apiClient.get<ReviewsResponse>('/reviews?type=received&limit=5')
           
           if (reviewsResponse.success) {
             setReviews(reviewsResponse.data.reviews)
@@ -152,10 +179,7 @@ export default function FreelancerDashboard() {
         // Fetch review stats
         // GET /api/reviews/stats/:userId
         try {
-          const statsResponse = await apiClient.get<{
-            success: boolean
-            data: ReviewStats
-          }>(`/reviews/stats/${user.id}`)
+          const statsResponse = await apiClient.get<ReviewStatsResponse>(`/reviews/stats/${user.id}`)
           
           if (statsResponse.success) {
             setStats((prev) => ({
@@ -193,36 +217,57 @@ export default function FreelancerDashboard() {
           b.id === bookingId ? { ...b, status: { code: 'CONFIRMED', name: 'Confirmed' } } : b
         )
       )
+      
+      toast({
+        title: "Booking Accepted",
+        description: "The booking has been confirmed successfully.",
+      })
     } catch (err) {
       console.error('Failed to accept booking:', err)
-      alert('Failed to accept booking. Please try again.')
+      toast({
+        title: "Error",
+        description: "Failed to accept booking. Please try again.",
+        variant: "destructive",
+      })
     }
   }
   
   // Get user display name
   const displayName = user ? user.firstName || user.email?.split('@')[0] : 'Freelancer'
   
-  // Format booking time
+  // Format booking time - combines sessionDate with startTime for display
   const formatBookingTime = (booking: Booking): string => {
-    const date = new Date(booking.sessionDate)
-    const isToday = date.toDateString() === new Date().toDateString()
-    const isTomorrow = date.toDateString() === new Date(Date.now() + 86400000).toDateString()
+    const sessionDate = new Date(booking.sessionDate)
+    const isToday = sessionDate.toDateString() === new Date().toDateString()
+    const isTomorrow = sessionDate.toDateString() === new Date(Date.now() + 86400000).toDateString()
     
-    const time = new Date(booking.startTime).toLocaleTimeString('en-US', {
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true,
-    })
+    // startTime is expected to be a full ISO date string from backend
+    // If it's not valid, fall back to just showing the date
+    const startTimeDate = new Date(booking.startTime)
+    const timeString = isNaN(startTimeDate.getTime()) 
+      ? '' 
+      : startTimeDate.toLocaleTimeString('en-US', {
+          hour: 'numeric',
+          minute: '2-digit',
+          hour12: true,
+        })
     
-    if (isToday) return `Today, ${time}`
-    if (isTomorrow) return `Tomorrow, ${time}`
-    return `${date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}, ${time}`
+    if (isToday) return timeString ? `Today, ${timeString}` : 'Today'
+    if (isTomorrow) return timeString ? `Tomorrow, ${timeString}` : 'Tomorrow'
+    const dateStr = sessionDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+    return timeString ? `${dateStr}, ${timeString}` : dateStr
   }
   
-  // Calculate duration
+  // Calculate duration from start and end times
   const calculateDuration = (booking: Booking): string => {
     const start = new Date(booking.startTime)
     const end = new Date(booking.endTime)
+    
+    // Check if dates are valid
+    if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+      return 'N/A'
+    }
+    
     const hours = (end.getTime() - start.getTime()) / (1000 * 60 * 60)
     return hours >= 1 ? `${hours}h` : `${hours * 60}m`
   }
