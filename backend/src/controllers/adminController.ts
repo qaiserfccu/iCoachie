@@ -1,8 +1,16 @@
 import express from 'express';
 import prisma from '../db';
 import { requireAuth } from '../middleware/jwtAuth';
+import { requireRole } from '../middleware';
 
 const router = express.Router();
+
+// Define admin roles that can access these endpoints
+const ADMIN_ROLES = ['SUPER_ADMIN', 'SYSTEM_SUPPORT', 'CLUB_ADMIN'];
+
+// Define time thresholds
+const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
+const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
 
 /**
  * @swagger
@@ -20,7 +28,7 @@ const router = express.Router();
  *       403:
  *         description: Forbidden - Admin access required
  */
-router.get('/stats', requireAuth, async (req, res) => {
+router.get('/stats', requireAuth, requireRole(ADMIN_ROLES), async (req, res) => {
   try {
     // Get total users count
     const totalUsers = await prisma.user.count({
@@ -206,12 +214,12 @@ router.get('/stats', requireAuth, async (req, res) => {
  *       200:
  *         description: Pending actions
  */
-router.get('/pending', requireAuth, async (req, res) => {
+router.get('/pending', requireAuth, requireRole(ADMIN_ROLES), async (req, res) => {
   try {
     // Get pending club approvals (clubs with no verified status - approximated by recent clubs)
     const recentClubs = await prisma.club.count({
       where: {
-        createdAt: { gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) },
+        createdAt: { gte: new Date(Date.now() - THIRTY_DAYS_MS) },
         deletedAt: null
       }
     });
@@ -219,7 +227,7 @@ router.get('/pending', requireAuth, async (req, res) => {
     // Get pending coach verifications (coaches created recently without verification)
     const pendingCoaches = await prisma.user.count({
       where: {
-        createdAt: { gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) },
+        createdAt: { gte: new Date(Date.now() - THIRTY_DAYS_MS) },
         deletedAt: null,
         primaryRole: {
           code: { in: ['COACH', 'HEAD_COACH'] }
@@ -237,7 +245,7 @@ router.get('/pending', requireAuth, async (req, res) => {
     // Get support tickets (approximated by recent messages without replies)
     const supportTickets = await prisma.message.count({
       where: {
-        createdAt: { gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) }
+        createdAt: { gte: new Date(Date.now() - SEVEN_DAYS_MS) }
       }
     });
 
@@ -267,7 +275,7 @@ router.get('/pending', requireAuth, async (req, res) => {
  *       200:
  *         description: Recent activities
  */
-router.get('/activities', requireAuth, async (req, res) => {
+router.get('/activities', requireAuth, requireRole(ADMIN_ROLES), async (req, res) => {
   try {
     const activities: Array<{
       user: string;
@@ -275,6 +283,7 @@ router.get('/activities', requireAuth, async (req, res) => {
       time: string;
       avatar: string;
       type: string;
+      timestamp: Date;
     }> = [];
 
     // Get recent club registrations
@@ -295,7 +304,8 @@ router.get('/activities', requireAuth, async (req, res) => {
         action: 'submitted club registration',
         time: timeAgo,
         avatar: club.name.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase(),
-        type: 'club'
+        type: 'club',
+        timestamp: club.createdAt
       });
     }
 
@@ -322,7 +332,8 @@ router.get('/activities', requireAuth, async (req, res) => {
         action: 'completed coach verification',
         time: timeAgo,
         avatar: coach.name.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase(),
-        type: 'coach'
+        type: 'coach',
+        timestamp: coach.createdAt
       });
     }
 
@@ -348,19 +359,18 @@ router.get('/activities', requireAuth, async (req, res) => {
         action: `made a payment of $${(Number(payment.amount) / 100).toFixed(2)}`,
         time: timeAgo,
         avatar: userName.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase(),
-        type: 'payment'
+        type: 'payment',
+        timestamp: payment.createdAt
       });
     }
 
-    // Sort by time (most recent first) and take top 5
-    activities.sort((a, b) => {
-      const timeOrder = ['Just now', '1 min ago', '2 min ago', '5 min ago', '10 min ago', '15 min ago', '30 min ago', '1 hour ago', '2 hours ago', '3 hours ago'];
-      const aIndex = timeOrder.findIndex(t => a.time.includes(t.split(' ')[0]));
-      const bIndex = timeOrder.findIndex(t => b.time.includes(t.split(' ')[0]));
-      return aIndex - bIndex;
-    });
+    // Sort by timestamp (most recent first) and take top 5
+    activities.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
 
-    res.json({ activities: activities.slice(0, 5) });
+    // Remove timestamp from response (internal only)
+    const response = activities.slice(0, 5).map(({ timestamp, ...rest }) => rest);
+
+    res.json({ activities: response });
   } catch (error) {
     console.error('Error fetching activities:', error);
     res.status(500).json({ message: 'Internal error' });
@@ -379,7 +389,7 @@ router.get('/activities', requireAuth, async (req, res) => {
  *       200:
  *         description: Top clubs
  */
-router.get('/top-clubs', requireAuth, async (req, res) => {
+router.get('/top-clubs', requireAuth, requireRole(ADMIN_ROLES), async (req, res) => {
   try {
     // Get clubs with user counts (members)
     const clubs = await prisma.club.findMany({
@@ -410,11 +420,15 @@ router.get('/top-clubs', requireAuth, async (req, res) => {
       const revenue = Number(clubPayments._sum.amount || 0) / 100;
       const memberCount = club._count.users + club._count.students;
       
+      // TODO: Implement actual growth calculation by comparing current month revenue
+      // to previous month revenue for each club. For now, using placeholder value.
+      const growthPlaceholder = `+${Math.floor(Math.random() * 20) + 5}%`;
+      
       return {
         name: club.name,
         members: memberCount,
         revenue: `$${revenue.toLocaleString()}`,
-        growth: `+${Math.floor(Math.random() * 20) + 5}%` // TODO: Calculate actual growth
+        growth: growthPlaceholder
       };
     }));
 
@@ -444,7 +458,7 @@ router.get('/top-clubs', requireAuth, async (req, res) => {
  *       200:
  *         description: System health status
  */
-router.get('/health', requireAuth, async (req, res) => {
+router.get('/health', requireAuth, requireRole(ADMIN_ROLES), async (req, res) => {
   try {
     // Check database connection
     const dbStart = Date.now();
