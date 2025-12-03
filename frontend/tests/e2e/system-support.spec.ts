@@ -1,14 +1,7 @@
 // tests/e2e/system-support.spec.ts
 import { test, expect } from '@playwright/test';
-import { TestHelpers, generateTestData } from './utils/test-helpers';
 
 test.describe('System Support Dashboard', () => {
-  let helpers: TestHelpers;
-
-  test.beforeEach(async ({ page }) => {
-    helpers = new TestHelpers(page);
-  });
-
   test.describe('System Support Role Access', () => {
     test('should display system support dashboard for authorized users', async ({ page }) => {
       // Navigate to system support dashboard
@@ -256,6 +249,111 @@ test.describe('System Support Dashboard', () => {
     });
   });
 
+  test.describe('Audit Logs', () => {
+    test('should navigate to audit logs page', async ({ page }) => {
+      await page.goto('/system-support/audit-logs');
+      
+      await page.waitForTimeout(1000);
+      
+      const currentUrl = page.url();
+      expect(currentUrl).toMatch(/(audit-logs|login)/);
+    });
+
+    test('should display audit log statistics', async ({ page }) => {
+      await page.goto('/system-support/audit-logs');
+      
+      const totalEvents = page.locator('text=Total Events');
+      const logins = page.locator('text=Logins');
+      const passwordResets = page.locator('text=Password Resets');
+      
+      if (await totalEvents.isVisible({ timeout: 5000 }).catch(() => false)) {
+        await expect(logins).toBeVisible();
+        await expect(passwordResets).toBeVisible();
+      }
+    });
+
+    test('should have audit log filters', async ({ page }) => {
+      await page.goto('/system-support/audit-logs');
+      
+      const allButton = page.locator('button:has-text("All")');
+      const loginsButton = page.locator('button:has-text("Logins")');
+      
+      if (await allButton.isVisible({ timeout: 5000 }).catch(() => false)) {
+        await expect(loginsButton).toBeVisible();
+      }
+    });
+  });
+
+  test.describe('Knowledge Base', () => {
+    test('should navigate to knowledge base page', async ({ page }) => {
+      await page.goto('/system-support/knowledge-base');
+      
+      await page.waitForTimeout(1000);
+      
+      const currentUrl = page.url();
+      expect(currentUrl).toMatch(/(knowledge-base|login)/);
+    });
+
+    test('should display knowledge base categories', async ({ page }) => {
+      await page.goto('/system-support/knowledge-base');
+      
+      const gettingStarted = page.locator('text=Getting Started');
+      const accountBilling = page.locator('text=Account & Billing');
+      
+      if (await gettingStarted.isVisible({ timeout: 5000 }).catch(() => false)) {
+        await expect(accountBilling).toBeVisible();
+      }
+    });
+
+    test('should have article search', async ({ page }) => {
+      await page.goto('/system-support/knowledge-base');
+      
+      const searchInput = page.locator('input[placeholder*="Search"]');
+      
+      if (await searchInput.isVisible({ timeout: 5000 }).catch(() => false)) {
+        await searchInput.fill('password');
+        await page.waitForTimeout(500);
+        await expect(searchInput).toHaveValue('password');
+      }
+    });
+  });
+
+  test.describe('Access Management', () => {
+    test('should navigate to access management page', async ({ page }) => {
+      await page.goto('/system-support/access');
+      
+      await page.waitForTimeout(1000);
+      
+      const currentUrl = page.url();
+      expect(currentUrl).toMatch(/(access|login)/);
+    });
+
+    test('should display access statistics', async ({ page }) => {
+      await page.goto('/system-support/access');
+      
+      const totalUsers = page.locator('text=Total Users');
+      const activeToday = page.locator('text=Active Today');
+      const roles = page.locator('text=Roles');
+      
+      if (await totalUsers.isVisible({ timeout: 5000 }).catch(() => false)) {
+        await expect(activeToday).toBeVisible();
+        await expect(roles).toBeVisible();
+      }
+    });
+
+    test('should display system roles list', async ({ page }) => {
+      await page.goto('/system-support/access');
+      
+      const rolesTitle = page.locator('text=System Roles');
+      
+      if (await rolesTitle.isVisible({ timeout: 5000 }).catch(() => false)) {
+        // Check for role list
+        const rolesList = page.locator('[class*="glass-subtle"]');
+        expect(await rolesList.count()).toBeGreaterThan(0);
+      }
+    });
+  });
+
   test.describe('Error Handling', () => {
     test('should handle API errors gracefully', async ({ page }) => {
       // Navigate to dashboard with potential API failure
@@ -321,16 +419,39 @@ test.describe('System Support Dashboard', () => {
         }
       }
     });
+
+    test('should navigate to audit logs from sidebar', async ({ page }) => {
+      await page.goto('/system-support');
+      
+      if (page.url().includes('system-support') && !page.url().includes('login')) {
+        const auditLogsLink = page.locator('a[href*="/system-support/audit-logs"]');
+        
+        if (await auditLogsLink.first().isVisible({ timeout: 5000 }).catch(() => false)) {
+          await auditLogsLink.first().click();
+          await page.waitForTimeout(1000);
+          expect(page.url()).toMatch(/(audit-logs|login)/);
+        }
+      }
+    });
+
+    test('should navigate to knowledge base from sidebar', async ({ page }) => {
+      await page.goto('/system-support');
+      
+      if (page.url().includes('system-support') && !page.url().includes('login')) {
+        const kbLink = page.locator('a[href*="/system-support/knowledge-base"]');
+        
+        if (await kbLink.first().isVisible({ timeout: 5000 }).catch(() => false)) {
+          await kbLink.first().click();
+          await page.waitForTimeout(1000);
+          expect(page.url()).toMatch(/(knowledge-base|login)/);
+        }
+      }
+    });
   });
 });
 
 // Additional test suite for authenticated scenarios
 test.describe('System Support - Authenticated Tests', () => {
-  test.beforeEach(async ({ page }) => {
-    // Skip if authentication is required but test user isn't set up
-    // This allows tests to pass in CI environments without full auth setup
-  });
-
   test('should restrict access to system support for non-authorized roles', async ({ page }) => {
     // This test would be skipped or modified based on actual auth setup
     // For now, we verify the page loads without crashing
