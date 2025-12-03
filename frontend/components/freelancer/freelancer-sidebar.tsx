@@ -4,6 +4,7 @@ import { useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
+import { useAuth } from "@/lib/contexts/AuthContext"
 import {
   LayoutDashboard,
   Calendar,
@@ -19,6 +20,7 @@ import {
   BarChart3,
   Briefcase,
   Clock,
+  Loader2,
 } from "lucide-react"
 import LogoutButton from '@/components/ui/LogoutButton'
 
@@ -70,16 +72,38 @@ const bottomItems = [
   { icon: HelpCircle, label: "Help", href: "/freelancer/help" },
 ]
 
+/**
+ * FreelancerSidebar Component
+ * 
+ * Displays the navigation sidebar for freelancer users.
+ * User profile data is fetched from the backend via AuthContext.
+ * 
+ * Backend Endpoints Used:
+ * - GET /api/users/me - Fetches current user profile (via AuthContext)
+ *   See: backend/src/controllers/userController.ts
+ */
 export function FreelancerSidebar() {
   const [collapsed, setCollapsed] = useState(false)
   const [openMenus, setOpenMenus] = useState<string[]>([])
   const pathname = usePathname()
+  
+  // User data from AuthContext (fetched from GET /api/users/me)
+  const { user, isLoading } = useAuth()
 
   const toggleMenu = (label: string) => {
     setOpenMenus((prev) => (prev.includes(label) ? prev.filter((l) => l !== label) : [...prev, label]))
   }
 
   const isActive = (href: string) => pathname === href || pathname.startsWith(href + "/")
+  
+  // Get display name from user profile or fallback
+  const displayName = user ? `${user.firstName} ${user.lastName}`.trim() || user.email : 'Freelancer'
+  const roleLabel = user?.role?.name || 'Freelance Coach'
+  
+  // Generate initials for avatar fallback
+  const initials = user 
+    ? `${user.firstName?.charAt(0) || ''}${user.lastName?.charAt(0) || ''}`.toUpperCase() || user.email?.charAt(0)?.toUpperCase() || 'F'
+    : 'F'
 
   return (
     <>
@@ -92,12 +116,25 @@ export function FreelancerSidebar() {
         <div className="flex items-center justify-between p-4 border-b border-white/20">
           <Link href="/freelancer" className={cn("flex items-center gap-2", collapsed && "justify-center")}>
             <div className="w-10 h-10 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg">
-              <Briefcase className="w-5 h-5 text-white" />
+              {isLoading ? (
+                <Loader2 className="w-5 h-5 text-white animate-spin" />
+              ) : (
+                <span className="text-white text-sm font-semibold">{initials}</span>
+              )}
             </div>
             {!collapsed && (
               <div>
-                <span className="text-lg font-bold text-foreground">Mike Johnson</span>
-                <span className="block text-xs text-muted-foreground">Freelance Coach</span>
+                {isLoading ? (
+                  <>
+                    <span className="text-lg font-bold text-foreground">Loading...</span>
+                    <span className="block text-xs text-muted-foreground">Please wait</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="text-lg font-bold text-foreground">{displayName}</span>
+                    <span className="block text-xs text-muted-foreground">{roleLabel}</span>
+                  </>
+                )}
               </div>
             )}
           </Link>
