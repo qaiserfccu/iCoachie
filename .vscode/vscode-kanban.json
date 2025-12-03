@@ -45,6 +45,26 @@
         "name": "Copilot Agent"
       },
       "category": "integration",
+      "creation_time": "2025-12-03T00:00:00.000Z",
+      "description": {
+        "content": "Complete frontend-backend integration for login, register, and admin dashboard pages with working e2e tests.",
+        "mime": "text/markdown"
+      },
+      "details": {
+        "content": "# 16-1 Frontend-Backend Integration (Card 16)\n\n## Scope\n- Update frontend auth service to use real backend endpoints instead of mock data\n- Implement real API integration for login, register, and admin dashboard pages\n- Replace mock user credentials with actual backend authentication\n- Connect admin dashboard to real payment stats, clubs, activities, and pending actions\n\n## Tasks\n1. Update `frontend/lib/services/api/auth.ts` to call backend `/api/auth/login` and `/api/auth/register`\n2. Modify login page to handle real authentication responses and errors\n3. Update register page to submit to backend and handle validation\n4. Connect admin dashboard to `/api/payments/stats/overview` for stats\n5. Connect to `/api/clubs` for top clubs data\n6. Implement endpoints for recent activities and pending actions (or derive from existing)\n7. Add system health endpoint if needed\n8. Implement proper error handling and loading states\n9. Add JWT token persistence and refresh logic\n\n## Mock Services to Replace in Admin Dashboard\n- `adminStats` → `/api/payments/stats/overview` (extend if needed for all stats)\n- `adminTopClubs` → `/api/clubs` (with sorting/filtering for top performers)\n- `adminRecentActivities` → New endpoint `/api/admin/activities` or aggregate from existing\n- `adminPendingActions` → Derive from counts in various endpoints or new `/api/admin/pending`\n- System health → New endpoint `/api/admin/health` or static for now\n\n## Acceptance Criteria\n- Working e2e tests pass for login, register, and admin dashboard functionality\n- Users can successfully register, login, and access admin dashboard with real data\n- Authentication state persists across page reloads\n- Error messages display correctly for invalid credentials or network issues\n- Admin dashboard shows real data from backend APIs\n\n## Dependencies\n- Backend endpoints implemented and tested\n- Authentication flow working end-to-end",
+        "mime": "text/markdown"
+      },
+      "id": "16-1",
+      "prio": 9,
+      "references": [],
+      "title": "16-1 Frontend-Backend Integration (Card 16)",
+      "type": "task"
+    },
+    {
+      "assignedTo": {
+        "name": "Copilot Agent"
+      },
+      "category": "integration",
       "creation_time": "2025-12-02T00:00:00.000Z",
       "description": {
         "content": "Ensure frontend has all necessary backend endpoints and author integration tests covering the full stack.",
@@ -57,49 +77,32 @@
       "id": "16",
       "prio": 9,
       "references": [],
-      "title": "16 - Frontend/backend integration readiness",
-      "type": "note"
+      "title": "16 - Frontend/backend integration readiness"
     }
   ],
   "in-progress": [
     {
       "assignedTo": {
-        "name": "Cloud Copilot Agent"
+        "name": "Copilot Agent"
       },
       "category": "frontend",
       "creation_time": "2025-12-02T00:00:00.000Z",
       "description": {
-        "content": "Implement any missing frontend screens per role/permission matrix, focusing on UI only (no integration).",
+        "content": "Complete full backend integration for all admin panel routes defined in admin-sidebar.tsx, replacing all mock services with backend API calls or creating backend mock methods where APIs don't exist yet.",
         "mime": "text/markdown"
       },
       "details": {
-        "content": "# Task 5 - Build Remaining Frontend Screens (Priority 8)\n\n## Scope\n- Audit existing React/Next screens vs UX flows.\n- For each role (22 total), list mandatory screens/components (dashboards, management views, forms).\n- Implement missing UI following established folder/file conventions and design system.\n- Use mock data/services to decouple from backend.\n\n## Acceptance Criteria\n1. Inventory document mapping role -> required screens/components.\n2. New screens committed with Storybook stories (if applicable).\n3. Feature flag or routing guard ensures only relevant roles can access their screens.\n4. UI adheres to design tokens and responsive guidelines.\n5. QA review sign-off for visual parity with design mocks.",
+        "content": "# 16-2 Admin Panel Full Integration\n\n## Context\n- Admin sidebar defines 20+ routes requiring backend integration\n- Current admin dashboard uses mock data from mockDataService\n- Need comprehensive integration plan covering all admin routes\n- Strict policy: no frontend mocks allowed - must use backend APIs or create backend mock methods\n\n## Admin Routes to Integrate\n\n### User Management\n- `/admin/users` - User CRUD, role assignment, status management\n- `/admin/roles` - Role management and permissions\n- `/admin/permissions` - Permission assignment and management\n\n### Club Management\n- `/admin/clubs` - Club CRUD, membership management\n\n### Staff Management\n- `/admin/coaches` - Coach management and assignments\n- `/admin/students` - Student management and enrollments\n\n### Operations\n- `/admin/sessions` - Session scheduling and management\n- `/admin/attendance` - Attendance tracking and reporting\n- `/admin/evaluations` - Performance evaluations\n- `/admin/bookings` - Booking management\n\n### Financial\n- `/admin/payments` - Payment processing and history\n\n### Infrastructure\n- `/admin/facilities` - Facility/venue/ground management\n\n### Analytics & Reporting\n- `/admin/analytics` - Platform analytics and metrics\n- `/admin/reports` - Custom reports and exports\n\n### System Administration\n- `/admin/settings` - System configuration\n- `/admin/notifications` - Notification management\n- `/admin/support` - Support ticket management\n- `/admin/audit-logs` - Audit trail viewing\n- `/admin/system-health` - System monitoring\n- `/admin/backups` - Backup management\n\n## Implementation Strategy\n\n### For Each Route:\n1. **Identify Required Backend APIs**\n   - Review existing endpoints in global-endpoint-matrix.md\n   - Map frontend data needs to backend contracts\n   - Identify gaps where APIs don't exist\n\n2. **Replace Mock Services**\n   - Remove imports from `frontend/lib/services/mockDataService.ts`\n   - Update components to use real API services\n   - Ensure proper error handling and loading states\n\n3. **Create Missing Backend APIs**\n   - For routes without backend support, create mock methods in backend controllers\n   - Add TODO comments indicating these are temporary mocks\n   - Follow existing controller patterns and RBAC\n\n4. **Update Frontend Services**\n   - Extend `frontend/lib/api.ts` and service files as needed\n   - Ensure consistent error handling and response formatting\n   - Add proper TypeScript interfaces\n\n## Acceptance Criteria\n- ✅ All admin routes successfully load without frontend mock data\n- ✅ All API calls use backend endpoints (real or mock methods)\n- ✅ No remaining imports from mockDataService in admin components\n- ✅ Successful e2e tests covering all admin routes\n- ✅ Proper error handling and loading states implemented\n- ✅ RBAC properly enforced on all admin endpoints\n\n## Testing Requirements\n- E2e test suite covering navigation to all admin routes\n- API integration tests for each route's data fetching\n- Error scenario testing (unauthorized access, network failures)\n- Performance testing for data-heavy routes\n\n## Dependencies\n- Card 16-1 (Admin Dashboard Integration)\n- `docs/backend/global-endpoint-matrix.md` for API mapping\n- `frontend/components/admin/admin-sidebar.tsx` for route definitions\n- Backend controllers for each domain",
         "mime": "text/markdown"
       },
-      "id": "15",
-      "prio": 8,
-      "references": [],
-      "title": "15 - Frontend screen completion"
-    },
-    {
-      "assignedTo": {
-        "name": "Copilot Agent"
-      },
-      "category": "documentation",
-      "creation_time": "2025-12-02T00:00:00.000Z",
-      "description": {
-        "content": "Update Swagger, OpenAPI, and Postman artifacts so every request/response structure reflects the latest backend contract.",
-        "mime": "text/markdown"
-      },
-      "details": {
-        "content": "# Task 2 - API Contract Sync (Priority 5)\n\n## Scope\n- Swagger YAML/JSON hosted in repo\n- OpenAPI spec consumed by tooling\n- Postman collection shared with frontend QA\n\n## Deliverables\n1. Regenerated or manually updated Swagger/OpenAPI spec capturing all new endpoints, parameters, enums, and response schemas.\n2. Postman collection with folders per domain (Auth, Facilities, Venues, Grounds, RBAC) including sample environments and tests.\n3. Change log summarizing contract updates and any deprecations sent to frontend + QA.\n4. Validation step using `swagger-cli validate` or equivalent to ensure specs compile.\n5. Commit/PR referencing updated artifacts and linking to acceptance review from frontend lead.\n\n## Steps\n- Diff current controllers vs spec to spot mismatches.\n- Add missing schema components (FacilityResponse, VenuePayload, etc.).\n- Document auth headers, pagination/query params, error envelopes.\n- Export validated Postman JSON and place under `/docs/postman`.\n- Update README with instructions for importing the refreshed collection.",
-        "mime": "text/markdown"
-      },
-      "id": "12",
-      "prio": 5,
-      "references": [],
-      "title": "12 - Refresh API docs (Swagger/Postman/OpenAPI)",
-      "type": "note"
+      "id": "16-2",
+      "prio": 10,
+      "references": [
+        "16-1",
+        "docs/backend/global-endpoint-matrix.md",
+        "frontend/components/admin/admin-sidebar.tsx"
+      ],
+      "title": "16-2 Admin panel full integration"
     }
   ],
   "testing": [],
@@ -250,6 +253,45 @@
     },
     {
       "assignedTo": {
+        "name": "Cloud Copilot Agent"
+      },
+      "category": "frontend",
+      "creation_time": "2025-12-02T00:00:00.000Z",
+      "description": {
+        "content": "Implement any missing frontend screens per role/permission matrix, focusing on UI only (no integration).",
+        "mime": "text/markdown"
+      },
+      "details": {
+        "content": "# Task 5 - Build Remaining Frontend Screens (Priority 8)\n\n## Scope\n- Audit existing React/Next screens vs UX flows.\n- For each role (22 total), list mandatory screens/components (dashboards, management views, forms).\n- Implement missing UI following established folder/file conventions and design system.\n- Use mock data/services to decouple from backend.\n\n## Acceptance Criteria\n1. Inventory document mapping role -> required screens/components.\n2. New screens committed with Storybook stories (if applicable).\n3. Feature flag or routing guard ensures only relevant roles can access their screens.\n4. UI adheres to design tokens and responsive guidelines.\n5. QA review sign-off for visual parity with design mocks.",
+        "mime": "text/markdown"
+      },
+      "id": "15",
+      "prio": 8,
+      "references": [],
+      "title": "15 - Frontend screen completion"
+    },
+    {
+      "assignedTo": {
+        "name": "Cloud Copilot Agent"
+      },
+      "category": "testing",
+      "creation_time": "2025-12-02T00:00:00.000Z",
+      "description": {
+        "content": "Develop comprehensive unit-test coverage for backend services/controllers and ensure they run in CI.",
+        "mime": "text/markdown"
+      },
+      "details": {
+        "content": "# Task 4 - Backend Unit Test Coverage (Priority 7)\n\n## Goals\n- Identify critical modules lacking unit tests (middleware, utils, controllers).\n- Write focused unit specs with dependency mocks.\n- Achieve agreed code coverage threshold (e.g., 80%).\n- Integrate coverage reports into CI and code review gates.\n\n## Checklist\n1. Coverage audit report attached to ticket.\n2. Test plan per module (what to mock, expected inputs/outputs).\n3. New tests committed with descriptive names.\n4. Coverage badge updated in README.\n5. Failing tests in CI block merges.\n\n## Deliverables\n- `npm run test:unit` script.\n- Coverage reports uploaded (lcov + HTML).\n- Documentation for running tests locally.",
+        "mime": "text/markdown"
+      },
+      "id": "14",
+      "prio": 7,
+      "references": [],
+      "title": "14 - Backend unit test expansion",
+      "type": "bug"
+    },
+    {
+      "assignedTo": {
         "name": "Copilot Agent"
       },
       "category": "rbac",
@@ -325,6 +367,26 @@
       "prio": 6,
       "references": [],
       "title": "Implement role-based access control middleware",
+      "type": "note"
+    },
+    {
+      "assignedTo": {
+        "name": "Copilot Agent"
+      },
+      "category": "documentation",
+      "creation_time": "2025-12-02T00:00:00.000Z",
+      "description": {
+        "content": "Update Swagger, OpenAPI, and Postman artifacts so every request/response structure reflects the latest backend contract.",
+        "mime": "text/markdown"
+      },
+      "details": {
+        "content": "# Task 2 - API Contract Sync (Priority 5)\n\n## Scope\n- Swagger YAML/JSON hosted in repo\n- OpenAPI spec consumed by tooling\n- Postman collection shared with frontend QA\n\n## Deliverables\n1. Regenerated or manually updated Swagger/OpenAPI spec capturing all new endpoints, parameters, enums, and response schemas.\n2. Postman collection with folders per domain (Auth, Facilities, Venues, Grounds, RBAC) including sample environments and tests.\n3. Change log summarizing contract updates and any deprecations sent to frontend + QA.\n4. Validation step using `swagger-cli validate` or equivalent to ensure specs compile.\n5. Commit/PR referencing updated artifacts and linking to acceptance review from frontend lead.\n\n## Steps\n- Diff current controllers vs spec to spot mismatches.\n- Add missing schema components (FacilityResponse, VenuePayload, etc.).\n- Document auth headers, pagination/query params, error envelopes.\n- Export validated Postman JSON and place under `/docs/postman`.\n- Update README with instructions for importing the refreshed collection.",
+        "mime": "text/markdown"
+      },
+      "id": "12",
+      "prio": 5,
+      "references": [],
+      "title": "12 - Refresh API docs (Swagger/Postman/OpenAPI)",
       "type": "note"
     },
     {
@@ -478,26 +540,6 @@
         "24"
       ],
       "title": "11 - Global backend endpoint verification"
-    },
-    {
-      "assignedTo": {
-        "name": "Cloud Copilot Agent"
-      },
-      "category": "testing",
-      "creation_time": "2025-12-02T00:00:00.000Z",
-      "description": {
-        "content": "Develop comprehensive unit-test coverage for backend services/controllers and ensure they run in CI.",
-        "mime": "text/markdown"
-      },
-      "details": {
-        "content": "# Task 4 - Backend Unit Test Coverage (Priority 7)\n\n## Goals\n- Identify critical modules lacking unit tests (middleware, utils, controllers).\n- Write focused unit specs with dependency mocks.\n- Achieve agreed code coverage threshold (e.g., 80%).\n- Integrate coverage reports into CI and code review gates.\n\n## Checklist\n1. Coverage audit report attached to ticket.\n2. Test plan per module (what to mock, expected inputs/outputs).\n3. New tests committed with descriptive names.\n4. Coverage badge updated in README.\n5. Failing tests in CI block merges.\n\n## Deliverables\n- `npm run test:unit` script.\n- Coverage reports uploaded (lcov + HTML).\n- Documentation for running tests locally.",
-        "mime": "text/markdown"
-      },
-      "id": "14",
-      "prio": 7,
-      "references": [],
-      "title": "14 - Backend unit test expansion",
-      "type": "bug"
     }
   ]
 }
