@@ -27,6 +27,12 @@ export { default as freelancerBookingsService } from './freelancerBookingsServic
 export { freelancerClientsService } from './freelancerClientsService'
 export { freelancerEarningsService } from './freelancerEarningsService'
 export { freelancerProfileService } from './freelancerProfileService'
+export { 
+  bookingsCoordinatorService, 
+  frontDeskService, 
+  accountantService,
+  getOperationsStatusColor
+} from './operationsService'
 
 // Export types from services
 export type { Student } from './studentService'
@@ -36,3 +42,16 @@ export type { Status, UserStatus, SessionStatus, AttendanceStatus, PaymentStatus
 export type { DashboardStats, DashboardSession, DashboardAttendance } from './dashboardService'
 export type { PaymentTransaction, PaymentStats } from './clubPaymentsService'
 export type { CalendarSession, UpcomingSession, SessionStats } from './clubSessionsService'
+export type {
+  OperationsBooking,
+  BookingsCoordinatorStats,
+  BookingTask,
+  FrontDeskStats,
+  FrontDeskSession,
+  FrontDeskCheckin,
+  AccountantStats,
+  AccountantTransaction,
+  AccountantInvoice,
+  FinancialStats,
+  MonthlyCollectionProgress
+} from './operationsService'

@@ -133,28 +133,6 @@
       "category": "integration",
       "creation_time": "2025-12-03T00:00:00.000Z",
       "description": {
-        "content": "Complete full backend integration for operations dashboards (BOOKINGS_COORDINATOR, FRONT_DESK, ACCOUNTANT) covering bookings, front desk operations, and financial management.",
-        "mime": "text/markdown"
-      },
-      "details": {
-        "content": "# 16-2-2 Operations Dashboard Integration\n\n## Context\n- Operations roles (BOOKINGS_COORDINATOR, FRONT_DESK, ACCOUNTANT) need dedicated dashboards\n- Current dashboards likely use mock data from mockDataService\n- Need comprehensive integration plan covering operational workflows\n- Strict policy: no frontend mocks allowed - must use backend APIs or create backend mock methods\n\n## Operations Routes to Integrate\n\n### Bookings Coordination\n- `/operations/dashboard` - Operations overview with key metrics\n- `/operations/bookings` - Booking management and coordination\n- `/operations/schedule` - Facility scheduling and availability\n- `/operations/conflicts` - Booking conflict resolution\n\n### Front Desk Operations\n- `/operations/checkin` - Member check-in and attendance tracking\n- `/operations/visitors` - Visitor management and logging\n- `/operations/incidents` - Incident reporting and handling\n\n### Financial Operations\n- `/operations/payments` - Payment processing and tracking\n- `/operations/invoices` - Invoice generation and management\n- `/operations/financials` - Financial reporting and analytics\n\n### Analytics & Reporting\n- `/operations/analytics` - Operational metrics and KPIs\n- `/operations/reports` - Custom operational reports\n\n## Implementation Strategy\n\n### For Each Route:\n1. **Identify Required Backend APIs**\n   - Review existing endpoints in global-endpoint-matrix.md\n   - Map frontend data needs to backend contracts with operations scoping\n   - Identify gaps where APIs don't exist\n\n2. **Replace Mock Services**\n   - Remove imports from `frontend/lib/services/mockDataService.ts`\n   - Update components to use real API services\n   - Ensure proper error handling and loading states\n\n3. **Create Missing Backend APIs**\n   - For routes without backend support, create mock methods in backend controllers\n   - Add TODO comments indicating these are temporary mocks\n   - Follow existing controller patterns and RBAC with appropriate operations roles\n\n4. **Update Frontend Services**\n   - Extend `frontend/lib/api.ts` and service files as needed\n   - Ensure consistent error handling and response formatting\n   - Add proper TypeScript interfaces\n\n## Acceptance Criteria\n- ✅ All operations routes successfully load without frontend mock data\n- ✅ All API calls use backend endpoints (real or mock methods) with proper operations scoping\n- ✅ No remaining imports from mockDataService in operations components\n- ✅ Successful e2e tests covering all operations routes\n- ✅ Proper error handling and loading states implemented\n- ✅ RBAC properly enforced for BOOKINGS_COORDINATOR/FRONT_DESK/ACCOUNTANT roles\n\n## Testing Requirements\n- E2e test suite covering navigation to all operations routes\n- API integration tests for each route's data fetching with operations scoping\n- Error scenario testing (unauthorized access, network failures)\n- Performance testing for data-heavy routes\n\n## Dependencies\n- Card 16-2 (Admin Panel Integration)\n- `docs/backend/global-endpoint-matrix.md` for API mapping\n- Frontend operations dashboard components (likely in `app/(dashboard)/operations/`)\n- Backend controllers with operations role RBAC",
-        "mime": "text/markdown"
-      },
-      "id": "16-2-2",
-      "prio": 11,
-      "references": [
-        "16-2",
-        "docs/backend/global-endpoint-matrix.md"
-      ],
-      "title": "16-2-2 Operations dashboard integration"
-    },
-    {
-      "assignedTo": {
-        "name": "Copilot Agent"
-      },
-      "category": "integration",
-      "creation_time": "2025-12-03T00:00:00.000Z",
-      "description": {
         "content": "Complete full backend integration for content and medical dashboards (CONTENT_MANAGER, MEDICAL_STAFF) covering content management and medical services.",
         "mime": "text/markdown"
       },
