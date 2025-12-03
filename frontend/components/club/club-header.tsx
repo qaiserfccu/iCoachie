@@ -1,6 +1,8 @@
 "use client"
 
 import { Bell, Search, Menu } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { useAuth } from "@/lib/contexts/AuthContext"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -19,6 +21,9 @@ export function ClubHeader() {
   const notificationDrawer = useNotificationDrawer()
   const user = mockUsers.clubAdmin
   const unreadCount = getUnreadNotificationCount()
+  const { logout } = useAuth()
+  const router = useRouter()
+  const handleLogout = async () => { try { await logout(); router.push('/login') } catch (_) { router.push('/login') } }
 
   return (
     <>
@@ -74,7 +79,7 @@ export function ClubHeader() {
                 <DropdownMenuItem>Settings</DropdownMenuItem>
                 <DropdownMenuItem>Billing</DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="text-destructive">Log out</DropdownMenuItem>
+                <DropdownMenuItem className="text-destructive" onClick={handleLogout}>Log out</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>

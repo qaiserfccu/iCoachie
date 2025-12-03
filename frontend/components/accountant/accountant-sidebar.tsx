@@ -13,7 +13,6 @@ import {
   CreditCard,
   ChevronLeft,
   ChevronDown,
-  LogOut,
   HelpCircle,
   Settings,
   Globe,

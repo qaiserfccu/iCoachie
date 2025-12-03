@@ -12,7 +12,6 @@ import {
   ShoppingCart,
   Trash2,
   ChevronLeft,
-  LogOut,
   HelpCircle,
   Settings,
   Globe,

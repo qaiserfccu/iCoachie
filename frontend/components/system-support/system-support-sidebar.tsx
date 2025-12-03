@@ -13,7 +13,6 @@ import {
   FileText,
   ChevronLeft,
   ChevronDown,
-  LogOut,
   HelpCircle,
   Wrench,
   Globe,

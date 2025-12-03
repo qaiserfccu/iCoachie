@@ -11,7 +11,6 @@ import {
   AlertTriangle,
   Stethoscope,
   ChevronLeft,
-  LogOut,
   HelpCircle,
   Settings,
   Globe,

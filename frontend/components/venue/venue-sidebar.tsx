@@ -12,7 +12,6 @@ import {
   Star,
   DollarSign,
   ChevronLeft,
-  LogOut,
   HelpCircle,
   Settings,
   Globe,

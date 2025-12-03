@@ -11,7 +11,6 @@ import {
   ClipboardCheck,
   MessageSquare,
   ChevronLeft,
-  LogOut,
   HelpCircle,
   Settings,
   Globe,

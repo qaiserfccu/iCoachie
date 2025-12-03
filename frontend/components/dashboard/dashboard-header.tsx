@@ -12,6 +12,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Bell, Search, Menu, Plus, User, Settings, LogOut } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { useAuth } from "@/lib/contexts/AuthContext"
 import { NotificationDrawer, useNotificationDrawer } from "@/components/ui/notification-drawer"
 import { mockUsers, getUnreadNotificationCount } from "@/lib/services/mockDataService"
 
@@ -23,12 +25,25 @@ export function DashboardHeader() {
   const user = mockUsers.coach
   const unreadCount = getUnreadNotificationCount()
 
+  const { logout } = useAuth()
+  const router = useRouter()
+
+  const handleLogout = async () => {
+    try {
+      await logout()
+      router.push('/login')
+    } catch (err) {
+      router.push('/login')
+    }
+  }
+
   return (
     <>
       <header className="sticky top-0 z-30 bg-card/95 backdrop-blur-sm border-b border-border">
         <div className="flex items-center justify-between px-4 lg:px-6 h-16">
           <div className="flex items-center gap-4">
             <button
+              aria-label="Toggle menu"
               className="lg:hidden p-2 rounded-lg hover:bg-muted"
               onClick={() => setShowMobileMenu(!showMobileMenu)}
             >
@@ -83,7 +98,7 @@ export function DashboardHeader() {
                   Settings
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="text-destructive">
+                <DropdownMenuItem className="text-destructive" onClick={handleLogout}>
                   <LogOut className="w-4 h-4 mr-2" />
                   Log out
                 </DropdownMenuItem>

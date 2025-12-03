@@ -12,7 +12,6 @@ import {
   BarChart3,
   UserCog,
   ChevronLeft,
-  LogOut,
   HelpCircle,
   Settings,
   Globe,

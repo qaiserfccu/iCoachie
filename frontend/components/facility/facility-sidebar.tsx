@@ -4,7 +4,7 @@ import { useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
-import { LayoutDashboard, Building2, MapPin, Users, Wrench, Package, Calendar, ChevronLeft, ChevronDown, LogOut, HelpCircle, Settings, Globe } from "lucide-react"
+import { LayoutDashboard, Building2, MapPin, Users, Wrench, Package, Calendar, ChevronLeft, ChevronDown, HelpCircle, Settings, Globe } from "lucide-react"
 import LogoutButton from '@/components/ui/LogoutButton'
 
 const menuItems = [

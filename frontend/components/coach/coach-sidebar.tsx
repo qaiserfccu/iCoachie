@@ -14,7 +14,6 @@ import {
   MessageSquare,
   Settings,
   HelpCircle,
-  LogOut,
   ChevronLeft,
   ChevronDown,
   Bell,

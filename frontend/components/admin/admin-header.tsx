@@ -2,6 +2,8 @@
 
 import { useState } from "react"
 import { Bell, Search, Menu, Moon, Sun } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { useAuth } from "@/lib/contexts/AuthContext"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -17,6 +19,9 @@ import { NotificationDrawer, useNotificationDrawer } from "@/components/ui/notif
 import { mockUsers, getUnreadNotificationCount } from "@/lib/services/mockDataService"
 
 export function AdminHeader() {
+  const { logout } = useAuth()
+  const router = useRouter()
+  const handleLogout = async () => { try { await logout(); router.push('/login') } catch (_) { router.push('/login') } }
   const [isDark, setIsDark] = useState(false)
   const notificationDrawer = useNotificationDrawer()
   
@@ -81,7 +86,7 @@ export function AdminHeader() {
                 <DropdownMenuItem>Profile Settings</DropdownMenuItem>
                 <DropdownMenuItem>Activity Log</DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="text-destructive">Log out</DropdownMenuItem>
+                <DropdownMenuItem className="text-destructive" onClick={handleLogout}>Log out</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>

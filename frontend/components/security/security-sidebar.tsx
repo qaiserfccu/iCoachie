@@ -12,7 +12,6 @@ import {
   Users,
   Siren,
   ChevronLeft,
-  LogOut,
   HelpCircle,
   Settings,
   Globe,

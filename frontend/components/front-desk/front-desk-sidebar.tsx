@@ -12,7 +12,6 @@ import {
   ClipboardList,
   ChevronLeft,
   ChevronDown,
-  LogOut,
   HelpCircle,
   Settings,
   Globe,

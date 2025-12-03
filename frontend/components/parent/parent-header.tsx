@@ -1,6 +1,8 @@
 "use client"
 
 import { Bell, Search, Menu } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { useAuth } from "@/lib/contexts/AuthContext"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -14,6 +16,11 @@ import {
 } from "@/components/ui/dropdown-menu"
 
 export function ParentHeader() {
+  const { logout } = useAuth()
+  const router = useRouter()
+  const handleLogout = async () => {
+    try { await logout(); router.push('/login') } catch (_) { router.push('/login') }
+  }
   return (
     <header className="sticky top-0 z-30 glass border-b border-white/20">
       <div className="flex items-center justify-between h-16 px-4 lg:px-6">
@@ -80,7 +87,7 @@ export function ParentHeader() {
               <DropdownMenuItem>Settings</DropdownMenuItem>
               <DropdownMenuItem>Payments</DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-destructive">Log out</DropdownMenuItem>
+              <DropdownMenuItem className="text-destructive" onClick={handleLogout}>Log out</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

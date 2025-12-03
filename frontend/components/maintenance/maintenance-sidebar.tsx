@@ -12,7 +12,6 @@ import {
   Building2,
   BarChart3,
   ChevronLeft,
-  LogOut,
   HelpCircle,
   Settings,
   Globe,

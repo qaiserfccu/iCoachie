@@ -12,7 +12,6 @@ import {
   Bug,
   Calendar,
   ChevronLeft,
-  LogOut,
   HelpCircle,
   Settings,
   Globe,

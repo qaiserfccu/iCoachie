@@ -12,7 +12,6 @@ import {
   Users,
   FileText,
   ChevronLeft,
-  LogOut,
   HelpCircle,
   Settings,
   Globe,

@@ -12,7 +12,6 @@ import {
   BarChart3,
   Wrench,
   ChevronLeft,
-  LogOut,
   HelpCircle,
   Settings,
   Globe,
