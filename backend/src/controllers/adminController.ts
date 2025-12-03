@@ -407,8 +407,17 @@ router.get('/top-clubs', requireAuth, requireRole(ADMIN_ROLES), async (req, res)
     });
 
     // Calculate revenue per club (from payments of club members)
+    const startOfMonth = new Date();
+    startOfMonth.setDate(1);
+    startOfMonth.setHours(0, 0, 0, 0);
+    
+    const startOfLastMonth = new Date(startOfMonth);
+    startOfLastMonth.setMonth(startOfLastMonth.getMonth() - 1);
+    const endOfLastMonth = new Date(startOfMonth);
+    endOfLastMonth.setMilliseconds(-1);
+    
     const topClubs = await Promise.all(clubs.map(async (club) => {
-      // Get payments from users in this club
+      // Get total revenue from users in this club
       const clubPayments = await prisma.payment.aggregate({
         where: {
           user: { clubId: club.id },
@@ -417,18 +426,46 @@ router.get('/top-clubs', requireAuth, requireRole(ADMIN_ROLES), async (req, res)
         _sum: { amount: true }
       });
 
+      // Get current month revenue
+      const currentMonthPayments = await prisma.payment.aggregate({
+        where: {
+          user: { clubId: club.id },
+          status: { code: 'COMPLETED' },
+          createdAt: { gte: startOfMonth }
+        },
+        _sum: { amount: true }
+      });
+
+      // Get last month revenue
+      const lastMonthPayments = await prisma.payment.aggregate({
+        where: {
+          user: { clubId: club.id },
+          status: { code: 'COMPLETED' },
+          createdAt: { gte: startOfLastMonth, lte: endOfLastMonth }
+        },
+        _sum: { amount: true }
+      });
+
       const revenue = Number(clubPayments._sum.amount || 0) / 100;
       const memberCount = club._count.users + club._count.students;
       
-      // TODO: Implement actual growth calculation by comparing current month revenue
-      // to previous month revenue for each club. For now, using placeholder value.
-      const growthPlaceholder = `+${Math.floor(Math.random() * 20) + 5}%`;
+      const currentMonthRevenue = Number(currentMonthPayments._sum.amount || 0);
+      const lastMonthRevenue = Number(lastMonthPayments._sum.amount || 0);
+      
+      // Calculate actual growth percentage
+      let growth = '0%';
+      if (lastMonthRevenue > 0) {
+        const growthPercent = ((currentMonthRevenue - lastMonthRevenue) / lastMonthRevenue * 100).toFixed(0);
+        growth = `${parseFloat(growthPercent) >= 0 ? '+' : ''}${growthPercent}%`;
+      } else if (currentMonthRevenue > 0) {
+        growth = '+100%';
+      }
       
       return {
         name: club.name,
         members: memberCount,
         revenue: `$${revenue.toLocaleString()}`,
-        growth: growthPlaceholder
+        growth
       };
     }));
 
