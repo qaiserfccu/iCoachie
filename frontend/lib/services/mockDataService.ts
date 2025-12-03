@@ -1767,3 +1767,201 @@ export function getSeverityColor(severity: string): string {
   }
   return severityColors[severity] || "bg-gray-500/20 text-gray-600"
 }
+
+// ============================================================================
+// ADMIN - EXTENDED DATA FOR SUB-PAGES
+// ============================================================================
+
+// Admin Users - Admins List
+export const adminAdminUsers = [
+  { id: 1, name: "Admin User 1", email: "admin1@icoachie.com", role: "Super Admin", status: "Active", lastLogin: "Today, 10:30 AM", avatar: "A1" },
+  { id: 2, name: "Admin User 2", email: "admin2@icoachie.com", role: "Admin", status: "Active", lastLogin: "Today, 9:15 AM", avatar: "A2" },
+  { id: 3, name: "Support Admin", email: "support@icoachie.com", role: "Support Admin", status: "Active", lastLogin: "Yesterday", avatar: "SA" },
+  { id: 4, name: "Finance Admin", email: "finance@icoachie.com", role: "Finance Admin", status: "Active", lastLogin: "2 days ago", avatar: "FA" },
+]
+
+// Admin Users - Pending Approvals
+export const adminPendingUsers = [
+  { id: 1, name: "New Coach", email: "newcoach@email.com", role: "Coach", requestDate: "Feb 15, 2024", documents: 3, avatar: "NC" },
+  { id: 2, name: "Sports Club", email: "sportsclub@email.com", role: "Club Admin", requestDate: "Feb 14, 2024", documents: 5, avatar: "SC" },
+  { id: 3, name: "Freelance Trainer", email: "trainer@email.com", role: "Freelancer", requestDate: "Feb 13, 2024", documents: 2, avatar: "FT" },
+  { id: 4, name: "New Parent", email: "parent@email.com", role: "Parent", requestDate: "Feb 12, 2024", documents: 1, avatar: "NP" },
+]
+
+// Admin Roles - Permissions
+export const adminPermissions = [
+  { id: 1, name: "User Management", description: "Create, edit, and delete users", roles: ["Super Admin", "Admin"] },
+  { id: 2, name: "Club Management", description: "Manage clubs and approvals", roles: ["Super Admin", "Admin", "Club Admin"] },
+  { id: 3, name: "Financial Access", description: "View and manage payments", roles: ["Super Admin", "Finance Admin"] },
+  { id: 4, name: "Content Management", description: "Manage platform content", roles: ["Super Admin", "Content Manager"] },
+  { id: 5, name: "Support Tickets", description: "Handle support requests", roles: ["Super Admin", "Support Admin"] },
+  { id: 6, name: "Analytics View", description: "Access analytics dashboard", roles: ["Super Admin", "Admin"] },
+  { id: 7, name: "Reports Generation", description: "Generate and export reports", roles: ["Super Admin", "Admin", "Finance Admin"] },
+  { id: 8, name: "System Settings", description: "Configure system settings", roles: ["Super Admin"] },
+]
+
+// Admin Clubs - Pending Clubs
+export const adminPendingClubs = [
+  { id: 1, name: "New Sports Academy", location: "Miami, FL", owner: "John Doe", submittedDate: "Feb 15, 2024", documents: 4, logo: "NS" },
+  { id: 2, name: "Youth Football Club", location: "Dallas, TX", owner: "Jane Smith", submittedDate: "Feb 14, 2024", documents: 3, logo: "YF" },
+  { id: 3, name: "Tennis Pro Academy", location: "Seattle, WA", owner: "Mike Wilson", submittedDate: "Feb 13, 2024", documents: 5, logo: "TP" },
+]
+
+// Admin Clubs - Analytics
+export const adminClubAnalytics = {
+  totalClubs: 284,
+  activeClubs: 256,
+  newThisMonth: 12,
+  churnRate: "2.3%",
+  topRegions: [
+    { region: "California", clubs: 45, growth: "+15%" },
+    { region: "New York", clubs: 38, growth: "+12%" },
+    { region: "Texas", clubs: 32, growth: "+18%" },
+    { region: "Florida", clubs: 28, growth: "+8%" },
+  ],
+  revenueByPlan: [
+    { plan: "Premium", revenue: "$85,000", clubs: 120 },
+    { plan: "Standard", revenue: "$32,000", clubs: 98 },
+    { plan: "Basic", revenue: "$11,450", clubs: 66 },
+  ],
+}
+
+// Admin Coaches
+export const adminCoaches = [
+  { id: 1, name: "Coach Smith", email: "smith@email.com", specialty: "Football", rating: 4.8, students: 45, status: "Verified", avatar: "CS" },
+  { id: 2, name: "Coach Johnson", email: "johnson@email.com", specialty: "Basketball", rating: 4.6, students: 32, status: "Verified", avatar: "CJ" },
+  { id: 3, name: "Coach Williams", email: "williams@email.com", specialty: "Tennis", rating: 4.9, students: 28, status: "Verified", avatar: "CW" },
+  { id: 4, name: "Coach Brown", email: "brown@email.com", specialty: "Swimming", rating: 4.7, students: 38, status: "Pending", avatar: "CB" },
+  { id: 5, name: "Coach Davis", email: "davis@email.com", specialty: "Soccer", rating: 4.5, students: 52, status: "Verified", avatar: "CD" },
+]
+
+// Admin Coaches - Verifications
+export const adminCoachVerifications = [
+  { id: 1, name: "New Coach 1", email: "new1@email.com", specialty: "Football", submittedDate: "Feb 15, 2024", documents: ["ID", "Certification", "Background Check"], avatar: "N1" },
+  { id: 2, name: "New Coach 2", email: "new2@email.com", specialty: "Basketball", submittedDate: "Feb 14, 2024", documents: ["ID", "Certification"], avatar: "N2" },
+  { id: 3, name: "New Coach 3", email: "new3@email.com", specialty: "Tennis", submittedDate: "Feb 13, 2024", documents: ["ID", "Certification", "References"], avatar: "N3" },
+]
+
+// Admin Freelancers
+export const adminFreelancers = [
+  { id: 1, name: "Freelance Coach 1", email: "free1@email.com", specialty: "Personal Training", rating: 4.8, bookings: 45, earnings: "$3,200", status: "Active", avatar: "F1" },
+  { id: 2, name: "Freelance Coach 2", email: "free2@email.com", specialty: "Yoga", rating: 4.6, bookings: 38, earnings: "$2,800", status: "Active", avatar: "F2" },
+  { id: 3, name: "Freelance Coach 3", email: "free3@email.com", specialty: "Swimming", rating: 4.9, bookings: 52, earnings: "$4,100", status: "Active", avatar: "F3" },
+  { id: 4, name: "Freelance Coach 4", email: "free4@email.com", specialty: "Tennis", rating: 4.4, bookings: 28, earnings: "$2,100", status: "Pending", avatar: "F4" },
+]
+
+// Admin Families (Parents & Kids)
+export const adminFamilies = [
+  { id: 1, parentName: "Parent Smith", email: "smith@email.com", kids: 2, activeSessions: 4, totalSpent: "$1,200", joined: "Jan 2024", avatar: "PS" },
+  { id: 2, parentName: "Parent Johnson", email: "johnson@email.com", kids: 1, activeSessions: 2, totalSpent: "$800", joined: "Dec 2023", avatar: "PJ" },
+  { id: 3, parentName: "Parent Williams", email: "williams@email.com", kids: 3, activeSessions: 5, totalSpent: "$2,100", joined: "Nov 2023", avatar: "PW" },
+  { id: 4, parentName: "Parent Brown", email: "brown@email.com", kids: 1, activeSessions: 3, totalSpent: "$950", joined: "Jan 2024", avatar: "PB" },
+]
+
+// Admin Payments - Transactions
+export const adminTransactions = [
+  { id: "TXN-001", user: "Champions FC", amount: "$450", type: "Subscription", status: "Completed", date: "Feb 15, 2024" },
+  { id: "TXN-002", user: "Sarah Wilson", amount: "$120", type: "Session Booking", status: "Completed", date: "Feb 15, 2024" },
+  { id: "TXN-003", user: "Elite Academy", amount: "$890", type: "Subscription", status: "Pending", date: "Feb 14, 2024" },
+  { id: "TXN-004", user: "John Smith", amount: "$75", type: "Session Booking", status: "Refunded", date: "Feb 14, 2024" },
+  { id: "TXN-005", user: "Victory Athletics", amount: "$450", type: "Subscription", status: "Completed", date: "Feb 13, 2024" },
+]
+
+// Admin Payments - Subscriptions
+export const adminSubscriptions = [
+  { id: 1, club: "Champions FC", plan: "Premium", amount: "$450/mo", startDate: "Jan 1, 2024", status: "Active", nextBilling: "Mar 1, 2024" },
+  { id: 2, club: "Elite Academy", plan: "Premium", amount: "$450/mo", startDate: "Dec 15, 2023", status: "Active", nextBilling: "Mar 15, 2024" },
+  { id: 3, club: "Victory Athletics", plan: "Standard", amount: "$250/mo", startDate: "Feb 1, 2024", status: "Active", nextBilling: "Mar 1, 2024" },
+  { id: 4, club: "Rising Stars", plan: "Basic", amount: "$99/mo", startDate: "Jan 20, 2024", status: "Cancelled", nextBilling: "-" },
+]
+
+// Admin Payments - Refunds
+export const adminRefunds = [
+  { id: "REF-001", user: "John Smith", originalAmount: "$75", refundAmount: "$75", reason: "Session cancelled", status: "Processed", date: "Feb 15, 2024" },
+  { id: "REF-002", user: "Sarah Wilson", originalAmount: "$120", refundAmount: "$60", reason: "Partial refund", status: "Pending", date: "Feb 14, 2024" },
+  { id: "REF-003", user: "Mike Johnson", originalAmount: "$200", refundAmount: "$200", reason: "Service issue", status: "Under Review", date: "Feb 13, 2024" },
+]
+
+// Admin Analytics
+export const adminAnalyticsData = {
+  userGrowth: [
+    { month: "Sep", users: 8500 },
+    { month: "Oct", users: 9200 },
+    { month: "Nov", users: 10100 },
+    { month: "Dec", users: 11200 },
+    { month: "Jan", users: 12000 },
+    { month: "Feb", users: 12847 },
+  ],
+  revenueBreakdown: [
+    { category: "Subscriptions", amount: "$85,000", percentage: 66 },
+    { category: "Session Bookings", amount: "$32,000", percentage: 25 },
+    { category: "Other", amount: "$11,450", percentage: 9 },
+  ],
+  topMetrics: [
+    { label: "Active Sessions", value: "2,456", change: "+12%" },
+    { label: "Avg. Session Duration", value: "45 min", change: "+5%" },
+    { label: "User Retention", value: "87%", change: "+3%" },
+    { label: "NPS Score", value: "72", change: "+8" },
+  ],
+}
+
+// Admin Reports
+export const adminReports = [
+  { id: 1, name: "Monthly Revenue Report", type: "Financial", lastGenerated: "Feb 1, 2024", frequency: "Monthly" },
+  { id: 2, name: "User Growth Report", type: "Analytics", lastGenerated: "Feb 15, 2024", frequency: "Weekly" },
+  { id: 3, name: "Club Performance Report", type: "Performance", lastGenerated: "Feb 10, 2024", frequency: "Monthly" },
+  { id: 4, name: "Coach Activity Report", type: "Activity", lastGenerated: "Feb 14, 2024", frequency: "Weekly" },
+  { id: 5, name: "Payment Summary Report", type: "Financial", lastGenerated: "Feb 15, 2024", frequency: "Daily" },
+]
+
+// Admin Notifications
+export const adminNotifications = [
+  { id: 1, title: "New Club Registration", message: "Champions FC submitted registration", type: "info", time: "2 min ago", read: false },
+  { id: 2, title: "Payment Failed", message: "Subscription payment failed for Elite Academy", type: "error", time: "15 min ago", read: false },
+  { id: 3, title: "Coach Verification", message: "New coach verification pending review", type: "warning", time: "1 hour ago", read: true },
+  { id: 4, title: "System Update", message: "Scheduled maintenance tonight at 2 AM", type: "info", time: "2 hours ago", read: true },
+  { id: 5, title: "Refund Request", message: "New refund request from John Smith", type: "warning", time: "3 hours ago", read: false },
+]
+
+// Admin Settings - Email Templates
+export const adminEmailTemplates = [
+  { id: 1, name: "Welcome Email", subject: "Welcome to iCoachie!", lastModified: "Jan 15, 2024", status: "Active" },
+  { id: 2, name: "Password Reset", subject: "Reset Your Password", lastModified: "Jan 10, 2024", status: "Active" },
+  { id: 3, name: "Session Reminder", subject: "Your Session is Coming Up", lastModified: "Feb 1, 2024", status: "Active" },
+  { id: 4, name: "Payment Confirmation", subject: "Payment Received", lastModified: "Jan 20, 2024", status: "Active" },
+  { id: 5, name: "Club Approval", subject: "Your Club Has Been Approved", lastModified: "Feb 5, 2024", status: "Active" },
+]
+
+// Admin Settings - Integrations
+export const adminIntegrations = [
+  { id: 1, name: "Stripe", description: "Payment processing", status: "Connected", icon: "stripe" },
+  { id: 2, name: "Google Calendar", description: "Calendar sync", status: "Connected", icon: "google" },
+  { id: 3, name: "Zoom", description: "Video conferencing", status: "Connected", icon: "zoom" },
+  { id: 4, name: "Mailchimp", description: "Email marketing", status: "Not Connected", icon: "mailchimp" },
+  { id: 5, name: "Slack", description: "Team notifications", status: "Not Connected", icon: "slack" },
+]
+
+// Admin Database
+export const adminDatabaseStats = {
+  totalSize: "2.4 GB",
+  tablesCount: 45,
+  lastBackup: "Feb 15, 2024, 3:00 AM",
+  backupFrequency: "Daily",
+  tables: [
+    { name: "users", rows: "12,847", size: "450 MB" },
+    { name: "sessions", rows: "45,230", size: "380 MB" },
+    { name: "bookings", rows: "28,450", size: "320 MB" },
+    { name: "payments", rows: "15,890", size: "280 MB" },
+    { name: "clubs", rows: "284", size: "120 MB" },
+  ],
+}
+
+// Admin Help
+export const adminHelpTopics = [
+  { id: 1, title: "Getting Started", articles: 12, icon: "book" },
+  { id: 2, title: "User Management", articles: 8, icon: "users" },
+  { id: 3, title: "Payment Setup", articles: 6, icon: "credit-card" },
+  { id: 4, title: "Club Management", articles: 10, icon: "building" },
+  { id: 5, title: "Reports & Analytics", articles: 5, icon: "chart" },
+  { id: 6, title: "Troubleshooting", articles: 15, icon: "help" },
+]
