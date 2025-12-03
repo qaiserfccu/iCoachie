@@ -462,6 +462,61 @@ class AdminService {
       throw error
     }
   }
+
+  // Pending Users (for approvals)
+  async getPendingUsers(params?: { page?: number; pageSize?: number }): Promise<PendingUsersResponse> {
+    try {
+      const queryParams = new URLSearchParams()
+      if (params?.page) queryParams.append('page', params.page.toString())
+      if (params?.pageSize) queryParams.append('pageSize', params.pageSize.toString())
+      
+      const url = queryParams.toString() ? `/admin/pending-users?${queryParams}` : '/admin/pending-users'
+      return await apiClient.get<PendingUsersResponse>(url)
+    } catch (error) {
+      console.error('Error fetching pending users:', error)
+      throw error
+    }
+  }
+
+  // Pending Clubs (for approvals)
+  async getPendingClubs(params?: { page?: number; pageSize?: number }): Promise<PendingClubsResponse> {
+    try {
+      const queryParams = new URLSearchParams()
+      if (params?.page) queryParams.append('page', params.page.toString())
+      if (params?.pageSize) queryParams.append('pageSize', params.pageSize.toString())
+      
+      const url = queryParams.toString() ? `/admin/pending-clubs?${queryParams}` : '/admin/pending-clubs'
+      return await apiClient.get<PendingClubsResponse>(url)
+    } catch (error) {
+      console.error('Error fetching pending clubs:', error)
+      throw error
+    }
+  }
+
+  // Coach Verifications
+  async getCoachVerifications(params?: { page?: number; pageSize?: number }): Promise<CoachVerificationsResponse> {
+    try {
+      const queryParams = new URLSearchParams()
+      if (params?.page) queryParams.append('page', params.page.toString())
+      if (params?.pageSize) queryParams.append('pageSize', params.pageSize.toString())
+      
+      const url = queryParams.toString() ? `/admin/coach-verifications?${queryParams}` : '/admin/coach-verifications'
+      return await apiClient.get<CoachVerificationsResponse>(url)
+    } catch (error) {
+      console.error('Error fetching coach verifications:', error)
+      throw error
+    }
+  }
+
+  // Database Stats
+  async getDatabaseStats(): Promise<DatabaseStats> {
+    try {
+      return await apiClient.get<DatabaseStats>('/admin/database-stats')
+    } catch (error) {
+      console.error('Error fetching database stats:', error)
+      throw error
+    }
+  }
 }
 
 // Settings types
@@ -501,6 +556,69 @@ export interface CreateEmailTemplateInput {
   body: string
   variables?: string[]
   isActive?: boolean
+}
+
+// Pending Users types
+export interface PendingUser {
+  id: number
+  name: string
+  email: string
+  role: string
+  requestDate: string
+  documents: number
+  avatar: string
+}
+
+export interface PendingUsersResponse {
+  users: PendingUser[]
+  pageInfo: PageInfo
+}
+
+// Pending Clubs types
+export interface PendingClub {
+  id: number
+  name: string
+  location: string
+  owner: string
+  submittedDate: string
+  documents: number
+  logo: string
+}
+
+export interface PendingClubsResponse {
+  clubs: PendingClub[]
+  pageInfo: PageInfo
+}
+
+// Coach Verifications types
+export interface CoachVerification {
+  id: number
+  name: string
+  email: string
+  specialty: string
+  submittedDate: string
+  documents: string[]
+  avatar: string
+}
+
+export interface CoachVerificationsResponse {
+  coaches: CoachVerification[]
+  pageInfo: PageInfo
+}
+
+// Database Stats types
+export interface TableStats {
+  name: string
+  rows: string
+  size: string
+}
+
+export interface DatabaseStats {
+  totalSize: string
+  tablesCount: number
+  lastBackup: string
+  backupFrequency: string
+  tables: TableStats[]
 }
 
 export const adminService = new AdminService()
