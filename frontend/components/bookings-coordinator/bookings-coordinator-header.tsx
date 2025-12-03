@@ -1,10 +1,14 @@
 "use client"
 
-import { Bell, Search, User } from "lucide-react"
+import { Search, Wifi, WifiOff } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { GlobalNotifications } from "@/components/GlobalNotifications"
+import { useSocket } from "@/contexts/SocketContext"
 
 export function BookingsCoordinatorHeader() {
+  const { isConnected } = useSocket()
+
   return (
     <header className="sticky top-0 z-30 glass border-b border-white/20">
       <div className="flex items-center justify-between h-16 px-4 lg:px-6">
@@ -19,10 +23,22 @@ export function BookingsCoordinatorHeader() {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon" className="relative">
-            <Bell className="h-5 w-5" />
-            <span className="absolute top-1 right-1 w-2 h-2 bg-cyan-500 rounded-full" />
-          </Button>
+          <div className="hidden sm:flex items-center gap-1.5 px-2 py-1 rounded-full bg-white/5 border border-white/10">
+            {isConnected ? (
+              <>
+                <Wifi className="w-3.5 h-3.5 text-emerald-500" />
+                <span className="text-[10px] font-medium text-emerald-500/90">Live</span>
+              </>
+            ) : (
+              <>
+                <WifiOff className="w-3.5 h-3.5 text-amber-500" />
+                <span className="text-[10px] font-medium text-amber-500/90">Offline</span>
+              </>
+            )}
+          </div>
+
+          <GlobalNotifications />
+
           <div className="flex items-center gap-3 pl-2 border-l border-white/20">
             <Avatar className="h-9 w-9">
               <AvatarFallback className="bg-gradient-to-br from-cyan-500 to-blue-500 text-white text-sm">

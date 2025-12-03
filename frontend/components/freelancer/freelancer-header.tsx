@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { Bell, Search, Menu, Loader2 } from "lucide-react"
+import { Search, Menu, Wifi, WifiOff } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/lib/contexts/AuthContext"
 import { apiClient } from "@/lib/api"
@@ -17,6 +18,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { NotificationDrawer, useNotificationDrawer } from "@/components/ui/notification-drawer"
+import { GlobalNotifications } from "@/components/GlobalNotifications"
+import { useSocket } from "@/contexts/SocketContext"
 
 /**
  * API Response Types
@@ -87,6 +90,9 @@ export function FreelancerHeader() {
   const initials = user 
     ? `${user.firstName?.charAt(0) || ''}${user.lastName?.charAt(0) || ''}`.toUpperCase() || user.email?.charAt(0)?.toUpperCase() || 'F'
     : 'F'
+  const { logout } = useAuth()
+  const router = useRouter()
+  const { isConnected } = useSocket()
 
   const handleLogout = async () => {
     try {
@@ -126,8 +132,21 @@ export function FreelancerHeader() {
                 <span className="absolute -top-1 -right-1 w-5 h-5 bg-yellow-500 rounded-full text-xs text-white flex items-center justify-center">
                   {unreadCount > 99 ? '99+' : unreadCount}
                 </span>
+            <div className="hidden sm:flex items-center gap-1.5 px-2 py-1 rounded-full bg-white/5 border border-white/10">
+              {isConnected ? (
+                <>
+                  <Wifi className="w-3.5 h-3.5 text-emerald-500" />
+                  <span className="text-[10px] font-medium text-emerald-500/90">Live</span>
+                </>
+              ) : (
+                <>
+                  <WifiOff className="w-3.5 h-3.5 text-amber-500" />
+                  <span className="text-[10px] font-medium text-amber-500/90">Offline</span>
+                </>
               )}
-            </Button>
+            </div>
+
+            <GlobalNotifications />
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -150,6 +169,12 @@ export function FreelancerHeader() {
                         <p className="text-xs text-muted-foreground">{roleLabel}</p>
                       </>
                     )}
+                      FL
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="hidden md:block text-left">
+                    <p className="text-sm font-medium">Freelancer</p>
+                    <p className="text-xs text-muted-foreground">Independent</p>
                   </div>
                 </Button>
               </DropdownMenuTrigger>
@@ -166,11 +191,6 @@ export function FreelancerHeader() {
           </div>
         </div>
       </header>
-      
-      <NotificationDrawer 
-        isOpen={notificationDrawer.isOpen} 
-        onClose={notificationDrawer.close} 
-      />
     </>
   )
 }

@@ -1,10 +1,11 @@
 "use client"
 
 import { useState } from "react"
-import { Bell, Search, Menu, Moon, Sun, Wifi, WifiOff } from "lucide-react"
+import { Search, Menu, Moon, Sun, Wifi, WifiOff } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/lib/contexts/AuthContext"
-import { useAdminSocket } from "@/contexts/AdminSocketContext"
+import { useSocket } from "@/contexts/SocketContext"
+import { GlobalNotifications } from "@/components/GlobalNotifications"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -16,15 +17,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { AdminNotificationDrawer } from "@/components/admin/admin-notification-drawer"
 
 export function AdminHeader() {
   const { user: authUser, logout } = useAuth()
-  const { unreadCount, isConnected } = useAdminSocket()
+  const { isConnected } = useSocket()
   const router = useRouter()
   const handleLogout = async () => { try { await logout(); router.push('/login') } catch (_) { router.push('/login') } }
   const [isDark, setIsDark] = useState(false)
-  const [isNotificationDrawerOpen, setIsNotificationDrawerOpen] = useState(false)
   
   // Use authenticated user or fallback to default
   const displayName = authUser?.firstName && authUser?.lastName 
@@ -70,19 +69,9 @@ export function AdminHeader() {
               {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
             </Button>
 
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="glass-subtle rounded-xl relative"
-              onClick={() => setIsNotificationDrawerOpen(true)}
-            >
-              <Bell className="h-5 w-5" />
-              {unreadCount > 0 && (
-                <span className="absolute -top-1 -right-1 w-5 h-5 bg-destructive rounded-full text-xs text-white flex items-center justify-center">
-                  {unreadCount > 9 ? '9+' : unreadCount}
-                </span>
-              )}
-            </Button>
+            <div className="glass-subtle rounded-xl">
+              <GlobalNotifications />
+            </div>
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -111,11 +100,6 @@ export function AdminHeader() {
           </div>
         </div>
       </header>
-      
-      <AdminNotificationDrawer 
-        isOpen={isNotificationDrawerOpen} 
-        onClose={() => setIsNotificationDrawerOpen(false)} 
-      />
     </>
   )
 }

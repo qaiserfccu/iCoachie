@@ -1,11 +1,15 @@
 "use client"
 
-import { Bell, Search, Menu, Crown } from "lucide-react"
+import { Search, Menu, Crown, Wifi, WifiOff } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { GlobalNotifications } from "@/components/GlobalNotifications"
+import { useSocket } from "@/contexts/SocketContext"
 
 export function HeadCoachHeader() {
+  const { isConnected } = useSocket()
+
   return (
     <header className="sticky top-0 z-30 glass border-b border-white/20">
       <div className="flex items-center justify-between p-4">
@@ -27,10 +31,22 @@ export function HeadCoachHeader() {
           </div>
         </div>
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" className="relative glass-subtle">
-            <Bell className="w-5 h-5" />
-            <span className="absolute top-1 right-1 w-2 h-2 bg-orange-500 rounded-full" />
-          </Button>
+          <div className="hidden sm:flex items-center gap-1.5 px-2 py-1 rounded-full bg-white/5 border border-white/10">
+            {isConnected ? (
+              <>
+                <Wifi className="w-3.5 h-3.5 text-emerald-500" />
+                <span className="text-[10px] font-medium text-emerald-500/90">Live</span>
+              </>
+            ) : (
+              <>
+                <WifiOff className="w-3.5 h-3.5 text-amber-500" />
+                <span className="text-[10px] font-medium text-amber-500/90">Offline</span>
+              </>
+            )}
+          </div>
+
+          <GlobalNotifications />
+          
           <Avatar className="h-9 w-9 border-2 border-orange-500/50">
             <AvatarFallback className="bg-gradient-to-br from-orange-500 to-red-500 text-white text-sm">HC</AvatarFallback>
           </Avatar>

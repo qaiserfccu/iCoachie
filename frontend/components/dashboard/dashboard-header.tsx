@@ -11,19 +11,19 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Bell, Search, Menu, Plus, User, Settings, LogOut } from "lucide-react"
+import { Search, Menu, Plus, User, Settings, LogOut, Wifi, WifiOff } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/lib/contexts/AuthContext"
-import { NotificationDrawer, useNotificationDrawer } from "@/components/ui/notification-drawer"
-import { mockUsers, getUnreadNotificationCount } from "@/lib/services/mockDataService"
+import { mockUsers } from "@/lib/services/mockDataService"
+import { GlobalNotifications } from "@/components/GlobalNotifications"
+import { useSocket } from "@/contexts/SocketContext"
 
 export function DashboardHeader() {
   const [showMobileMenu, setShowMobileMenu] = useState(false)
-  const notificationDrawer = useNotificationDrawer()
+  const { isConnected } = useSocket()
   
   // Get user data from centralized mock service
   const user = mockUsers.coach
-  const unreadCount = getUnreadNotificationCount()
 
   const { logout } = useAuth()
   const router = useRouter()
@@ -59,20 +59,26 @@ export function DashboardHeader() {
           </div>
 
           <div className="flex items-center gap-3">
+            <div className="hidden sm:flex items-center gap-1.5 px-2 py-1 rounded-full bg-white/5 border border-white/10">
+              {isConnected ? (
+                <>
+                  <Wifi className="w-3.5 h-3.5 text-emerald-500" />
+                  <span className="text-[10px] font-medium text-emerald-500/90">Live</span>
+                </>
+              ) : (
+                <>
+                  <WifiOff className="w-3.5 h-3.5 text-amber-500" />
+                  <span className="text-[10px] font-medium text-amber-500/90">Offline</span>
+                </>
+              )}
+            </div>
+
             <Button className="hidden sm:flex bg-primary text-primary-foreground hover:bg-primary/90">
               <Plus className="w-4 h-4 mr-2" />
               New Session
             </Button>
 
-            <button 
-              className="relative p-2 rounded-lg hover:bg-muted"
-              onClick={notificationDrawer.open}
-            >
-              <Bell className="w-5 h-5 text-muted-foreground" />
-              {unreadCount > 0 && (
-                <span className="absolute top-1 right-1 w-2 h-2 bg-destructive rounded-full" />
-              )}
-            </button>
+            <GlobalNotifications />
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -107,11 +113,6 @@ export function DashboardHeader() {
           </div>
         </div>
       </header>
-      
-      <NotificationDrawer 
-        isOpen={notificationDrawer.isOpen} 
-        onClose={notificationDrawer.close} 
-      />
     </>
   )
 }
