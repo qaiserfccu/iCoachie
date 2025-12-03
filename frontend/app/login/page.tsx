@@ -9,57 +9,45 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Eye, EyeOff, Mail, Lock, Users } from "lucide-react"
-import { authService, mockUserCredentials, type MockUserCredentials } from "@/lib/services/api/auth"
-import type { UserRole } from "@/lib/services/api/types"
+import { Eye, EyeOff, Mail, Lock } from "lucide-react"
+import { authService } from "@/lib/auth"
 
-// Role display names for dropdown
-const roleOptions: { value: UserRole; label: string }[] = [
-  { value: 'admin', label: 'Administrator' },
-  { value: 'coach', label: 'Coach' },
-  { value: 'head-coach', label: 'Head Coach' },
-  { value: 'parent', label: 'Parent' },
-  { value: 'guardian', label: 'Guardian' },
-  { value: 'student', label: 'Student/Athlete' },
-  { value: 'accountant', label: 'Accountant' },
-  { value: 'front-desk', label: 'Front Desk' },
-  { value: 'content-manager', label: 'Content Manager' },
-  { value: 'medical', label: 'Medical Staff' },
-  { value: 'facility', label: 'Facility Manager' },
-  { value: 'system-support', label: 'System Support' },
-  { value: 'bookings-coordinator', label: 'Bookings Coordinator' },
-  { value: 'maintenance', label: 'Maintenance' },
-  { value: 'equipment', label: 'Equipment Manager' },
-  { value: 'security', label: 'Security' },
-  { value: 'cleaning', label: 'Cleaning Staff' },
-  { value: 'venue', label: 'Venue Manager' },
-  { value: 'ground', label: 'Ground Staff' },
-  { value: 'groundskeeper', label: 'Groundskeeper' },
-  { value: 'academy-owner', label: 'Academy Owner' },
-  { value: 'club', label: 'Club Admin' },
-  { value: 'freelancer', label: 'Freelancer' },
-]
+// Helper to get dashboard path based on role code
+function getDashboardPath(roleCode: string): string {
+  const rolePathMap: Record<string, string> = {
+    'SUPER_ADMIN': '/admin',
+    'SYSTEM_SUPPORT': '/system-support',
+    'CLUB_ADMIN': '/club',
+    'CLUB_MANAGER': '/club',
+    'HEAD_COACH': '/head-coach',
+    'COACH': '/coach',
+    'FREELANCER': '/freelancer',
+    'PARENT': '/parent',
+    'FACILITY_MANAGER': '/facility',
+    'BOOKINGS_COORDINATOR': '/bookings-coordinator',
+    'VENUE_MANAGER': '/venue',
+    'GROUND_MANAGER': '/ground',
+    'GROUNDSKEEPER': '/groundskeeper',
+    'MAINTENANCE_TECH': '/maintenance',
+    'EQUIPMENT_MANAGER': '/equipment',
+    'SECURITY_STAFF': '/security',
+    'CLEANING_STAFF': '/cleaning',
+    'ACCOUNTANT': '/accountant',
+    'FRONT_DESK': '/front-desk',
+    'CONTENT_MANAGER': '/content-manager',
+    'MEDICAL_STAFF': '/medical',
+    'STUDENT': '/student',
+  }
+  return rolePathMap[roleCode] || '/dashboard'
+}
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
-  const [selectedRole, setSelectedRole] = useState<UserRole | "">("")
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
   const router = useRouter()
-
-  // Handle role selection - auto-fill credentials
-  const handleRoleSelect = (role: UserRole) => {
-    setSelectedRole(role)
-    const credentials = mockUserCredentials[role]
-    if (credentials) {
-      setEmail(credentials.email)
-      setPassword(credentials.password)
-      setError("")
-    }
-  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -67,12 +55,12 @@ export default function LoginPage() {
     setError("")
 
     try {
-      const { user } = await authService.login(email, password)
+      const { user } = await authService.login({ email, password })
       // Redirect to the appropriate dashboard based on user role
-      const dashboardPath = authService.getDashboardPath(user.role)
+      const dashboardPath = getDashboardPath(user.role.code)
       router.push(dashboardPath)
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Login failed")
+      setError(err instanceof Error ? err.message : "Login failed. Please check your credentials.")
     } finally {
       setIsLoading(false)
     }
@@ -99,31 +87,8 @@ export default function LoginPage() {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Role selector for testing */}
-            <div className="p-4 rounded-xl glass-subtle border border-primary/20 mb-4">
-              <Label className="text-foreground flex items-center gap-2 mb-2">
-                <Users className="w-4 h-4" />
-                Quick Login (Testing)
-              </Label>
-              <Select value={selectedRole} onValueChange={(value) => handleRoleSelect(value as UserRole)}>
-                <SelectTrigger className="h-12 glass-input border-white/30">
-                  <SelectValue placeholder="Select a role to auto-fill credentials" />
-                </SelectTrigger>
-                <SelectContent className="max-h-[300px]">
-                  {roleOptions.map((role) => (
-                    <SelectItem key={role.value} value={role.value}>
-                      {role.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <p className="text-xs text-muted-foreground mt-2">
-                Select a role to auto-fill email and password for testing
-              </p>
-            </div>
-
             {error && (
-              <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-sm">
+              <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-sm" data-testid="error-message">
                 {error}
               </div>
             )}
