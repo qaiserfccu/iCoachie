@@ -68,10 +68,14 @@ export function NotificationDrawer({ isOpen, onClose, position = "right" }: Noti
       <div 
         className="fixed inset-0 z-40 bg-black/20 backdrop-blur-sm animate-in fade-in duration-200"
         onClick={onClose}
+        aria-hidden="true"
       />
       
       {/* Drawer */}
       <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="notification-drawer-title"
         className={cn(
           "fixed top-0 bottom-0 z-50 w-full sm:w-96 flex flex-col",
           "glass-card border-l border-white/20 shadow-2xl",
@@ -88,7 +92,7 @@ export function NotificationDrawer({ isOpen, onClose, position = "right" }: Noti
               <Bell className="w-5 h-5 text-primary" />
             </div>
             <div>
-              <h2 className="font-semibold text-foreground">Notifications</h2>
+              <h2 id="notification-drawer-title" className="font-semibold text-foreground">Notifications</h2>
               {unreadCount > 0 && (
                 <p className="text-sm text-muted-foreground">{unreadCount} unread</p>
               )}

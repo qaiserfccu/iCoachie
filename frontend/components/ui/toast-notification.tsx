@@ -23,6 +23,7 @@ const toastConfig = {
     borderClass: "border-green-500/30",
     iconClass: "text-green-500",
     titleClass: "text-green-700 dark:text-green-300",
+    progressClass: "bg-green-500",
   },
   error: {
     icon: AlertCircle,
@@ -30,6 +31,7 @@ const toastConfig = {
     borderClass: "border-red-500/30",
     iconClass: "text-red-500",
     titleClass: "text-red-700 dark:text-red-300",
+    progressClass: "bg-red-500",
   },
   warning: {
     icon: AlertTriangle,
@@ -37,6 +39,7 @@ const toastConfig = {
     borderClass: "border-yellow-500/30",
     iconClass: "text-yellow-500",
     titleClass: "text-yellow-700 dark:text-yellow-300",
+    progressClass: "bg-yellow-500",
   },
   info: {
     icon: Info,
@@ -44,6 +47,7 @@ const toastConfig = {
     borderClass: "border-blue-500/30",
     iconClass: "text-blue-500",
     titleClass: "text-blue-700 dark:text-blue-300",
+    progressClass: "bg-blue-500",
   },
 }
 
@@ -115,7 +119,7 @@ export function ToastNotification({
         {/* Progress bar */}
         <div className="absolute bottom-0 left-0 right-0 h-1 rounded-b-xl overflow-hidden">
           <div 
-            className={cn("h-full animate-shrink-width", config.iconClass.replace("text-", "bg-"))}
+            className={cn("h-full animate-shrink-width", toastConfig[type].progressClass)}
             style={{ animationDuration: `${duration}ms` }}
           />
         </div>
@@ -150,7 +154,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   const [toasts, setToasts] = React.useState<Toast[]>([])
 
   const showToast = React.useCallback((type: ToastType, title: string, message?: string) => {
-    const id = `toast-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+    const id = `toast-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`
     setToasts((prev) => [...prev, { id, type, title, message }])
   }, [])
 
