@@ -22,6 +22,7 @@ import coachRoutes from './controllers/coachController';
 import statusRoutes from './controllers/statusController';
 import rbacTestRoutes from './controllers/rbacTestController';
 import facilityRoutes from './controllers/facilityController';
+import adminRoutes from './controllers/adminController';
 import fileRoutes from './routes/fileRoutes';
 
 dotenv.config();
@@ -95,6 +96,7 @@ app.use('/api/coaches', coachRoutes);
 app.use('/api/statuses', statusRoutes);
 app.use('/api/rbac/test', rbacTestRoutes);
 app.use('/api/facilities', facilityRoutes);
+app.use('/api/admin', adminRoutes);
 app.use('/api/files', fileRoutes);
 
 app.get('/api/health', (req, res) => {

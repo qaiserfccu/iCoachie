@@ -40,26 +40,7 @@
       "title": "17 - Backend integration (phase-2) plan",
       "type": "epic"
     },
-    {
-      "assignedTo": {
-        "name": "Copilot Agent"
-      },
-      "category": "integration",
-      "creation_time": "2025-12-03T00:00:00.000Z",
-      "description": {
-        "content": "Complete frontend-backend integration for login, register, and admin dashboard pages with working e2e tests.",
-        "mime": "text/markdown"
-      },
-      "details": {
-        "content": "# 16-1 Frontend-Backend Integration (Card 16)\n\n## Scope\n- Update frontend auth service to use real backend endpoints instead of mock data\n- Implement real API integration for login, register, and admin dashboard pages\n- Replace mock user credentials with actual backend authentication\n- Connect admin dashboard to real payment stats, clubs, activities, and pending actions\n\n## Tasks\n1. Update `frontend/lib/services/api/auth.ts` to call backend `/api/auth/login` and `/api/auth/register`\n2. Modify login page to handle real authentication responses and errors\n3. Update register page to submit to backend and handle validation\n4. Connect admin dashboard to `/api/payments/stats/overview` for stats\n5. Connect to `/api/clubs` for top clubs data\n6. Implement endpoints for recent activities and pending actions (or derive from existing)\n7. Add system health endpoint if needed\n8. Implement proper error handling and loading states\n9. Add JWT token persistence and refresh logic\n\n## Mock Services to Replace in Admin Dashboard\n- `adminStats` → `/api/payments/stats/overview` (extend if needed for all stats)\n- `adminTopClubs` → `/api/clubs` (with sorting/filtering for top performers)\n- `adminRecentActivities` → New endpoint `/api/admin/activities` or aggregate from existing\n- `adminPendingActions` → Derive from counts in various endpoints or new `/api/admin/pending`\n- System health → New endpoint `/api/admin/health` or static for now\n\n## Acceptance Criteria\n- Working e2e tests pass for login, register, and admin dashboard functionality\n- Users can successfully register, login, and access admin dashboard with real data\n- Authentication state persists across page reloads\n- Error messages display correctly for invalid credentials or network issues\n- Admin dashboard shows real data from backend APIs\n\n## Dependencies\n- Backend endpoints implemented and tested\n- Authentication flow working end-to-end",
-        "mime": "text/markdown"
-      },
-      "id": "16-1",
-      "prio": 9,
-      "references": [],
-      "title": "16-1 Frontend-Backend Integration (Card 16)",
-      "type": "task"
-    },
+
     {
       "assignedTo": {
         "name": "Copilot Agent"
@@ -237,7 +218,28 @@
       "title": "16-2 Admin panel full integration"
     }
   ],
-  "testing": [],
+  "testing": [
+    {
+      "assignedTo": {
+        "name": "Copilot Agent"
+      },
+      "category": "integration",
+      "creation_time": "2025-12-03T00:00:00.000Z",
+      "description": {
+        "content": "Complete frontend-backend integration for login, register, and admin dashboard pages with working e2e tests.",
+        "mime": "text/markdown"
+      },
+      "details": {
+        "content": "# 16-1 Frontend-Backend Integration (Card 16)\n\n## Status: COMPLETED - Ready for Testing\n\n## Summary of Changes\n\n### Frontend Authentication Updates\n- Updated `frontend/app/login/page.tsx` to use real auth service (`lib/auth.ts`) instead of mock credentials\n- Updated `frontend/app/register/page.tsx` to use real auth service with proper error handling\n- Removed role selector (mock testing feature) from login page\n- Added loading states and error message displays\n\n### Backend Admin API Endpoints\nCreated new admin controller (`backend/src/controllers/adminController.ts`) with endpoints:\n- `GET /api/admin/stats` - Dashboard statistics (users, clubs, coaches, revenue)\n- `GET /api/admin/pending` - Pending actions (approvals, verifications, tickets)\n- `GET /api/admin/activities` - Recent activities (clubs, coaches, payments)\n- `GET /api/admin/top-clubs` - Top performing clubs with revenue\n- `GET /api/admin/health` - System health status\n\n### Frontend Admin Dashboard Updates\n- Created `frontend/lib/services/adminService.ts` for API calls\n- Updated `frontend/app/admin/page.tsx` to fetch real data from backend\n- Replaced mock data imports with real API calls\n- Added loading states and error handling\n\n## Files Changed\n- `frontend/app/login/page.tsx`\n- `frontend/app/register/page.tsx`\n- `backend/src/controllers/adminController.ts` (new)\n- `backend/src/server.ts`\n- `frontend/lib/services/adminService.ts` (new)\n- `frontend/app/admin/page.tsx`\n\n## Testing Checklist\n- [ ] Login with valid credentials redirects to appropriate dashboard\n- [ ] Login with invalid credentials shows error message\n- [ ] Register creates new user and redirects to dashboard\n- [ ] Register shows error for duplicate email\n- [ ] Admin dashboard loads with real data from backend\n- [ ] Admin dashboard shows loading state while fetching\n- [ ] Admin dashboard shows error state on API failure\n\n## Notes\n- Database connection required for integration testing\n- Backend tests require PostgreSQL connection (skipped in CI without DB)",
+        "mime": "text/markdown"
+      },
+      "id": "16-1",
+      "prio": 9,
+      "references": [],
+      "title": "16-1 Frontend-Backend Integration (Card 16)",
+      "type": "task"
+    }
+  ],
   "done": [
     {
       "assignedTo": {
