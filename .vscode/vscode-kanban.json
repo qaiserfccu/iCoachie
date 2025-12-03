@@ -130,28 +130,6 @@
       "category": "integration",
       "creation_time": "2025-12-03T00:00:00.000Z",
       "description": {
-        "content": "Complete full backend integration for facility operations dashboards covering facility management, maintenance, and operational workflows.",
-        "mime": "text/markdown"
-      },
-      "details": {
-        "content": "# 16-2-1 Facility Operations Dashboard Integration\n\n## Context\n- Facility operations roles (FACILITY_MANAGER, VENUE_MANAGER, GROUND_MANAGER, GROUNDSKEEPER, MAINTENANCE_TECH, EQUIPMENT_MANAGER, SECURITY_STAFF, CLEANING_STAFF) need dedicated dashboards\n- Current dashboards likely use mock data from mockDataService\n- Need comprehensive integration plan covering facility operations and maintenance\n- Strict policy: no frontend mocks allowed - must use backend APIs or create backend mock methods\n\n## Facility Operations Routes to Integrate\n\n### Facility Management\n- `/facility/dashboard` - Facility overview with status and maintenance alerts\n- `/facility/venues` - Venue management and scheduling\n- `/facility/grounds` - Ground maintenance and availability\n- `/facility/equipment` - Equipment inventory and maintenance tracking\n\n### Maintenance & Operations\n- `/facility/maintenance` - Maintenance schedules and work orders\n- `/facility/cleaning` - Cleaning schedules and assignments\n- `/facility/security` - Security logs and incident reporting\n\n### Scheduling & Bookings\n- `/facility/schedule` - Facility-wide scheduling and availability\n- `/facility/bookings` - Booking management and conflict resolution\n\n### Analytics & Reporting\n- `/facility/analytics` - Facility utilization and maintenance metrics\n- `/facility/reports` - Operational reports and compliance tracking\n\n## Implementation Strategy\n\n### For Each Route:\n1. **Identify Required Backend APIs**\n   - Review existing endpoints in global-endpoint-matrix.md\n   - Map frontend data needs to backend contracts with facility scoping\n   - Identify gaps where APIs don't exist\n\n2. **Replace Mock Services**\n   - Remove imports from `frontend/lib/services/mockDataService.ts`\n   - Update components to use real API services\n   - Ensure proper error handling and loading states\n\n3. **Create Missing Backend APIs**\n   - For routes without backend support, create mock methods in backend controllers\n   - Add TODO comments indicating these are temporary mocks\n   - Follow existing controller patterns and RBAC with FACILITY scope\n\n4. **Update Frontend Services**\n   - Extend `frontend/lib/api.ts` and service files as needed\n   - Ensure consistent error handling and response formatting\n   - Add proper TypeScript interfaces\n\n## Acceptance Criteria\n- ✅ All facility operations routes successfully load without frontend mock data\n- ✅ All API calls use backend endpoints (real or mock methods) with proper facility scoping\n- ✅ No remaining imports from mockDataService in facility components\n- ✅ Successful e2e tests covering all facility operations routes\n- ✅ Proper error handling and loading states implemented\n- ✅ RBAC properly enforced for facility operations roles\n\n## Testing Requirements\n- E2e test suite covering navigation to all facility operations routes\n- API integration tests for each route's data fetching with facility scoping\n- Error scenario testing (unauthorized access, network failures)\n- Performance testing for data-heavy routes\n\n## Dependencies\n- Card 16-2 (Admin Panel Integration)\n- `docs/backend/global-endpoint-matrix.md` for API mapping\n- Frontend facility dashboard components (likely in `app/(dashboard)/facility/`)\n- Backend controllers with facility role RBAC",
-        "mime": "text/markdown"
-      },
-      "id": "16-2-1",
-      "prio": 11,
-      "references": [
-        "16-2",
-        "docs/backend/global-endpoint-matrix.md"
-      ],
-      "title": "16-2-1 Facility operations dashboard integration"
-    },
-    {
-      "assignedTo": {
-        "name": "Copilot Agent"
-      },
-      "category": "integration",
-      "creation_time": "2025-12-03T00:00:00.000Z",
-      "description": {
         "content": "Complete full backend integration for operations dashboards (BOOKINGS_COORDINATOR, FRONT_DESK, ACCOUNTANT) covering bookings, front desk operations, and financial management.",
         "mime": "text/markdown"
       },
@@ -235,6 +213,28 @@
         "frontend/components/admin/admin-sidebar.tsx"
       ],
       "title": "16-2 Admin panel full integration"
+    },
+    {
+      "assignedTo": {
+        "name": "Copilot Agent"
+      },
+      "category": "integration",
+      "creation_time": "2025-12-03T00:00:00.000Z",
+      "description": {
+        "content": "Complete full backend integration for facility operations dashboards covering facility management, maintenance, and operational workflows.",
+        "mime": "text/markdown"
+      },
+      "details": {
+        "content": "# 16-2-1 Facility Operations Dashboard Integration\n\n## Context\n- Facility operations roles (FACILITY_MANAGER, VENUE_MANAGER, GROUND_MANAGER, GROUNDSKEEPER, MAINTENANCE_TECH, EQUIPMENT_MANAGER, SECURITY_STAFF, CLEANING_STAFF) need dedicated dashboards\n- Current dashboards likely use mock data from mockDataService\n- Need comprehensive integration plan covering facility operations and maintenance\n- Strict policy: no frontend mocks allowed - must use backend APIs or create backend mock methods\n\n## Facility Operations Routes to Integrate\n\n### Facility Management\n- `/facility/dashboard` - Facility overview with status and maintenance alerts\n- `/facility/venues` - Venue management and scheduling\n- `/facility/grounds` - Ground maintenance and availability\n- `/facility/equipment` - Equipment inventory and maintenance tracking\n\n### Maintenance & Operations\n- `/facility/maintenance` - Maintenance schedules and work orders\n- `/facility/cleaning` - Cleaning schedules and assignments\n- `/facility/security` - Security logs and incident reporting\n\n### Scheduling & Bookings\n- `/facility/schedule` - Facility-wide scheduling and availability\n- `/facility/bookings` - Booking management and conflict resolution\n\n### Analytics & Reporting\n- `/facility/analytics` - Facility utilization and maintenance metrics\n- `/facility/reports` - Operational reports and compliance tracking\n\n## Implementation Strategy\n\n### For Each Route:\n1. **Identify Required Backend APIs**\n   - Review existing endpoints in global-endpoint-matrix.md\n   - Map frontend data needs to backend contracts with facility scoping\n   - Identify gaps where APIs don't exist\n\n2. **Replace Mock Services**\n   - Remove imports from `frontend/lib/services/mockDataService.ts`\n   - Update components to use real API services\n   - Ensure proper error handling and loading states\n\n3. **Create Missing Backend APIs**\n   - For routes without backend support, create mock methods in backend controllers\n   - Add TODO comments indicating these are temporary mocks\n   - Follow existing controller patterns and RBAC with FACILITY scope\n\n4. **Update Frontend Services**\n   - Extend `frontend/lib/api.ts` and service files as needed\n   - Ensure consistent error handling and response formatting\n   - Add proper TypeScript interfaces\n\n## Acceptance Criteria\n- ✅ All facility operations routes successfully load without frontend mock data\n- ✅ All API calls use backend endpoints (real or mock methods) with proper facility scoping\n- ✅ No remaining imports from mockDataService in facility components\n- ✅ Successful e2e tests covering all facility operations routes\n- ✅ Proper error handling and loading states implemented\n- ✅ RBAC properly enforced for facility operations roles\n\n## Testing Requirements\n- E2e test suite covering navigation to all facility operations routes\n- API integration tests for each route's data fetching with facility scoping\n- Error scenario testing (unauthorized access, network failures)\n- Performance testing for data-heavy routes\n\n## Dependencies\n- Card 16-2 (Admin Panel Integration)\n- `docs/backend/global-endpoint-matrix.md` for API mapping\n- Frontend facility dashboard components (likely in `app/(dashboard)/facility/`)\n- Backend controllers with facility role RBAC",
+        "mime": "text/markdown"
+      },
+      "id": "16-2-1",
+      "prio": 11,
+      "references": [
+        "16-2",
+        "docs/backend/global-endpoint-matrix.md"
+      ],
+      "title": "16-2-1 Facility operations dashboard integration"
     }
   ],
   "testing": [],
