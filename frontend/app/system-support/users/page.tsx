@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { 
   Search, Filter, Users, UserCheck, UserX, Key, 
-  Mail, Shield, ArrowRight, RefreshCw, Loader2
+  Mail, Shield, ArrowRight, RefreshCw, Loader2, CheckCircle, XCircle
 } from "lucide-react"
 import { useState, useEffect } from "react"
 import { systemSupportService, type SupportUser } from "@/lib/services"
@@ -40,6 +40,15 @@ export default function UserSupportPage() {
   const [searchQuery, setSearchQuery] = useState("")
   const [totalUsers, setTotalUsers] = useState(0)
   const [resettingPassword, setResettingPassword] = useState<number | null>(null)
+  const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
+
+  // Auto-dismiss notification after 5 seconds
+  useEffect(() => {
+    if (notification) {
+      const timer = setTimeout(() => setNotification(null), 5000)
+      return () => clearTimeout(timer)
+    }
+  }, [notification])
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -68,10 +77,10 @@ export default function UserSupportPage() {
     try {
       setResettingPassword(userId)
       const result = await systemSupportService.resetUserPassword(userId)
-      alert(result.message)
+      setNotification({ type: 'success', message: result.message })
     } catch (err) {
       console.error('Error resetting password:', err)
-      alert('Failed to reset password')
+      setNotification({ type: 'error', message: 'Failed to reset password. Please try again.' })
     } finally {
       setResettingPassword(null)
     }
@@ -109,6 +118,21 @@ export default function UserSupportPage() {
       {error && (
         <div className="p-4 rounded-lg bg-red-500/20 text-red-500 text-sm">
           {error}
+        </div>
+      )}
+
+      {/* Notification Toast */}
+      {notification && (
+        <div className={`fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg flex items-center gap-3 ${
+          notification.type === 'success' ? 'bg-green-500/90 text-white' : 'bg-red-500/90 text-white'
+        }`}>
+          {notification.type === 'success' ? (
+            <CheckCircle className="w-5 h-5" />
+          ) : (
+            <XCircle className="w-5 h-5" />
+          )}
+          <span>{notification.message}</span>
+          <button onClick={() => setNotification(null)} className="ml-2 hover:opacity-80">×</button>
         </div>
       )}
 

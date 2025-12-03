@@ -1,4 +1,5 @@
 import express, { Request, Response } from 'express';
+import crypto from 'crypto';
 import prisma from '../db';
 import { requireAuth } from '../middleware/jwtAuth';
 import { requireRole, requirePermission } from '../middleware/rbac';
@@ -829,7 +830,6 @@ router.post('/users/:id/reset-password', requireAuth, requireRole(SYSTEM_SUPPORT
     }
 
     // Create password reset token
-    const crypto = require('crypto');
     const token = crypto.randomBytes(32).toString('hex');
     const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
 
@@ -870,18 +870,24 @@ router.get('/users/issues', requireAuth, requireRole(SYSTEM_SUPPORT_ROLES), asyn
     // Get users with potential issues (recently created without activity)
     const inactiveThreshold = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
     
-    const usersWithIssues = await prisma.user.findMany({
+    // Get recently created users and filter in-memory for those with no activity
+    const recentUsers = await prisma.user.findMany({
       where: {
         deletedAt: null,
-        createdAt: { gte: inactiveThreshold },
-        updatedAt: { equals: prisma.user.fields.createdAt }
+        createdAt: { gte: inactiveThreshold }
       },
-      take: 20,
+      take: 50,
       orderBy: { createdAt: 'desc' },
       include: {
         primaryRole: { select: { name: true } }
       }
     });
+
+    // Filter users where updatedAt is close to createdAt (no activity)
+    const usersWithIssues = recentUsers.filter(user => {
+      const timeDiff = user.updatedAt.getTime() - user.createdAt.getTime();
+      return timeDiff < 60000; // Less than 1 minute difference means no real activity
+    }).slice(0, 20);
 
     res.json({
       users: usersWithIssues.map(user => ({
