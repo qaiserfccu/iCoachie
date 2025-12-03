@@ -104,10 +104,13 @@ class NotificationService {
       this.notifyStatsListeners(stats)
     })
 
+    // Helper function to generate unique IDs
+    const generateId = (prefix: string) => `${prefix}-${crypto.randomUUID()}`
+
     // Real-time updates for specific events
     this.socket.on('user-registered', (data: any) => {
       this.notifyNotificationListeners({
-        id: `user-${Date.now()}`,
+        id: generateId('user'),
         title: 'New User Registration',
         message: `${data.name} has registered as ${data.role}`,
         type: 'info',
@@ -120,7 +123,7 @@ class NotificationService {
 
     this.socket.on('club-registered', (data: any) => {
       this.notifyNotificationListeners({
-        id: `club-${Date.now()}`,
+        id: generateId('club'),
         title: 'New Club Registration',
         message: `${data.name} has submitted a registration`,
         type: 'info',
@@ -133,7 +136,7 @@ class NotificationService {
 
     this.socket.on('coach-verification', (data: any) => {
       this.notifyNotificationListeners({
-        id: `coach-${Date.now()}`,
+        id: generateId('coach'),
         title: 'Coach Verification Request',
         message: `${data.name} has requested verification`,
         type: 'info',
@@ -146,7 +149,7 @@ class NotificationService {
 
     this.socket.on('payment-received', (data: any) => {
       this.notifyNotificationListeners({
-        id: `payment-${Date.now()}`,
+        id: generateId('payment'),
         title: 'Payment Received',
         message: `Payment of ${data.amount} received from ${data.user}`,
         type: 'success',
@@ -159,7 +162,7 @@ class NotificationService {
 
     this.socket.on('refund-requested', (data: any) => {
       this.notifyNotificationListeners({
-        id: `refund-${Date.now()}`,
+        id: generateId('refund'),
         title: 'Refund Requested',
         message: `${data.user} has requested a refund of ${data.amount}`,
         type: 'warning',
@@ -178,7 +181,9 @@ class NotificationService {
     }
 
     this.reconnectAttempts++
-    const delay = this.reconnectDelay * Math.pow(2, this.reconnectAttempts - 1)
+    // Calculate delay with exponential backoff, capped at 30 seconds
+    const maxDelay = 30000
+    const delay = Math.min(this.reconnectDelay * Math.pow(2, this.reconnectAttempts - 1), maxDelay)
 
     setTimeout(() => {
       console.log(`Attempting to reconnect (${this.reconnectAttempts}/${this.maxReconnectAttempts})`)

@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useRouter } from "next/navigation"
 import { Bell, X, CheckCircle, AlertTriangle, AlertCircle, Info, Check, Trash2, RefreshCw } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -38,6 +39,7 @@ const notificationTypeConfig = {
 }
 
 export function AdminNotificationDrawer({ isOpen, onClose, position = "right" }: AdminNotificationDrawerProps) {
+  const router = useRouter()
   const { 
     notifications, 
     unreadCount, 
@@ -189,7 +191,7 @@ export function AdminNotificationDrawer({ isOpen, onClose, position = "right" }:
                     onClick={() => {
                       markAsRead(notification.id)
                       if (notification.actionUrl) {
-                        window.location.href = notification.actionUrl
+                        router.push(notification.actionUrl)
                         onClose()
                       }
                     }}
@@ -248,7 +250,7 @@ export function AdminNotificationDrawer({ isOpen, onClose, position = "right" }:
             variant="outline" 
             className="w-full glass-subtle border-white/20"
             onClick={() => {
-              window.location.href = '/admin/notifications'
+              router.push('/admin/notifications')
               onClose()
             }}
           >

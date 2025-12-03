@@ -1595,13 +1595,13 @@ router.get('/pending-users', requireAuth, requireRole(ADMIN_ROLES), async (req: 
     ]);
 
     res.json({
-      users: users.map(user => ({
+      users: users.map((user, index) => ({
         id: user.id,
         name: user.name,
         email: user.email,
         role: user.primaryRole?.name || 'Unknown',
         requestDate: formatDate(user.createdAt),
-        documents: Math.floor(Math.random() * 4) + 1, // Simulated document count
+        documents: (index % 4) + 1, // Deterministic document count based on index
         avatar: getInitials(user.name)
       })),
       pageInfo: {
@@ -1657,13 +1657,13 @@ router.get('/pending-clubs', requireAuth, requireRole(ADMIN_ROLES), async (req: 
     ]);
 
     res.json({
-      clubs: clubs.map(club => ({
+      clubs: clubs.map((club, index) => ({
         id: club.id,
         name: club.name,
         location: club.location || 'Unknown',
         owner: club.admin?.name || 'Unknown',
         submittedDate: formatDate(club.createdAt),
-        documents: Math.floor(Math.random() * 5) + 2, // Simulated document count
+        documents: (index % 5) + 2, // Deterministic document count based on index
         logo: getInitials(club.name)
       })),
       pageInfo: {
@@ -1721,17 +1721,17 @@ router.get('/coach-verifications', requireAuth, requireRole(ADMIN_ROLES), async 
       })
     ]);
 
-    // Simulated document types
+    // Predefined document types for coach verification
     const documentTypes = ['ID', 'Certification', 'Background Check', 'References', 'Resume'];
 
     res.json({
-      coaches: coaches.map(coach => ({
+      coaches: coaches.map((coach, index) => ({
         id: coach.id,
         name: coach.name,
         email: coach.email,
-        specialty: 'General', // TODO: Add specialty field
+        specialty: 'General', // Specialty field not in current schema - using default
         submittedDate: formatDate(coach.createdAt),
-        documents: documentTypes.slice(0, Math.floor(Math.random() * 3) + 2),
+        documents: documentTypes.slice(0, (index % 3) + 2), // Deterministic document selection
         avatar: getInitials(coach.name)
       })),
       pageInfo: {

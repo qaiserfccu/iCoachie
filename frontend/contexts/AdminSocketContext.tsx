@@ -79,10 +79,6 @@ export function AdminSocketProvider({ children }: AdminSocketProviderProps) {
       
       toastType(notification.title, {
         description: notification.message,
-        action: notification.actionUrl ? {
-          label: 'View',
-          onClick: () => window.location.href = notification.actionUrl!
-        } : undefined
       })
     })
 
