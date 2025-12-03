@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -29,7 +30,24 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   AlertTriangle,
 }
 
+// Navigation mapping for stats cards
+const statsNavMap: Record<string, string> = {
+  'Total Users': '/admin/users',
+  'Active Clubs': '/admin/clubs',
+  'Verified Coaches': '/admin/coaches',
+  'Monthly Revenue': '/admin/transactions',
+}
+
+// Navigation mapping for pending actions
+const pendingNavMap: Record<string, string> = {
+  'Club Approval': '/admin/clubs?filter=pending',
+  'Coach Verification': '/admin/coaches?filter=pending',
+  'Refund Requests': '/admin/transactions?filter=failed',
+  'Support Tickets': '/admin/tickets',
+}
+
 export default function AdminDashboard() {
+  const router = useRouter()
   const [stats, setStats] = useState<AdminStat[]>([])
   const [pendingActions, setPendingActions] = useState<PendingAction[]>([])
   const [activities, setActivities] = useState<Activity[]>([])
@@ -112,8 +130,13 @@ export default function AdminDashboard() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map((stat) => {
           const IconComponent = iconMap[stat.icon] || Users
+          const navPath = statsNavMap[stat.title]
           return (
-            <Card key={stat.title} className="glass-card border-white/20 hover-lift">
+            <Card 
+              key={stat.title} 
+              className="glass-card border-white/20 hover-lift cursor-pointer transition-all hover:shadow-lg hover:scale-[1.02]"
+              onClick={() => navPath && router.push(navPath)}
+            >
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
@@ -155,10 +178,12 @@ export default function AdminDashboard() {
           <CardContent className="space-y-3">
             {pendingActions.map((item) => {
               const IconComponent = iconMap[item.icon] || AlertTriangle
+              const navPath = pendingNavMap[item.type]
               return (
                 <div
                   key={item.type}
-                  className="flex items-center justify-between p-3 rounded-xl glass-subtle hover:bg-white/20 transition-colors cursor-pointer"
+                  className="flex items-center justify-between p-3 rounded-xl glass-subtle hover:bg-white/20 transition-all cursor-pointer hover:scale-[1.01]"
+                  onClick={() => navPath && router.push(navPath)}
                 >
                   <div className="flex items-center gap-3">
                     <div className={`w-10 h-10 rounded-xl bg-white/50 flex items-center justify-center ${item.color}`}>

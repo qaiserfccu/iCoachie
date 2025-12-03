@@ -369,6 +369,138 @@ class AdminService {
       throw error
     }
   }
+
+  // Settings Management
+  async getSettings(category?: string): Promise<SettingsResponse> {
+    try {
+      const url = category ? `/admin/settings?category=${category}` : '/admin/settings'
+      return await apiClient.get<SettingsResponse>(url)
+    } catch (error) {
+      console.error('Error fetching settings:', error)
+      throw error
+    }
+  }
+
+  async updateSettings(settings: Record<string, Record<string, string>>): Promise<{ success: boolean; message: string }> {
+    try {
+      return await apiClient.put<{ success: boolean; message: string }>('/admin/settings', { settings })
+    } catch (error) {
+      console.error('Error updating settings:', error)
+      throw error
+    }
+  }
+
+  async testEmailConfiguration(testEmail: string): Promise<{ success: boolean; message: string }> {
+    try {
+      return await apiClient.post<{ success: boolean; message: string }>('/admin/settings/test-email', { testEmail })
+    } catch (error) {
+      console.error('Error testing email:', error)
+      throw error
+    }
+  }
+
+  // Email Templates Management
+  async getEmailTemplates(): Promise<EmailTemplatesResponse> {
+    try {
+      return await apiClient.get<EmailTemplatesResponse>('/admin/email-templates')
+    } catch (error) {
+      console.error('Error fetching email templates:', error)
+      throw error
+    }
+  }
+
+  async getEmailTemplate(id: number): Promise<EmailTemplate> {
+    try {
+      return await apiClient.get<EmailTemplate>(`/admin/email-templates/${id}`)
+    } catch (error) {
+      console.error('Error fetching email template:', error)
+      throw error
+    }
+  }
+
+  async createEmailTemplate(template: CreateEmailTemplateInput): Promise<EmailTemplate & { message: string }> {
+    try {
+      return await apiClient.post<EmailTemplate & { message: string }>('/admin/email-templates', template)
+    } catch (error) {
+      console.error('Error creating email template:', error)
+      throw error
+    }
+  }
+
+  async updateEmailTemplate(id: number, template: Partial<CreateEmailTemplateInput>): Promise<EmailTemplate & { message: string }> {
+    try {
+      return await apiClient.put<EmailTemplate & { message: string }>(`/admin/email-templates/${id}`, template)
+    } catch (error) {
+      console.error('Error updating email template:', error)
+      throw error
+    }
+  }
+
+  async deleteEmailTemplate(id: number): Promise<{ success: boolean; message: string }> {
+    try {
+      return await apiClient.delete<{ success: boolean; message: string }>(`/admin/email-templates/${id}`)
+    } catch (error) {
+      console.error('Error deleting email template:', error)
+      throw error
+    }
+  }
+
+  async duplicateEmailTemplate(id: number): Promise<EmailTemplate & { message: string }> {
+    try {
+      return await apiClient.post<EmailTemplate & { message: string }>(`/admin/email-templates/${id}/duplicate`, {})
+    } catch (error) {
+      console.error('Error duplicating email template:', error)
+      throw error
+    }
+  }
+
+  async sendTestEmail(id: number, testEmail: string, testData?: Record<string, string>): Promise<{ success: boolean; message: string }> {
+    try {
+      return await apiClient.post<{ success: boolean; message: string }>(`/admin/email-templates/${id}/test`, { testEmail, testData })
+    } catch (error) {
+      console.error('Error sending test email:', error)
+      throw error
+    }
+  }
+}
+
+// Settings types
+export interface SettingsResponse {
+  settings: Record<string, Record<string, string>>
+  raw: Array<{
+    id: number
+    key: string
+    value: string
+    category: string
+    isEncrypted: boolean
+    createdAt: string
+    updatedAt: string
+  }>
+}
+
+// Email Template types
+export interface EmailTemplate {
+  id: number
+  name: string
+  subject: string
+  body: string
+  variables: string[]
+  status: 'Active' | 'Inactive'
+  lastModified: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface EmailTemplatesResponse {
+  templates: EmailTemplate[]
+}
+
+export interface CreateEmailTemplateInput {
+  name: string
+  subject: string
+  body: string
+  variables?: string[]
+  isActive?: boolean
 }
 
 export const adminService = new AdminService()

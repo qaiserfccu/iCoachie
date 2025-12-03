@@ -568,3 +568,37 @@ model File {
 
   @@map("files")
 }
+
+// =============================================================================
+// System Settings Model
+// =============================================================================
+
+model SystemSettings {
+  id          Int      @id @default(autoincrement())
+  key         String   @unique  // e.g., 'platform_name', 'smtp_host', 'enable_registrations'
+  value       String   // JSON string for complex values
+  category    String   @default("general") // general, email, security, payments, notifications
+  isEncrypted Boolean  @default(false) // For sensitive values like passwords
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("system_settings")
+}
+
+// =============================================================================
+// Email Template Model
+// =============================================================================
+
+model EmailTemplate {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique  // e.g., 'welcome_email', 'password_reset'
+  subject     String
+  body        String   // HTML body of the email
+  variables   String[] // Placeholder variables like ['{{name}}', '{{email}}']
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  deletedAt   DateTime? // Soft delete
+
+  @@map("email_templates")
+}
