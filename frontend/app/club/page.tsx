@@ -1,3 +1,6 @@
+"use client"
+
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -13,10 +16,135 @@ import {
   AlertCircle,
   Star,
   Trophy,
+  UserCog,
+  CreditCard,
+  Loader2,
 } from "lucide-react"
-import { clubStats, clubTodaySessions, clubTopPerformers, clubRecentPayments } from "@/lib/services/mockDataService"
+import { clubAdminService, type ClubDashboardStats, type ClubSession, type TopPerformer, type ClubTransaction } from "@/lib/services"
 
 export default function ClubDashboard() {
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [stats, setStats] = useState<ClubDashboardStats | null>(null)
+  const [todaySessions, setTodaySessions] = useState<ClubSession[]>([])
+  const [topPerformers, setTopPerformers] = useState<TopPerformer[]>([])
+  const [recentPayments, setRecentPayments] = useState<ClubTransaction[]>([])
+
+  useEffect(() => {
+    loadDashboardData()
+  }, [])
+
+  async function loadDashboardData() {
+    try {
+      setLoading(true)
+      setError(null)
+      
+      const [statsData, sessionsData, performersData, paymentsData] = await Promise.all([
+        clubAdminService.getDashboardStats(),
+        clubAdminService.getTodaySessions(),
+        clubAdminService.getTopPerformers(3),
+        clubAdminService.getTransactions({ pageSize: 5 })
+      ])
+      
+      setStats(statsData)
+      setTodaySessions(sessionsData)
+      setTopPerformers(performersData)
+      setRecentPayments(paymentsData.data.slice(0, 5))
+    } catch (err) {
+      console.error('Error loading dashboard data:', err)
+      setError('Failed to load dashboard data. Please try again.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(amount)
+  }
+
+  const formatTime = (dateString: string) => {
+    return new Date(dateString).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+  }
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString)
+    const now = new Date()
+    const diffTime = now.getTime() - date.getTime()
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
+    
+    if (diffDays === 0) return 'Today'
+    if (diffDays === 1) return 'Yesterday'
+    if (diffDays < 7) return `${diffDays} days ago`
+    return date.toLocaleDateString()
+  }
+
+  const getStatusBadgeClass = (status: string) => {
+    switch (status) {
+      case 'completed':
+        return 'bg-green-500/20 text-green-600'
+      case 'in_progress':
+        return 'bg-blue-500/20 text-blue-600'
+      case 'pending':
+        return 'bg-yellow-500/20 text-yellow-600'
+      default:
+        return 'bg-yellow-500/20 text-yellow-600'
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
+        <AlertCircle className="w-12 h-12 text-red-500" />
+        <p className="text-muted-foreground">{error}</p>
+        <Button onClick={loadDashboardData}>Try Again</Button>
+      </div>
+    )
+  }
+
+  const clubStats = [
+    {
+      title: "Total Members",
+      value: stats?.totalMembers.toString() || "0",
+      change: stats?.memberChange || "+0",
+      icon: Users,
+      color: "from-blue-500 to-blue-600",
+    },
+    {
+      title: "Active Coaches",
+      value: stats?.activeCoaches.toString() || "0",
+      change: stats?.coachChange || "+0",
+      icon: UserCog,
+      color: "from-teal-500 to-teal-600",
+    },
+    {
+      title: "Sessions Today",
+      value: stats?.sessionsToday.toString() || "0",
+      change: stats?.sessionChange || "0",
+      icon: Calendar,
+      color: "from-green-500 to-green-600",
+    },
+    {
+      title: "Monthly Revenue",
+      value: formatCurrency(stats?.monthlyRevenue || 0),
+      change: stats?.revenueChange || "+0%",
+      icon: CreditCard,
+      color: "from-yellow-500 to-orange-500",
+    },
+  ]
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -70,42 +198,38 @@ export default function ClubDashboard() {
             </Button>
           </CardHeader>
           <CardContent className="space-y-4">
-            {clubTodaySessions.map((session, index) => (
-              <div
-                key={index}
-                className="flex items-center justify-between p-4 rounded-xl glass-subtle hover:bg-white/20 transition-colors"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="text-center min-w-[70px]">
-                    <Clock className="w-4 h-4 mx-auto text-muted-foreground mb-1" />
-                    <span className="text-sm font-medium">{session.time}</span>
+            {todaySessions.length === 0 ? (
+              <p className="text-muted-foreground text-center py-8">No sessions scheduled for today</p>
+            ) : (
+              todaySessions.map((session) => (
+                <div
+                  key={session.id}
+                  className="flex items-center justify-between p-4 rounded-xl glass-subtle hover:bg-white/20 transition-colors"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="text-center min-w-[70px]">
+                      <Clock className="w-4 h-4 mx-auto text-muted-foreground mb-1" />
+                      <span className="text-sm font-medium">{formatTime(session.startTime)}</span>
+                    </div>
+                    <div>
+                      <p className="font-medium">{session.title}</p>
+                      <p className="text-sm text-muted-foreground">Coach: {session.coachName}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-medium">{session.name}</p>
-                    <p className="text-sm text-muted-foreground">Coach: {session.coach}</p>
+                  <div className="flex items-center gap-4">
+                    <div className="text-right">
+                      <p className="text-sm font-medium">
+                        {session.enrolledCount}/{session.maxCapacity}
+                      </p>
+                      <p className="text-xs text-muted-foreground">Enrolled</p>
+                    </div>
+                    <Badge className={getStatusBadgeClass(session.status)}>
+                      {session.status.replace('_', ' ')}
+                    </Badge>
                   </div>
                 </div>
-                <div className="flex items-center gap-4">
-                  <div className="text-right">
-                    <p className="text-sm font-medium">
-                      {session.enrolled}/{session.capacity}
-                    </p>
-                    <p className="text-xs text-muted-foreground">Enrolled</p>
-                  </div>
-                  <Badge
-                    className={
-                      session.status === "completed"
-                        ? "bg-green-500/20 text-green-600"
-                        : session.status === "ongoing"
-                          ? "bg-blue-500/20 text-blue-600"
-                          : "bg-yellow-500/20 text-yellow-600"
-                    }
-                  >
-                    {session.status}
-                  </Badge>
-                </div>
-              </div>
-            ))}
+              ))
+            )}
           </CardContent>
         </Card>
 
@@ -117,10 +241,10 @@ export default function ClubDashboard() {
             </CardHeader>
             <CardContent className="space-y-2">
               {[
-                { label: "Add New Member", icon: Users, color: "text-blue-500" },
-                { label: "Create Session", icon: Calendar, color: "text-teal-500" },
-                { label: "Record Attendance", icon: CheckCircle, color: "text-green-500" },
-                { label: "Send Announcement", icon: AlertCircle, color: "text-yellow-500" },
+                { label: "Add New Member", icon: Users, color: "text-blue-500", href: "/club/members/add" },
+                { label: "Create Session", icon: Calendar, color: "text-teal-500", href: "/club/sessions/create" },
+                { label: "Record Attendance", icon: CheckCircle, color: "text-green-500", href: "/club/attendance" },
+                { label: "Send Announcement", icon: AlertCircle, color: "text-yellow-500", href: "/club/announcements" },
               ].map((action) => (
                 <Button
                   key={action.label}
@@ -143,43 +267,47 @@ export default function ClubDashboard() {
               <Trophy className="w-5 h-5 text-yellow-500" />
             </CardHeader>
             <CardContent className="space-y-4">
-              {clubTopPerformers.map((performer, index) => (
-                <div key={performer.name} className="flex items-center gap-3">
-                  <div className="relative">
-                    <Avatar className="h-10 w-10">
-                      <AvatarImage src={`/.jpg?height=40&width=40&query=${performer.name}`} />
-                      <AvatarFallback className="bg-gradient-to-br from-blue-500 to-teal-500 text-white text-sm">
-                        {performer.name
-                          .split(" ")
-                          .map((n) => n[0])
-                          .join("")}
-                      </AvatarFallback>
-                    </Avatar>
-                    <span className="absolute -top-1 -left-1 w-5 h-5 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-full flex items-center justify-center text-xs text-white font-bold">
-                      {index + 1}
-                    </span>
+              {topPerformers.length === 0 ? (
+                <p className="text-muted-foreground text-center py-4">No performance data available</p>
+              ) : (
+                topPerformers.map((performer, index) => (
+                  <div key={performer.id} className="flex items-center gap-3">
+                    <div className="relative">
+                      <Avatar className="h-10 w-10">
+                        <AvatarImage src={`/.jpg?height=40&width=40&query=${performer.name}`} />
+                        <AvatarFallback className="bg-gradient-to-br from-blue-500 to-teal-500 text-white text-sm">
+                          {performer.name
+                            .split(" ")
+                            .map((n) => n[0])
+                            .join("")}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="absolute -top-1 -left-1 w-5 h-5 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-full flex items-center justify-center text-xs text-white font-bold">
+                        {index + 1}
+                      </span>
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium">{performer.name}</p>
+                      <p className="text-xs text-muted-foreground">{performer.sport}</p>
+                    </div>
+                    <div className="text-right">
+                      <Badge
+                        className={
+                          performer.badge === "Gold"
+                            ? "bg-yellow-500/20 text-yellow-600"
+                            : performer.badge === "Silver"
+                              ? "bg-gray-400/20 text-gray-600"
+                              : "bg-orange-500/20 text-orange-600"
+                        }
+                      >
+                        <Star className="w-3 h-3 mr-1" />
+                        {performer.badge}
+                      </Badge>
+                      <Progress value={performer.progress} className="h-1.5 mt-1 w-16" />
+                    </div>
                   </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium">{performer.name}</p>
-                    <p className="text-xs text-muted-foreground">{performer.sport}</p>
-                  </div>
-                  <div className="text-right">
-                    <Badge
-                      className={
-                        performer.badge === "Gold"
-                          ? "bg-yellow-500/20 text-yellow-600"
-                          : performer.badge === "Silver"
-                            ? "bg-gray-400/20 text-gray-600"
-                            : "bg-orange-500/20 text-orange-600"
-                      }
-                    >
-                      <Star className="w-3 h-3 mr-1" />
-                      {performer.badge}
-                    </Badge>
-                    <Progress value={performer.progress} className="h-1.5 mt-1 w-16" />
-                  </div>
-                </div>
-              ))}
+                ))
+              )}
             </CardContent>
           </Card>
         </div>
@@ -195,38 +323,36 @@ export default function ClubDashboard() {
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-white/20">
-                  <th className="text-left py-3 px-4 font-medium">Member</th>
-                  <th className="text-left py-3 px-4 font-medium">Amount</th>
-                  <th className="text-left py-3 px-4 font-medium">Type</th>
-                  <th className="text-left py-3 px-4 font-medium">Date</th>
-                  <th className="text-left py-3 px-4 font-medium">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {clubRecentPayments.map((payment, index) => (
-                  <tr key={index} className="border-b border-white/10 hover:bg-white/5">
-                    <td className="py-3 px-4">{payment.member}</td>
-                    <td className="py-3 px-4 font-medium text-green-500">{payment.amount}</td>
-                    <td className="py-3 px-4">{payment.type}</td>
-                    <td className="py-3 px-4 text-muted-foreground">{payment.date}</td>
-                    <td className="py-3 px-4">
-                      <Badge
-                        className={
-                          payment.status === "completed"
-                            ? "bg-green-500/20 text-green-600"
-                            : "bg-yellow-500/20 text-yellow-600"
-                        }
-                      >
-                        {payment.status}
-                      </Badge>
-                    </td>
+            {recentPayments.length === 0 ? (
+              <p className="text-muted-foreground text-center py-8">No payment records found</p>
+            ) : (
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-white/20">
+                    <th className="text-left py-3 px-4 font-medium">Member</th>
+                    <th className="text-left py-3 px-4 font-medium">Amount</th>
+                    <th className="text-left py-3 px-4 font-medium">Type</th>
+                    <th className="text-left py-3 px-4 font-medium">Date</th>
+                    <th className="text-left py-3 px-4 font-medium">Status</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {recentPayments.map((payment) => (
+                    <tr key={payment.id} className="border-b border-white/10 hover:bg-white/5">
+                      <td className="py-3 px-4">{payment.studentName}</td>
+                      <td className="py-3 px-4 font-medium text-green-500">{formatCurrency(payment.amount)}</td>
+                      <td className="py-3 px-4">{payment.type}</td>
+                      <td className="py-3 px-4 text-muted-foreground">{formatDate(payment.date)}</td>
+                      <td className="py-3 px-4">
+                        <Badge className={getStatusBadgeClass(payment.status)}>
+                          {payment.status}
+                        </Badge>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
           </div>
         </CardContent>
       </Card>

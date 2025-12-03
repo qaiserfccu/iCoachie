@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
@@ -22,6 +22,7 @@ import {
   Bell,
 } from "lucide-react"
 import LogoutButton from '@/components/ui/LogoutButton'
+import { clubAdminService, type ClubInfo } from "@/lib/services"
 
 const menuItems = [
   { icon: LayoutDashboard, label: "Dashboard", href: "/club" },
@@ -94,7 +95,20 @@ const bottomItems = [
 export function ClubSidebar() {
   const [collapsed, setCollapsed] = useState(false)
   const [openMenus, setOpenMenus] = useState<string[]>([])
+  const [clubInfo, setClubInfo] = useState<ClubInfo | null>(null)
   const pathname = usePathname()
+
+  useEffect(() => {
+    async function loadClubInfo() {
+      try {
+        const info = await clubAdminService.getMyClub()
+        setClubInfo(info)
+      } catch (error) {
+        console.error('Error loading club info:', error)
+      }
+    }
+    loadClubInfo()
+  }, [])
 
   const toggleMenu = (label: string) => {
     setOpenMenus((prev) => (prev.includes(label) ? prev.filter((l) => l !== label) : [...prev, label]))
@@ -117,7 +131,7 @@ export function ClubSidebar() {
             </div>
             {!collapsed && (
               <div>
-                <span className="text-lg font-bold text-foreground">Champions FC</span>
+                <span className="text-lg font-bold text-foreground">{clubInfo?.name || 'My Club'}</span>
                 <span className="block text-xs text-muted-foreground">Club Admin</span>
               </div>
             )}
