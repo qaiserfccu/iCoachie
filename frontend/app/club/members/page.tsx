@@ -86,7 +86,7 @@ export default function MembersPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {members.map((member) => (
+                {clubMembers.map((member) => (
                   <TableRow key={member.id} className="hover:bg-white/10">
                     <TableCell>
                       <div className="flex items-center gap-3">

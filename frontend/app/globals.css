@@ -271,4 +271,17 @@
       transform: translateY(-20px) scale(1.05);
     }
   }
+
+  @keyframes shrink-width {
+    from {
+      width: 100%;
+    }
+    to {
+      width: 0%;
+    }
+  }
+
+  .animate-shrink-width {
+    animation: shrink-width linear forwards;
+  }
 }

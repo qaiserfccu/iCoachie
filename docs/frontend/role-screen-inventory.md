@@ -22,7 +22,7 @@ This document tracks the frontend screens and components implemented for each of
 |------|-------|--------|------------|-------|
 | CLUB_ADMIN | `/club/*` | ✅ Complete | club-sidebar, club-header, 5 pages | Dashboard, coaches, members, payments, sessions |
 | CLUB_MANAGER | `/club/*` | ✅ Complete | Shares club components | Same interface as CLUB_ADMIN with permission differences |
-| HEAD_COACH | `/head-coach/*` | 🟡 Basic | Dashboard page | Coach management, programs, sessions overview |
+| HEAD_COACH | `/head-coach/*` | ✅ Complete | head-coach-sidebar, head-coach-header, 6 pages | Coach management, programs, evaluations, teams, training plans |
 | COACH | `/coach/*` | ✅ Complete | coach-sidebar, coach-header, 6 pages | Attendance, evaluations, progress, schedule, students |
 | ACCOUNTANT | `/accountant/*` | ✅ Complete | accountant-sidebar, accountant-header, dashboard | Financial management, invoices, payments, reports |
 | FRONT_DESK | `/front-desk/*` | ✅ Complete | front-desk-sidebar, front-desk-header, dashboard | Check-ins, schedule, bookings, inquiries |
@@ -34,19 +34,19 @@ This document tracks the frontend screens and components implemented for each of
 | Role | Route | Status | Components | Notes |
 |------|-------|--------|------------|-------|
 | FACILITY_MANAGER | `/facility/*` | ✅ Complete | facility-sidebar, facility-header, dashboard | Venues, grounds, staff, maintenance, equipment |
-| BOOKINGS_COORDINATOR | `/bookings-coordinator/*` | 🟡 Basic | Dashboard page | Booking management interface |
-| MAINTENANCE_TECH | `/maintenance/*` | 🟡 Basic | Dashboard page | Work orders, requests, reports |
-| EQUIPMENT_MANAGER | `/equipment/*` | 🟡 Basic | Dashboard page | Inventory, distribution, orders |
-| SECURITY_STAFF | `/security/*` | 🟡 Basic | Dashboard page | Incidents, logs, schedules |
-| CLEANING_STAFF | `/cleaning/*` | 🟡 Basic | Dashboard page | Schedule, tasks, reports |
+| BOOKINGS_COORDINATOR | `/bookings-coordinator/*` | ✅ Complete | bookings-coordinator-sidebar, bookings-coordinator-header, 6 pages | Booking management, calendar, reservations, pricing |
+| MAINTENANCE_TECH | `/maintenance/*` | ✅ Complete | maintenance-sidebar, maintenance-header, 6 pages | Work orders, preventive, inventory, vendors, reports |
+| EQUIPMENT_MANAGER | `/equipment/*` | ✅ Complete | equipment-sidebar, equipment-header, 6 pages | Inventory, checkouts, procurement, maintenance, disposal |
+| SECURITY_STAFF | `/security/*` | ✅ Complete | security-sidebar, security-header, 6 pages | Incidents, patrol logs, access control, emergency, visitor screening |
+| CLEANING_STAFF | `/cleaning/*` | ✅ Complete | cleaning-sidebar, cleaning-header, 6 pages | Assignments, schedules, inspections, supplies, reports |
 
 ### Venue/Ground Scope Roles
 
 | Role | Route | Status | Components | Notes |
 |------|-------|--------|------------|-------|
-| VENUE_MANAGER | `/venue/*` | 🟡 Basic | Dashboard page | Venue bookings, schedule, issues |
-| GROUND_MANAGER | `/ground/*` | 🟡 Basic | Dashboard page | Ground bookings, schedule, conditions |
-| GROUNDSKEEPER | `/groundskeeper/*` | 🟡 Basic | Dashboard page | Field conditions, schedule, reports |
+| VENUE_MANAGER | `/venue/*` | ✅ Complete | venue-sidebar, venue-header, 6 pages | Venue bookings, events, capacity, pricing, amenities |
+| GROUND_MANAGER | `/ground/*` | ✅ Complete | ground-sidebar, ground-header, 6 pages | Ground conditions, maintenance, schedules, usage, weather |
+| GROUNDSKEEPER | `/groundskeeper/*` | ✅ Complete | groundskeeper-sidebar, groundskeeper-header, 6 pages | Daily tasks, turf, irrigation, pest control, seasonal |
 
 ### Independent Scope Roles
 
@@ -64,15 +64,12 @@ This document tracks the frontend screens and components implemented for each of
 ## Implementation Priority
 
 ### Phase 1 (Complete) ✅
-All 22 roles now have at least a basic dashboard page accessible.
+All 22 roles now have full dashboard pages with sidebars, headers, and sub-pages.
 
-### Phase 2 (Recommended)
-Upgrade "Basic" status roles to "Complete" by adding:
-1. Custom sidebar with role-specific navigation
-2. Custom header with role-specific search and notifications
-3. Sub-pages for detailed functionality
+### Phase 2 (Complete) ✅
+All roles upgraded to use centralized mockDataService for consistent data management.
 
-### Phase 3 (Future)
+### Phase 3 (In Progress)
 1. Connect all screens to backend APIs
 2. Implement real-time data updates
 3. Add role-specific widgets and analytics
@@ -149,4 +146,4 @@ Each role's screens should enforce their respective permissions as defined in `d
 | STUDENT | student.schedule.view, student.progress.view, student.evaluations.view |
 
 ## Last Updated
-2025-12-02 - Initial inventory created covering all 22 roles
+2025-12-03 - Updated all roles to use centralized mockDataService for data management

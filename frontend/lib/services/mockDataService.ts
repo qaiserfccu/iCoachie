@@ -1708,11 +1708,13 @@ export function formatCurrency(amount: number): string {
  */
 export function getStatusColor(status: string): string {
   const statusColors: Record<string, string> = {
+    // General statuses
     Active: "bg-green-500/20 text-green-600",
     Verified: "bg-green-500/20 text-green-600",
     Completed: "bg-green-500/20 text-green-600",
     completed: "bg-green-500/20 text-green-600",
     confirmed: "bg-green-500/20 text-green-600",
+    Confirmed: "bg-green-500/20 text-green-600",
     Pending: "bg-yellow-500/20 text-yellow-600",
     pending: "bg-yellow-500/20 text-yellow-600",
     ongoing: "bg-blue-500/20 text-blue-600",
@@ -1721,6 +1723,659 @@ export function getStatusColor(status: string): string {
     "in-progress": "bg-blue-500/20 text-blue-600",
     Suspended: "bg-red-500/20 text-red-600",
     overdue: "bg-red-500/20 text-red-600",
+    // Facility/Venue statuses
+    Available: "bg-green-500/20 text-green-500",
+    Occupied: "bg-blue-500/20 text-blue-500",
+    Maintenance: "bg-yellow-500/20 text-yellow-600",
+    Closed: "bg-red-500/20 text-red-500",
+    // Content statuses
+    Published: "bg-green-500/20 text-green-500",
+    Draft: "bg-yellow-500/20 text-yellow-600",
+    Scheduled: "bg-blue-500/20 text-blue-500",
   }
   return statusColors[status] || "bg-gray-500/20 text-gray-600"
+}
+
+/**
+ * Get priority color class
+ */
+export function getPriorityColor(priority: string): string {
+  const priorityColors: Record<string, string> = {
+    High: "bg-red-500/20 text-red-600",
+    high: "bg-red-500/20 text-red-600",
+    Medium: "bg-yellow-500/20 text-yellow-600",
+    medium: "bg-yellow-500/20 text-yellow-600",
+    Low: "bg-green-500/20 text-green-500",
+    low: "bg-green-500/20 text-green-500",
+    Normal: "bg-blue-500/20 text-blue-600",
+    normal: "bg-blue-500/20 text-blue-600",
+  }
+  return priorityColors[priority] || "bg-gray-500/20 text-gray-600"
+}
+
+/**
+ * Get severity color class
+ */
+export function getSeverityColor(severity: string): string {
+  const severityColors: Record<string, string> = {
+    Low: "bg-green-500/20 text-green-500",
+    low: "bg-green-500/20 text-green-500",
+    Moderate: "bg-yellow-500/20 text-yellow-600",
+    moderate: "bg-yellow-500/20 text-yellow-600",
+    High: "bg-red-500/20 text-red-500",
+    high: "bg-red-500/20 text-red-500",
+  }
+  return severityColors[severity] || "bg-gray-500/20 text-gray-600"
+}
+
+// ============================================================================
+// ADMIN - EXTENDED DATA FOR SUB-PAGES
+// ============================================================================
+
+// Admin Users - Admins List
+export const adminAdminUsers = [
+  { id: 1, name: "Admin User 1", email: "admin1@icoachie.com", role: "Super Admin", status: "Active", lastLogin: "Today, 10:30 AM", avatar: "A1" },
+  { id: 2, name: "Admin User 2", email: "admin2@icoachie.com", role: "Admin", status: "Active", lastLogin: "Today, 9:15 AM", avatar: "A2" },
+  { id: 3, name: "Support Admin", email: "support@icoachie.com", role: "Support Admin", status: "Active", lastLogin: "Yesterday", avatar: "SA" },
+  { id: 4, name: "Finance Admin", email: "finance@icoachie.com", role: "Finance Admin", status: "Active", lastLogin: "2 days ago", avatar: "FA" },
+]
+
+// Admin Users - Pending Approvals
+export const adminPendingUsers = [
+  { id: 1, name: "New Coach", email: "newcoach@email.com", role: "Coach", requestDate: "Feb 15, 2024", documents: 3, avatar: "NC" },
+  { id: 2, name: "Sports Club", email: "sportsclub@email.com", role: "Club Admin", requestDate: "Feb 14, 2024", documents: 5, avatar: "SC" },
+  { id: 3, name: "Freelance Trainer", email: "trainer@email.com", role: "Freelancer", requestDate: "Feb 13, 2024", documents: 2, avatar: "FT" },
+  { id: 4, name: "New Parent", email: "parent@email.com", role: "Parent", requestDate: "Feb 12, 2024", documents: 1, avatar: "NP" },
+]
+
+// Admin Roles - Permissions
+export const adminPermissions = [
+  { id: 1, name: "User Management", description: "Create, edit, and delete users", roles: ["Super Admin", "Admin"] },
+  { id: 2, name: "Club Management", description: "Manage clubs and approvals", roles: ["Super Admin", "Admin", "Club Admin"] },
+  { id: 3, name: "Financial Access", description: "View and manage payments", roles: ["Super Admin", "Finance Admin"] },
+  { id: 4, name: "Content Management", description: "Manage platform content", roles: ["Super Admin", "Content Manager"] },
+  { id: 5, name: "Support Tickets", description: "Handle support requests", roles: ["Super Admin", "Support Admin"] },
+  { id: 6, name: "Analytics View", description: "Access analytics dashboard", roles: ["Super Admin", "Admin"] },
+  { id: 7, name: "Reports Generation", description: "Generate and export reports", roles: ["Super Admin", "Admin", "Finance Admin"] },
+  { id: 8, name: "System Settings", description: "Configure system settings", roles: ["Super Admin"] },
+]
+
+// Admin Clubs - Pending Clubs
+export const adminPendingClubs = [
+  { id: 1, name: "New Sports Academy", location: "Miami, FL", owner: "John Doe", submittedDate: "Feb 15, 2024", documents: 4, logo: "NS" },
+  { id: 2, name: "Youth Football Club", location: "Dallas, TX", owner: "Jane Smith", submittedDate: "Feb 14, 2024", documents: 3, logo: "YF" },
+  { id: 3, name: "Tennis Pro Academy", location: "Seattle, WA", owner: "Mike Wilson", submittedDate: "Feb 13, 2024", documents: 5, logo: "TP" },
+]
+
+// Admin Clubs - Analytics
+export const adminClubAnalytics = {
+  totalClubs: 284,
+  activeClubs: 256,
+  newThisMonth: 12,
+  churnRate: "2.3%",
+  topRegions: [
+    { region: "California", clubs: 45, growth: "+15%" },
+    { region: "New York", clubs: 38, growth: "+12%" },
+    { region: "Texas", clubs: 32, growth: "+18%" },
+    { region: "Florida", clubs: 28, growth: "+8%" },
+  ],
+  revenueByPlan: [
+    { plan: "Premium", revenue: "$85,000", clubs: 120 },
+    { plan: "Standard", revenue: "$32,000", clubs: 98 },
+    { plan: "Basic", revenue: "$11,450", clubs: 66 },
+  ],
+}
+
+// Admin Coaches
+export const adminCoaches = [
+  { id: 1, name: "Coach Smith", email: "smith@email.com", specialty: "Football", rating: 4.8, students: 45, status: "Verified", avatar: "CS" },
+  { id: 2, name: "Coach Johnson", email: "johnson@email.com", specialty: "Basketball", rating: 4.6, students: 32, status: "Verified", avatar: "CJ" },
+  { id: 3, name: "Coach Williams", email: "williams@email.com", specialty: "Tennis", rating: 4.9, students: 28, status: "Verified", avatar: "CW" },
+  { id: 4, name: "Coach Brown", email: "brown@email.com", specialty: "Swimming", rating: 4.7, students: 38, status: "Pending", avatar: "CB" },
+  { id: 5, name: "Coach Davis", email: "davis@email.com", specialty: "Soccer", rating: 4.5, students: 52, status: "Verified", avatar: "CD" },
+]
+
+// Admin Coaches - Verifications
+export const adminCoachVerifications = [
+  { id: 1, name: "New Coach 1", email: "new1@email.com", specialty: "Football", submittedDate: "Feb 15, 2024", documents: ["ID", "Certification", "Background Check"], avatar: "N1" },
+  { id: 2, name: "New Coach 2", email: "new2@email.com", specialty: "Basketball", submittedDate: "Feb 14, 2024", documents: ["ID", "Certification"], avatar: "N2" },
+  { id: 3, name: "New Coach 3", email: "new3@email.com", specialty: "Tennis", submittedDate: "Feb 13, 2024", documents: ["ID", "Certification", "References"], avatar: "N3" },
+]
+
+// Admin Freelancers
+export const adminFreelancers = [
+  { id: 1, name: "Freelance Coach 1", email: "free1@email.com", specialty: "Personal Training", rating: 4.8, bookings: 45, earnings: "$3,200", status: "Active", avatar: "F1" },
+  { id: 2, name: "Freelance Coach 2", email: "free2@email.com", specialty: "Yoga", rating: 4.6, bookings: 38, earnings: "$2,800", status: "Active", avatar: "F2" },
+  { id: 3, name: "Freelance Coach 3", email: "free3@email.com", specialty: "Swimming", rating: 4.9, bookings: 52, earnings: "$4,100", status: "Active", avatar: "F3" },
+  { id: 4, name: "Freelance Coach 4", email: "free4@email.com", specialty: "Tennis", rating: 4.4, bookings: 28, earnings: "$2,100", status: "Pending", avatar: "F4" },
+]
+
+// Admin Families (Parents & Kids)
+export const adminFamilies = [
+  { id: 1, parentName: "Parent Smith", email: "smith@email.com", kids: 2, activeSessions: 4, totalSpent: "$1,200", joined: "Jan 2024", avatar: "PS" },
+  { id: 2, parentName: "Parent Johnson", email: "johnson@email.com", kids: 1, activeSessions: 2, totalSpent: "$800", joined: "Dec 2023", avatar: "PJ" },
+  { id: 3, parentName: "Parent Williams", email: "williams@email.com", kids: 3, activeSessions: 5, totalSpent: "$2,100", joined: "Nov 2023", avatar: "PW" },
+  { id: 4, parentName: "Parent Brown", email: "brown@email.com", kids: 1, activeSessions: 3, totalSpent: "$950", joined: "Jan 2024", avatar: "PB" },
+]
+
+// Admin Payments - Transactions
+export const adminTransactions = [
+  { id: "TXN-001", user: "Champions FC", amount: "$450", type: "Subscription", status: "Completed", date: "Feb 15, 2024" },
+  { id: "TXN-002", user: "Sarah Wilson", amount: "$120", type: "Session Booking", status: "Completed", date: "Feb 15, 2024" },
+  { id: "TXN-003", user: "Elite Academy", amount: "$890", type: "Subscription", status: "Pending", date: "Feb 14, 2024" },
+  { id: "TXN-004", user: "John Smith", amount: "$75", type: "Session Booking", status: "Refunded", date: "Feb 14, 2024" },
+  { id: "TXN-005", user: "Victory Athletics", amount: "$450", type: "Subscription", status: "Completed", date: "Feb 13, 2024" },
+]
+
+// Admin Payments - Subscriptions
+export const adminSubscriptions = [
+  { id: 1, club: "Champions FC", plan: "Premium", amount: "$450/mo", startDate: "Jan 1, 2024", status: "Active", nextBilling: "Mar 1, 2024" },
+  { id: 2, club: "Elite Academy", plan: "Premium", amount: "$450/mo", startDate: "Dec 15, 2023", status: "Active", nextBilling: "Mar 15, 2024" },
+  { id: 3, club: "Victory Athletics", plan: "Standard", amount: "$250/mo", startDate: "Feb 1, 2024", status: "Active", nextBilling: "Mar 1, 2024" },
+  { id: 4, club: "Rising Stars", plan: "Basic", amount: "$99/mo", startDate: "Jan 20, 2024", status: "Cancelled", nextBilling: "-" },
+]
+
+// Admin Payments - Refunds
+export const adminRefunds = [
+  { id: "REF-001", user: "John Smith", originalAmount: "$75", refundAmount: "$75", reason: "Session cancelled", status: "Processed", date: "Feb 15, 2024" },
+  { id: "REF-002", user: "Sarah Wilson", originalAmount: "$120", refundAmount: "$60", reason: "Partial refund", status: "Pending", date: "Feb 14, 2024" },
+  { id: "REF-003", user: "Mike Johnson", originalAmount: "$200", refundAmount: "$200", reason: "Service issue", status: "Under Review", date: "Feb 13, 2024" },
+]
+
+// Admin Analytics
+export const adminAnalyticsData = {
+  userGrowth: [
+    { month: "Sep", users: 8500 },
+    { month: "Oct", users: 9200 },
+    { month: "Nov", users: 10100 },
+    { month: "Dec", users: 11200 },
+    { month: "Jan", users: 12000 },
+    { month: "Feb", users: 12847 },
+  ],
+  revenueBreakdown: [
+    { category: "Subscriptions", amount: "$85,000", percentage: 66 },
+    { category: "Session Bookings", amount: "$32,000", percentage: 25 },
+    { category: "Other", amount: "$11,450", percentage: 9 },
+  ],
+  topMetrics: [
+    { label: "Active Sessions", value: "2,456", change: "+12%" },
+    { label: "Avg. Session Duration", value: "45 min", change: "+5%" },
+    { label: "User Retention", value: "87%", change: "+3%" },
+    { label: "NPS Score", value: "72", change: "+8" },
+  ],
+}
+
+// Admin Reports
+export const adminReports = [
+  { id: 1, name: "Monthly Revenue Report", type: "Financial", lastGenerated: "Feb 1, 2024", frequency: "Monthly" },
+  { id: 2, name: "User Growth Report", type: "Analytics", lastGenerated: "Feb 15, 2024", frequency: "Weekly" },
+  { id: 3, name: "Club Performance Report", type: "Performance", lastGenerated: "Feb 10, 2024", frequency: "Monthly" },
+  { id: 4, name: "Coach Activity Report", type: "Activity", lastGenerated: "Feb 14, 2024", frequency: "Weekly" },
+  { id: 5, name: "Payment Summary Report", type: "Financial", lastGenerated: "Feb 15, 2024", frequency: "Daily" },
+]
+
+// Admin Notifications
+export const adminNotifications = [
+  { id: 1, title: "New Club Registration", message: "Champions FC submitted registration", type: "info", time: "2 min ago", read: false },
+  { id: 2, title: "Payment Failed", message: "Subscription payment failed for Elite Academy", type: "error", time: "15 min ago", read: false },
+  { id: 3, title: "Coach Verification", message: "New coach verification pending review", type: "warning", time: "1 hour ago", read: true },
+  { id: 4, title: "System Update", message: "Scheduled maintenance tonight at 2 AM", type: "info", time: "2 hours ago", read: true },
+  { id: 5, title: "Refund Request", message: "New refund request from John Smith", type: "warning", time: "3 hours ago", read: false },
+]
+
+// Admin Settings - Email Templates
+export const adminEmailTemplates = [
+  { id: 1, name: "Welcome Email", subject: "Welcome to iCoachie!", lastModified: "Jan 15, 2024", status: "Active" },
+  { id: 2, name: "Password Reset", subject: "Reset Your Password", lastModified: "Jan 10, 2024", status: "Active" },
+  { id: 3, name: "Session Reminder", subject: "Your Session is Coming Up", lastModified: "Feb 1, 2024", status: "Active" },
+  { id: 4, name: "Payment Confirmation", subject: "Payment Received", lastModified: "Jan 20, 2024", status: "Active" },
+  { id: 5, name: "Club Approval", subject: "Your Club Has Been Approved", lastModified: "Feb 5, 2024", status: "Active" },
+]
+
+// Admin Settings - Integrations
+export const adminIntegrations = [
+  { id: 1, name: "Stripe", description: "Payment processing", status: "Connected", icon: "stripe" },
+  { id: 2, name: "Google Calendar", description: "Calendar sync", status: "Connected", icon: "google" },
+  { id: 3, name: "Zoom", description: "Video conferencing", status: "Connected", icon: "zoom" },
+  { id: 4, name: "Mailchimp", description: "Email marketing", status: "Not Connected", icon: "mailchimp" },
+  { id: 5, name: "Slack", description: "Team notifications", status: "Not Connected", icon: "slack" },
+]
+
+// Admin Database
+export const adminDatabaseStats = {
+  totalSize: "2.4 GB",
+  tablesCount: 45,
+  lastBackup: "Feb 15, 2024, 3:00 AM",
+  backupFrequency: "Daily",
+  tables: [
+    { name: "users", rows: "12,847", size: "450 MB" },
+    { name: "sessions", rows: "45,230", size: "380 MB" },
+    { name: "bookings", rows: "28,450", size: "320 MB" },
+    { name: "payments", rows: "15,890", size: "280 MB" },
+    { name: "clubs", rows: "284", size: "120 MB" },
+  ],
+}
+
+// Admin Help
+export const adminHelpTopics = [
+  { id: 1, title: "Getting Started", articles: 12, icon: "book" },
+  { id: 2, title: "User Management", articles: 8, icon: "users" },
+  { id: 3, title: "Payment Setup", articles: 6, icon: "credit-card" },
+  { id: 4, title: "Club Management", articles: 10, icon: "building" },
+  { id: 5, title: "Reports & Analytics", articles: 5, icon: "chart" },
+  { id: 6, title: "Troubleshooting", articles: 15, icon: "help" },
+]
+
+// ============================================================================
+// MOCK LOGGED-IN USER DATA (for all roles)
+// ============================================================================
+
+export interface MockUser {
+  id: string
+  name: string
+  email: string
+  avatar: string
+  role: string
+  roleLabel: string
+  organization?: string
+}
+
+// Role-based mock users - use these in headers/sidebars instead of hardcoded values
+export const mockUsers: Record<string, MockUser> = {
+  admin: {
+    id: "admin-001",
+    name: "Super Admin",
+    email: "admin@icoachie.com",
+    avatar: "SA",
+    role: "admin",
+    roleLabel: "Super Admin",
+  },
+  clubAdmin: {
+    id: "club-admin-001",
+    name: "Champions FC",
+    email: "admin@championsfc.com",
+    avatar: "CF",
+    role: "club_admin",
+    roleLabel: "Club Admin",
+    organization: "Champions FC",
+  },
+  coach: {
+    id: "coach-001",
+    name: "John Smith",
+    email: "john.smith@email.com",
+    avatar: "JS",
+    role: "coach",
+    roleLabel: "Head Coach",
+    organization: "Champions FC",
+  },
+  freelancer: {
+    id: "freelancer-001",
+    name: "Mike Johnson",
+    email: "mike.j@email.com",
+    avatar: "MJ",
+    role: "freelancer",
+    roleLabel: "Freelancer Coach",
+  },
+  parent: {
+    id: "parent-001",
+    name: "Sarah Wilson",
+    email: "sarah.w@email.com",
+    avatar: "SW",
+    role: "parent",
+    roleLabel: "Parent",
+  },
+  student: {
+    id: "student-001",
+    name: "Emma Davis",
+    email: "emma.d@email.com",
+    avatar: "ED",
+    role: "student",
+    roleLabel: "Student",
+  },
+  accountant: {
+    id: "accountant-001",
+    name: "David Chen",
+    email: "david.chen@email.com",
+    avatar: "DC",
+    role: "accountant",
+    roleLabel: "Accountant",
+    organization: "Champions FC",
+  },
+  frontDesk: {
+    id: "front-desk-001",
+    name: "Lisa Brown",
+    email: "lisa.brown@email.com",
+    avatar: "LB",
+    role: "front_desk",
+    roleLabel: "Front Desk",
+    organization: "Champions FC",
+  },
+  maintenance: {
+    id: "maintenance-001",
+    name: "Tom Wilson",
+    email: "tom.w@email.com",
+    avatar: "TW",
+    role: "maintenance",
+    roleLabel: "Maintenance Tech",
+    organization: "Champions FC",
+  },
+  groundskeeper: {
+    id: "groundskeeper-001",
+    name: "Gary Fields",
+    email: "gary.f@email.com",
+    avatar: "GF",
+    role: "groundskeeper",
+    roleLabel: "Groundskeeper",
+    organization: "Champions FC",
+  },
+  security: {
+    id: "security-001",
+    name: "Mark Stone",
+    email: "mark.s@email.com",
+    avatar: "MS",
+    role: "security",
+    roleLabel: "Security Staff",
+    organization: "Champions FC",
+  },
+  medical: {
+    id: "medical-001",
+    name: "Dr. Emily Chen",
+    email: "emily.chen@email.com",
+    avatar: "EC",
+    role: "medical",
+    roleLabel: "Medical Staff",
+    organization: "Champions FC",
+  },
+  bookingsCoordinator: {
+    id: "bookings-001",
+    name: "Anna Roberts",
+    email: "anna.r@email.com",
+    avatar: "AR",
+    role: "bookings_coordinator",
+    roleLabel: "Bookings Coordinator",
+    organization: "Reservations Team",
+  },
+  contentManager: {
+    id: "content-001",
+    name: "Chris Martin",
+    email: "chris.m@email.com",
+    avatar: "CM",
+    role: "content_manager",
+    roleLabel: "Content Manager",
+    organization: "Champions FC",
+  },
+}
+
+// Helper to get mock user by role
+export function getMockUser(role: string): MockUser {
+  return mockUsers[role] || mockUsers.coach
+}
+
+// ============================================================================
+// MOCK NOTIFICATIONS DATA
+// ============================================================================
+
+export interface MockNotification {
+  id: string
+  title: string
+  message: string
+  type: "info" | "success" | "warning" | "error"
+  time: string
+  read: boolean
+  actionUrl?: string
+}
+
+export const mockNotifications: MockNotification[] = [
+  {
+    id: "notif-1",
+    title: "New Registration",
+    message: "Emma Wilson joined the Junior Soccer program",
+    type: "success",
+    time: "2 min ago",
+    read: false,
+    actionUrl: "/coach/students",
+  },
+  {
+    id: "notif-2",
+    title: "Payment Received",
+    message: "$150 from Michael Brown for monthly subscription",
+    type: "success",
+    time: "15 min ago",
+    read: false,
+  },
+  {
+    id: "notif-3",
+    title: "Session Reminder",
+    message: "Basketball training starts in 30 minutes",
+    type: "info",
+    time: "30 min ago",
+    read: false,
+  },
+  {
+    id: "notif-4",
+    title: "Booking Confirmed",
+    message: "Main Court reserved for tomorrow 9:00 AM",
+    type: "success",
+    time: "1 hour ago",
+    read: true,
+  },
+  {
+    id: "notif-5",
+    title: "Weather Alert",
+    message: "Rain expected tomorrow - consider indoor backup",
+    type: "warning",
+    time: "2 hours ago",
+    read: true,
+  },
+  {
+    id: "notif-6",
+    title: "Maintenance Required",
+    message: "Equipment inspection due for Pool Area",
+    type: "warning",
+    time: "3 hours ago",
+    read: true,
+  },
+  {
+    id: "notif-7",
+    title: "Payment Failed",
+    message: "Subscription payment failed for Elite Academy",
+    type: "error",
+    time: "4 hours ago",
+    read: false,
+  },
+  {
+    id: "notif-8",
+    title: "New Message",
+    message: "Coach Williams sent you a message",
+    type: "info",
+    time: "5 hours ago",
+    read: true,
+    actionUrl: "/messaging",
+  },
+]
+
+// ============================================================================
+// MOCK MESSAGING/CONVERSATIONS DATA
+// ============================================================================
+
+export interface MockConversation {
+  id: string
+  participantName: string
+  participantAvatar: string
+  participantRole: string
+  lastMessage: string
+  lastMessageTime: string
+  unreadCount: number
+  isOnline: boolean
+}
+
+export interface MockMessage {
+  id: string
+  senderId: string
+  senderName: string
+  senderAvatar: string
+  content: string
+  timestamp: string
+  isOwn: boolean
+  status: "sent" | "delivered" | "read"
+}
+
+export const mockConversations: MockConversation[] = [
+  {
+    id: "conv-1",
+    participantName: "Coach Williams",
+    participantAvatar: "CW",
+    participantRole: "Head Coach",
+    lastMessage: "The training schedule has been updated for next week",
+    lastMessageTime: "2 min ago",
+    unreadCount: 2,
+    isOnline: true,
+  },
+  {
+    id: "conv-2",
+    participantName: "Sarah Wilson",
+    participantAvatar: "SW",
+    participantRole: "Parent",
+    lastMessage: "Thank you for the update on Emma's progress!",
+    lastMessageTime: "15 min ago",
+    unreadCount: 0,
+    isOnline: true,
+  },
+  {
+    id: "conv-3",
+    participantName: "Champions FC Admin",
+    participantAvatar: "CF",
+    participantRole: "Club Admin",
+    lastMessage: "Please review the new facility booking guidelines",
+    lastMessageTime: "1 hour ago",
+    unreadCount: 1,
+    isOnline: false,
+  },
+  {
+    id: "conv-4",
+    participantName: "Mike Johnson",
+    participantAvatar: "MJ",
+    participantRole: "Freelancer",
+    lastMessage: "I'm available for the Saturday session",
+    lastMessageTime: "2 hours ago",
+    unreadCount: 0,
+    isOnline: true,
+  },
+  {
+    id: "conv-5",
+    participantName: "Dr. Emily Chen",
+    participantAvatar: "EC",
+    participantRole: "Medical Staff",
+    lastMessage: "Player clearance forms are ready for review",
+    lastMessageTime: "3 hours ago",
+    unreadCount: 0,
+    isOnline: false,
+  },
+  {
+    id: "conv-6",
+    participantName: "Support Team",
+    participantAvatar: "ST",
+    participantRole: "iCoachie Support",
+    lastMessage: "Your ticket has been resolved. Let us know if you need anything else!",
+    lastMessageTime: "1 day ago",
+    unreadCount: 0,
+    isOnline: true,
+  },
+]
+
+export const mockMessages: Record<string, MockMessage[]> = {
+  "conv-1": [
+    {
+      id: "msg-1",
+      senderId: "coach-williams",
+      senderName: "Coach Williams",
+      senderAvatar: "CW",
+      content: "Hi! I wanted to discuss the training schedule for next week.",
+      timestamp: "10:30 AM",
+      isOwn: false,
+      status: "read",
+    },
+    {
+      id: "msg-2",
+      senderId: "current-user",
+      senderName: "You",
+      senderAvatar: "JS",
+      content: "Sure, what changes are you thinking about?",
+      timestamp: "10:32 AM",
+      isOwn: true,
+      status: "read",
+    },
+    {
+      id: "msg-3",
+      senderId: "coach-williams",
+      senderName: "Coach Williams",
+      senderAvatar: "CW",
+      content: "I think we should add an extra practice session on Thursday for the upcoming tournament.",
+      timestamp: "10:35 AM",
+      isOwn: false,
+      status: "read",
+    },
+    {
+      id: "msg-4",
+      senderId: "current-user",
+      senderName: "You",
+      senderAvatar: "JS",
+      content: "That sounds good. I'll check the facility availability.",
+      timestamp: "10:38 AM",
+      isOwn: true,
+      status: "read",
+    },
+    {
+      id: "msg-5",
+      senderId: "coach-williams",
+      senderName: "Coach Williams",
+      senderAvatar: "CW",
+      content: "The training schedule has been updated for next week",
+      timestamp: "Just now",
+      isOwn: false,
+      status: "delivered",
+    },
+  ],
+  "conv-2": [
+    {
+      id: "msg-6",
+      senderId: "current-user",
+      senderName: "You",
+      senderAvatar: "JS",
+      content: "Hi Sarah! Emma has been doing great in practice lately.",
+      timestamp: "Yesterday",
+      isOwn: true,
+      status: "read",
+    },
+    {
+      id: "msg-7",
+      senderId: "sarah-wilson",
+      senderName: "Sarah Wilson",
+      senderAvatar: "SW",
+      content: "That's wonderful to hear! She's been really excited about the sessions.",
+      timestamp: "Yesterday",
+      isOwn: false,
+      status: "read",
+    },
+    {
+      id: "msg-8",
+      senderId: "sarah-wilson",
+      senderName: "Sarah Wilson",
+      senderAvatar: "SW",
+      content: "Thank you for the update on Emma's progress!",
+      timestamp: "15 min ago",
+      isOwn: false,
+      status: "read",
+    },
+  ],
+}
+
+// Helper to get unread notification count
+export function getUnreadNotificationCount(): number {
+  return mockNotifications.filter(n => !n.read).length
+}
+
+// Helper to get unread message count
+export function getUnreadMessageCount(): number {
+  return mockConversations.reduce((acc, conv) => acc + conv.unreadCount, 0)
 }
