@@ -218,7 +218,7 @@ export default function AccountantDashboard() {
                       <p className={`font-semibold ${txn.amount.startsWith("-") ? "text-red-500" : ""}`}>{txn.amount}</p>
                       <p className="text-xs text-muted-foreground">{txn.date}</p>
                     </div>
-                    <Badge className={statusColors[txn.status] || statusColors.pending}>{txn.status}</Badge>
+                    <Badge className={statusColors[txn.status] || "bg-gray-500/20 text-gray-500"}>{txn.status || 'unknown'}</Badge>
                   </div>
                 </div>
               ))

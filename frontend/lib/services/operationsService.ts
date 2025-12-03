@@ -22,8 +22,11 @@ const DEFAULT_FACILITY_NAME = 'Main Facility'
 /**
  * Financial collection target calculation constants.
  * These may be made configurable via admin settings in the future.
+ * 
+ * COLLECTION_TARGET_MULTIPLIER: Applied to the total amount (completed + pending)
+ * to set a realistic monthly collection goal that accounts for growth.
  */
-const COLLECTION_TARGET_MULTIPLIER = 1.2 // Target is 120% of current total
+const COLLECTION_TARGET_MULTIPLIER = 1.2 // Target is 120% of current total amount
 const MINIMUM_COLLECTION_TARGET = 150000 // Minimum target threshold in dollars
 
 /**
