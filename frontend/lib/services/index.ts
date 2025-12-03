@@ -30,7 +30,8 @@ export { freelancerProfileService } from './freelancerProfileService'
 export { 
   bookingsCoordinatorService, 
   frontDeskService, 
-  accountantService 
+  accountantService,
+  getOperationsStatusColor
 } from './operationsService'
 
 // Export types from services

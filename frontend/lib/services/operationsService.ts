@@ -661,6 +661,42 @@ class AccountantService {
 }
 
 // ============================================================================
+// UTILITY FUNCTIONS
+// ============================================================================
+
+/**
+ * Get the CSS class for a status badge based on the status string.
+ * Provides consistent styling for status indicators across operations dashboards.
+ */
+export function getOperationsStatusColor(status: string): string {
+  const normalizedStatus = status.toLowerCase()
+  
+  const statusColors: Record<string, string> = {
+    // Success states
+    'completed': 'bg-green-500/20 text-green-600',
+    'confirmed': 'bg-green-500/20 text-green-600',
+    'active': 'bg-green-500/20 text-green-600',
+    'verified': 'bg-green-500/20 text-green-600',
+    'paid': 'bg-green-500/20 text-green-600',
+    // Warning states
+    'pending': 'bg-yellow-500/20 text-yellow-600',
+    'upcoming': 'bg-yellow-500/20 text-yellow-600',
+    'waiting': 'bg-yellow-500/20 text-yellow-600',
+    // In Progress states
+    'ongoing': 'bg-blue-500/20 text-blue-600',
+    'in-progress': 'bg-blue-500/20 text-blue-600',
+    'in progress': 'bg-blue-500/20 text-blue-600',
+    // Error/Alert states
+    'cancelled': 'bg-red-500/20 text-red-600',
+    'overdue': 'bg-red-500/20 text-red-600',
+    'failed': 'bg-red-500/20 text-red-600',
+    'suspended': 'bg-red-500/20 text-red-600',
+  }
+  
+  return statusColors[normalizedStatus] || 'bg-gray-500/20 text-gray-600'
+}
+
+// ============================================================================
 // EXPORTS
 // ============================================================================
 

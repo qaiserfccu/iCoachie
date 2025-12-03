@@ -9,9 +9,9 @@ import { Calendar, ArrowRight, Plus, Clock, AlertTriangle, TrendingUp } from "lu
 import { 
   bookingsCoordinatorService,
   type BookingsCoordinatorStats,
-  type BookingTask 
+  type BookingTask,
+  getOperationsStatusColor
 } from "@/lib/services/operationsService"
-import { getStatusColor } from "@/lib/services/mockDataService"
 
 // Stats configuration with icons
 const statsConfig = [
@@ -149,7 +149,7 @@ export default function BookingsCoordinatorDashboard() {
                   <div className="flex items-center gap-3">
                     <div className="text-right">
                       <p className="text-sm font-medium">{task.time}</p>
-                      <Badge className={getStatusColor(task.status)}>{task.status}</Badge>
+                      <Badge className={getOperationsStatusColor(task.status)}>{task.status}</Badge>
                     </div>
                     <Button size="sm" variant="ghost" className="text-blue-500">
                       <ArrowRight className="w-4 h-4" />
