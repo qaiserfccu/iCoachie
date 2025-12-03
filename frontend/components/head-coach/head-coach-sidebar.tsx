@@ -16,6 +16,9 @@ import {
   Settings,
   Globe,
   Crown,
+  FileText,
+  TrendingUp,
+  MessageSquare,
 } from "lucide-react"
 import LogoutButton from '@/components/ui/LogoutButton'
 
@@ -26,6 +29,9 @@ const menuItems = [
   { icon: Star, label: "Player Evaluations", href: "/head-coach/evaluations" },
   { icon: BarChart3, label: "Match Analysis", href: "/head-coach/match-analysis" },
   { icon: UserCog, label: "Staff Coordination", href: "/head-coach/staff" },
+  { icon: FileText, label: "Reports", href: "/head-coach/reports" },
+  { icon: TrendingUp, label: "Analytics", href: "/head-coach/analytics" },
+  { icon: MessageSquare, label: "Communication", href: "/head-coach/communication" },
 ]
 
 const bottomItems = [

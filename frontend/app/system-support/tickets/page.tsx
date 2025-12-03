@@ -7,20 +7,11 @@ import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { 
   Search, Filter, Plus, ArrowRight, Clock, AlertTriangle, 
-  CheckCircle, MessageSquare, MoreVertical 
+  CheckCircle, MessageSquare, Loader2 
 } from "lucide-react"
-import { useState } from "react"
-
-const tickets = [
-  { id: "TKT-1234", user: "John Smith", email: "john@email.com", issue: "Cannot login to account", priority: "high", status: "open", time: "5 min ago", avatar: "JS", category: "technical", responses: 2 },
-  { id: "TKT-1233", user: "Sarah Wilson", email: "sarah@email.com", issue: "Payment processing failed", priority: "urgent", status: "in-progress", time: "15 min ago", avatar: "SW", category: "billing", responses: 5 },
-  { id: "TKT-1232", user: "Mike Johnson", email: "mike@email.com", issue: "Session booking not showing", priority: "medium", status: "open", time: "32 min ago", avatar: "MJ", category: "technical", responses: 1 },
-  { id: "TKT-1231", user: "Elite Sports Academy", email: "elite@academy.com", issue: "Bulk user import failing", priority: "high", status: "open", time: "1 hour ago", avatar: "ES", category: "technical", responses: 3 },
-  { id: "TKT-1230", user: "Lisa Garcia", email: "lisa@email.com", issue: "Invoice discrepancy", priority: "medium", status: "resolved", time: "2 hours ago", avatar: "LG", category: "billing", responses: 4 },
-  { id: "TKT-1229", user: "David Brown", email: "david@email.com", issue: "Mobile app crashes on startup", priority: "high", status: "in-progress", time: "3 hours ago", avatar: "DB", category: "technical", responses: 6 },
-  { id: "TKT-1228", user: "Emma Davis", email: "emma@email.com", issue: "Password reset not working", priority: "low", status: "closed", time: "1 day ago", avatar: "ED", category: "account", responses: 2 },
-  { id: "TKT-1227", user: "James Miller", email: "james@email.com", issue: "Feature request: Dark mode", priority: "low", status: "open", time: "2 days ago", avatar: "JM", category: "feature-request", responses: 0 },
-]
+import { useState, useEffect } from "react"
+import { systemSupportService, type Ticket } from "@/lib/services"
+import Link from "next/link"
 
 const priorityColors = {
   urgent: "bg-red-500/20 text-red-500",
@@ -45,20 +36,50 @@ const categoryColors = {
 }
 
 export default function TicketsPage() {
+  const [tickets, setTickets] = useState<Ticket[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedStatus, setSelectedStatus] = useState<string | null>(null)
+  const [stats, setStats] = useState({ open: 0, inProgress: 0, urgent: 0 })
+
+  useEffect(() => {
+    const fetchTickets = async () => {
+      try {
+        setLoading(true)
+        setError(null)
+        const data = await systemSupportService.getTickets({
+          status: selectedStatus || undefined,
+          search: searchQuery || undefined,
+          pageSize: 50
+        })
+        setTickets(data.tickets)
+        setStats(data.stats)
+      } catch (err) {
+        console.error('Error fetching tickets:', err)
+        setError('Failed to load tickets')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchTickets()
+  }, [searchQuery, selectedStatus])
 
   const filteredTickets = tickets.filter(ticket => {
     const matchesSearch = ticket.user.toLowerCase().includes(searchQuery.toLowerCase()) ||
                           ticket.issue.toLowerCase().includes(searchQuery.toLowerCase()) ||
                           ticket.id.toLowerCase().includes(searchQuery.toLowerCase())
-    const matchesStatus = !selectedStatus || ticket.status === selectedStatus
-    return matchesSearch && matchesStatus
+    return matchesSearch
   })
 
-  const openCount = tickets.filter(t => t.status === "open").length
-  const inProgressCount = tickets.filter(t => t.status === "in-progress").length
-  const urgentCount = tickets.filter(t => t.priority === "urgent" && t.status !== "closed").length
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="w-8 h-8 animate-spin text-purple-500" />
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">
@@ -73,13 +94,19 @@ export default function TicketsPage() {
         </Button>
       </div>
 
+      {error && (
+        <div className="p-4 rounded-lg bg-red-500/20 text-red-500 text-sm">
+          {error}
+        </div>
+      )}
+
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <Card className="glass-card border-white/20">
           <CardContent className="p-4 flex items-center justify-between">
             <div>
               <p className="text-sm text-muted-foreground">Open Tickets</p>
-              <p className="text-2xl font-bold">{openCount}</p>
+              <p className="text-2xl font-bold">{stats.open}</p>
             </div>
             <div className="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center">
               <Clock className="w-6 h-6 text-blue-500" />
@@ -90,7 +117,7 @@ export default function TicketsPage() {
           <CardContent className="p-4 flex items-center justify-between">
             <div>
               <p className="text-sm text-muted-foreground">In Progress</p>
-              <p className="text-2xl font-bold">{inProgressCount}</p>
+              <p className="text-2xl font-bold">{stats.inProgress}</p>
             </div>
             <div className="w-12 h-12 rounded-xl bg-purple-500/20 flex items-center justify-center">
               <MessageSquare className="w-6 h-6 text-purple-500" />
@@ -101,7 +128,7 @@ export default function TicketsPage() {
           <CardContent className="p-4 flex items-center justify-between">
             <div>
               <p className="text-sm text-muted-foreground">Urgent</p>
-              <p className="text-2xl font-bold">{urgentCount}</p>
+              <p className="text-2xl font-bold">{stats.urgent}</p>
             </div>
             <div className="w-12 h-12 rounded-xl bg-red-500/20 flex items-center justify-center">
               <AlertTriangle className="w-6 h-6 text-red-500" />
@@ -171,48 +198,56 @@ export default function TicketsPage() {
           </Button>
         </CardHeader>
         <CardContent className="space-y-3">
-          {filteredTickets.map((ticket) => (
-            <div
-              key={ticket.id}
-              className="flex items-center justify-between p-4 rounded-xl glass-subtle hover:bg-white/20 transition-colors cursor-pointer"
-            >
-              <div className="flex items-center gap-4">
-                <Avatar className="h-10 w-10">
-                  <AvatarFallback className="bg-gradient-to-br from-purple-500 to-indigo-500 text-white text-sm">
-                    {ticket.avatar}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium text-sm">{ticket.id}</span>
-                    <Badge className={priorityColors[ticket.priority as keyof typeof priorityColors]}>
-                      {ticket.priority}
-                    </Badge>
-                    <Badge className={categoryColors[ticket.category as keyof typeof categoryColors]}>
-                      {ticket.category}
-                    </Badge>
-                  </div>
-                  <p className="text-sm font-medium">{ticket.issue}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {ticket.user} • {ticket.email} • {ticket.time}
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="text-right hidden sm:block">
-                  <Badge className={statusColors[ticket.status as keyof typeof statusColors]}>
-                    {ticket.status}
-                  </Badge>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {ticket.responses} responses
-                  </p>
-                </div>
-                <Button size="sm" variant="ghost" className="text-purple-500">
-                  <ArrowRight className="w-4 h-4" />
-                </Button>
-              </div>
+          {filteredTickets.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              No tickets found matching your criteria
             </div>
-          ))}
+          ) : (
+            filteredTickets.map((ticket) => (
+              <div
+                key={ticket.id}
+                className="flex items-center justify-between p-4 rounded-xl glass-subtle hover:bg-white/20 transition-colors cursor-pointer"
+              >
+                <div className="flex items-center gap-4">
+                  <Avatar className="h-10 w-10">
+                    <AvatarFallback className="bg-gradient-to-br from-purple-500 to-indigo-500 text-white text-sm">
+                      {ticket.avatar}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium text-sm">{ticket.id}</span>
+                      <Badge className={priorityColors[ticket.priority as keyof typeof priorityColors]}>
+                        {ticket.priority}
+                      </Badge>
+                      <Badge className={categoryColors[ticket.category as keyof typeof categoryColors]}>
+                        {ticket.category}
+                      </Badge>
+                    </div>
+                    <p className="text-sm font-medium">{ticket.issue}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {ticket.user} • {ticket.email} • {ticket.time}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="text-right hidden sm:block">
+                    <Badge className={statusColors[ticket.status as keyof typeof statusColors]}>
+                      {ticket.status}
+                    </Badge>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {ticket.responses} responses
+                    </p>
+                  </div>
+                  <Link href={`/system-support/tickets/${ticket.id}`}>
+                    <Button size="sm" variant="ghost" className="text-purple-500">
+                      <ArrowRight className="w-4 h-4" />
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+            ))
+          )}
         </CardContent>
       </Card>
     </div>
