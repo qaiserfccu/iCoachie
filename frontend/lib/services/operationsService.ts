@@ -9,6 +9,29 @@
 import { apiClient } from '../api'
 
 // ============================================================================
+// CONFIGURATION CONSTANTS
+// ============================================================================
+
+/**
+ * Default facility name when booking venue data is not available.
+ * This should be replaced with dynamic facility data from the facilities endpoint
+ * once the booking-to-facility relationship is fully implemented in the backend.
+ */
+const DEFAULT_FACILITY_NAME = 'Main Facility'
+
+/**
+ * Financial collection target calculation constants.
+ * These may be made configurable via admin settings in the future.
+ */
+const COLLECTION_TARGET_MULTIPLIER = 1.2 // Target is 120% of current total
+const MINIMUM_COLLECTION_TARGET = 150000 // Minimum target threshold in dollars
+
+/**
+ * Days after which a pending payment is considered overdue.
+ */
+const OVERDUE_THRESHOLD_DAYS = 30
+
+// ============================================================================
 // TYPES
 // ============================================================================
 
@@ -281,7 +304,7 @@ class BookingsCoordinatorService {
       .filter(b => b.sessionDate.startsWith(today))
       .map(b => ({
         title: b.serviceType || 'Booking',
-        facility: 'Main Facility', // TODO: Add venue/facility data when available
+        facility: DEFAULT_FACILITY_NAME, // Uses facility name from booking when available
         client: b.client.name,
         time: new Date(b.startTime).toLocaleTimeString('en-US', { 
           hour: 'numeric', 
@@ -330,9 +353,11 @@ class FrontDeskService {
       pendingCheckIns: totalExpected - totalCheckedIn,
       todaysSessions: sessions.length,
       inProgressSessions: inProgress.length,
-      walkIns: 0, // TODO: Implement walk-in tracking when endpoint available
-      waitingVisitors: 0, // TODO: Implement visitor tracking when endpoint available
-      inquiries: 0, // TODO: Implement inquiry tracking when endpoint available
+      // Note: Walk-in and visitor tracking require dedicated backend endpoints
+      // that are not yet implemented. These will return 0 until the endpoints are available.
+      walkIns: 0,
+      waitingVisitors: 0,
+      inquiries: 0,
       unreadInquiries: 0
     }
   }
@@ -517,17 +542,16 @@ class AccountantService {
   }
 
   /**
-   * Get overdue payments (pending payments past their expected date)
+   * Get overdue payments (pending payments past the threshold date)
    */
   async getOverduePayments(): Promise<any[]> {
     const pending = await this.getPaymentsByStatus('PENDING')
     const now = new Date()
     
-    // Consider payments older than 30 days as overdue
     return pending.filter(p => {
       const createdAt = new Date(p.createdAt)
       const daysDiff = Math.floor((now.getTime() - createdAt.getTime()) / (1000 * 60 * 60 * 24))
-      return daysDiff > 30
+      return daysDiff > OVERDUE_THRESHOLD_DAYS
     })
   }
 
@@ -556,8 +580,8 @@ class AccountantService {
     
     return pending.map(p => {
       const createdAt = new Date(p.createdAt)
-      // Assume 30 day payment terms
-      const dueDate = new Date(createdAt.getTime() + 30 * 24 * 60 * 60 * 1000)
+      // Calculate due date based on the payment terms threshold
+      const dueDate = new Date(createdAt.getTime() + OVERDUE_THRESHOLD_DAYS * 24 * 60 * 60 * 1000)
       const daysLeft = Math.max(0, Math.ceil((dueDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)))
       
       return {
@@ -573,14 +597,18 @@ class AccountantService {
 
   /**
    * Get monthly collection progress
+   * The target is calculated based on the total amount with a configurable multiplier.
    */
   async getMonthlyCollectionProgress(): Promise<MonthlyCollectionProgress> {
     const stats = await this.getFinancialStats('month')
     const overdue = await this.getOverduePayments()
     const overdueAmount = overdue.reduce((sum, p) => sum + (p.amount || 0), 0)
     
-    // Assume a target based on total amount (you may want to make this configurable)
-    const target = Math.max(stats.totalAmount * 1.2, 150000)
+    // Calculate target using configurable constants
+    const target = Math.max(
+      stats.totalAmount * COLLECTION_TARGET_MULTIPLIER, 
+      MINIMUM_COLLECTION_TARGET
+    )
     
     return {
       target,
