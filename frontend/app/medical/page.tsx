@@ -2,9 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Heart, FileText, AlertTriangle, Users, ArrowRight, Stethoscope, Activity, Clock } from "lucide-react"
-import { medicalStats, medicalRecentInjuries, medicalUpcomingCheckups, getStatusColor } from "@/lib/services/mockDataService"
-
-const severityColors = { Low: "bg-green-500/20 text-green-500", Moderate: "bg-yellow-500/20 text-yellow-600", High: "bg-red-500/20 text-red-500" }
+import { medicalStats, medicalRecentInjuries, medicalUpcomingCheckups, getSeverityColor } from "@/lib/services/mockDataService"
 
 export default function MedicalDashboard() {
   return (
@@ -47,7 +45,7 @@ export default function MedicalDashboard() {
                   <div><p className="font-medium">{injury.student}</p><p className="text-sm text-muted-foreground">{injury.type}</p></div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <Badge className={severityColors[injury.severity as keyof typeof severityColors]}>{injury.severity}</Badge>
+                  <Badge className={getSeverityColor(injury.severity)}>{injury.severity}</Badge>
                   <Button size="sm" variant="ghost" className="text-red-500"><ArrowRight className="w-4 h-4" /></Button>
                 </div>
               </div>

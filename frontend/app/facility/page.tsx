@@ -2,10 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Building2, MapPin, Users, Wrench, Package, Calendar, ArrowRight, CheckCircle, AlertTriangle, Clock } from "lucide-react"
-import { facilityStats, facilityVenues, facilityMaintenanceRequests, getStatusColor } from "@/lib/services/mockDataService"
-
-const statusColors = { Available: "bg-green-500/20 text-green-500", Occupied: "bg-blue-500/20 text-blue-500", Maintenance: "bg-yellow-500/20 text-yellow-600", Closed: "bg-red-500/20 text-red-500" }
-const priorityColors = { High: "bg-red-500/20 text-red-500", Medium: "bg-yellow-500/20 text-yellow-600", Low: "bg-green-500/20 text-green-500" }
+import { facilityStats, facilityVenues, facilityMaintenanceRequests, getStatusColor, getPriorityColor } from "@/lib/services/mockDataService"
 
 export default function FacilityDashboard() {
   return (
@@ -57,7 +54,7 @@ export default function FacilityDashboard() {
                 <div className="flex items-center gap-3">
                   <div className="text-right">
                     <p className="text-sm font-medium">Next: {venue.nextBooking}</p>
-                    <Badge className={statusColors[venue.status as keyof typeof statusColors]}>{venue.status}</Badge>
+                    <Badge className={getStatusColor(venue.status)}>{venue.status}</Badge>
                   </div>
                   <Button size="sm" variant="ghost" className="text-amber-500"><ArrowRight className="w-4 h-4" /></Button>
                 </div>
@@ -76,7 +73,7 @@ export default function FacilityDashboard() {
               <div key={index} className="p-4 rounded-xl glass-subtle">
                 <div className="flex items-center justify-between mb-2">
                   <span className="font-medium text-sm">{req.venue}</span>
-                  <Badge className={priorityColors[req.priority as keyof typeof priorityColors]}>{req.priority}</Badge>
+                  <Badge className={getPriorityColor(req.priority)}>{req.priority}</Badge>
                 </div>
                 <p className="text-sm">{req.issue}</p>
                 <p className="text-xs text-muted-foreground mt-1">Reported by: {req.reportedBy}</p>

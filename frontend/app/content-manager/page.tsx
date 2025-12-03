@@ -4,8 +4,6 @@ import { Badge } from "@/components/ui/badge"
 import { FileText, Image, Megaphone, Edit, ArrowRight, Eye } from "lucide-react"
 import { contentManagerStats, contentManagerRecentContent, getStatusColor } from "@/lib/services/mockDataService"
 
-const statusColors = { Published: "bg-green-500/20 text-green-500", Draft: "bg-yellow-500/20 text-yellow-600", Pending: "bg-blue-500/20 text-blue-500" }
-
 export default function ContentManagerDashboard() {
   return (
     <div className="space-y-6 p-6">
@@ -47,7 +45,7 @@ export default function ContentManagerDashboard() {
               </div>
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-2 text-muted-foreground"><Edit className="w-4 h-4" /><span className="text-sm">{content.author}</span></div>
-                <Badge className={statusColors[content.status as keyof typeof statusColors]}>{content.status}</Badge>
+                <Badge className={getStatusColor(content.status)}>{content.status}</Badge>
                 <Button size="sm" variant="ghost" className="text-violet-500"><ArrowRight className="w-4 h-4" /></Button>
               </div>
             </div>

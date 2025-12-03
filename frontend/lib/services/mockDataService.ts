@@ -1708,11 +1708,13 @@ export function formatCurrency(amount: number): string {
  */
 export function getStatusColor(status: string): string {
   const statusColors: Record<string, string> = {
+    // General statuses
     Active: "bg-green-500/20 text-green-600",
     Verified: "bg-green-500/20 text-green-600",
     Completed: "bg-green-500/20 text-green-600",
     completed: "bg-green-500/20 text-green-600",
     confirmed: "bg-green-500/20 text-green-600",
+    Confirmed: "bg-green-500/20 text-green-600",
     Pending: "bg-yellow-500/20 text-yellow-600",
     pending: "bg-yellow-500/20 text-yellow-600",
     ongoing: "bg-blue-500/20 text-blue-600",
@@ -1721,6 +1723,47 @@ export function getStatusColor(status: string): string {
     "in-progress": "bg-blue-500/20 text-blue-600",
     Suspended: "bg-red-500/20 text-red-600",
     overdue: "bg-red-500/20 text-red-600",
+    // Facility/Venue statuses
+    Available: "bg-green-500/20 text-green-500",
+    Occupied: "bg-blue-500/20 text-blue-500",
+    Maintenance: "bg-yellow-500/20 text-yellow-600",
+    Closed: "bg-red-500/20 text-red-500",
+    // Content statuses
+    Published: "bg-green-500/20 text-green-500",
+    Draft: "bg-yellow-500/20 text-yellow-600",
+    Scheduled: "bg-blue-500/20 text-blue-500",
   }
   return statusColors[status] || "bg-gray-500/20 text-gray-600"
+}
+
+/**
+ * Get priority color class
+ */
+export function getPriorityColor(priority: string): string {
+  const priorityColors: Record<string, string> = {
+    High: "bg-red-500/20 text-red-600",
+    high: "bg-red-500/20 text-red-600",
+    Medium: "bg-yellow-500/20 text-yellow-600",
+    medium: "bg-yellow-500/20 text-yellow-600",
+    Low: "bg-green-500/20 text-green-500",
+    low: "bg-green-500/20 text-green-500",
+    Normal: "bg-blue-500/20 text-blue-600",
+    normal: "bg-blue-500/20 text-blue-600",
+  }
+  return priorityColors[priority] || "bg-gray-500/20 text-gray-600"
+}
+
+/**
+ * Get severity color class
+ */
+export function getSeverityColor(severity: string): string {
+  const severityColors: Record<string, string> = {
+    Low: "bg-green-500/20 text-green-500",
+    low: "bg-green-500/20 text-green-500",
+    Moderate: "bg-yellow-500/20 text-yellow-600",
+    moderate: "bg-yellow-500/20 text-yellow-600",
+    High: "bg-red-500/20 text-red-500",
+    high: "bg-red-500/20 text-red-500",
+  }
+  return severityColors[severity] || "bg-gray-500/20 text-gray-600"
 }
