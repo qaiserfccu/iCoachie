@@ -62,6 +62,8 @@ model User {
   uploadedFiles  File[]
   managedVenues Venue[] @relation("VenueManager")
   managedGrounds Ground[] @relation("GroundManager")
+  equipmentBookings EquipmentBooking[]
+  assignedMaintenanceTasks MaintenanceTask[]
 
   @@map("users")
 }
