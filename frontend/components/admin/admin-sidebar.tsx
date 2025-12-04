@@ -22,6 +22,9 @@ import {
   HelpCircle,
   Database,
   Globe,
+  Wrench,
+  Hammer,
+  Warehouse,
 } from "lucide-react"
 import LogoutButton from '@/components/ui/LogoutButton'
 
@@ -54,6 +57,7 @@ const menuItems = [
       { label: "All Clubs", href: "/admin/clubs" },
       { label: "Pending Clubs", href: "/admin/clubs/pending" },
       { label: "Club Analytics", href: "/admin/clubs/analytics" },
+      { label: "Settings", href: "/admin/clubs/settings" },
     ],
   },
   {
@@ -69,11 +73,36 @@ const menuItems = [
     icon: Briefcase,
     label: "Freelancers",
     href: "/admin/freelancers",
+    subItems: [
+      { label: "All Freelancers", href: "/admin/freelancers" },
+      { label: "Verifications", href: "/admin/freelancers/verifications" },
+      { label: "Payouts", href: "/admin/freelancers/payouts" },
+      { label: "Settings", href: "/admin/freelancers/settings" },
+    ],
   },
   {
     icon: Baby,
     label: "Parents & Kids",
     href: "/admin/families",
+    subItems: [
+      { label: "All Families", href: "/admin/families" },
+      { label: "Settings", href: "/admin/families/settings" },
+    ],
+  },
+  {
+    icon: Warehouse,
+    label: "Facilities",
+    href: "/admin/facilities",
+  },
+  {
+    icon: Hammer,
+    label: "Equipment",
+    href: "/admin/equipment",
+  },
+  {
+    icon: Wrench,
+    label: "Maintenance",
+    href: "/admin/maintenance",
   },
   {
     icon: CreditCard,

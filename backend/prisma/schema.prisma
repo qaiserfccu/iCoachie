@@ -458,6 +458,8 @@ model Facility {
   staff       User[]   @relation("FacilityStaff")
   venues      Venue[]
   grounds     Ground[]
+  equipment   Equipment[]
+  maintenanceTasks MaintenanceTask[]
   
   @@map("facilities")
 }
@@ -547,6 +549,61 @@ model GroundSchedule {
   ground      Ground   @relation(fields: [groundId], references: [id])
   
   @@map("ground_schedules")
+}
+
+model Equipment {
+  id          Int      @id @default(autoincrement())
+  facilityId  Int
+  name        String
+  type        String   // e.g., 'Ball', 'Net', 'Machine'
+  quantity    Int      @default(1)
+  condition   String   // 'New', 'Good', 'Fair', 'Poor'
+  isBookable  Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  deletedAt   DateTime?
+
+  facility    Facility @relation(fields: [facilityId], references: [id])
+  bookings    EquipmentBooking[]
+
+  @@map("equipment")
+}
+
+model EquipmentBooking {
+  id          Int      @id @default(autoincrement())
+  equipmentId Int
+  userId      Int
+  bookingDate DateTime
+  startTime   DateTime
+  endTime     DateTime
+  status      String   // 'Pending', 'Confirmed', 'Cancelled'
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  equipment   Equipment @relation(fields: [equipmentId], references: [id])
+  user        User      @relation(fields: [userId], references: [id])
+
+  @@map("equipment_bookings")
+}
+
+model MaintenanceTask {
+  id          Int      @id @default(autoincrement())
+  facilityId  Int
+  title       String
+  description String?
+  status      String   // 'Pending', 'In Progress', 'Completed'
+  priority    String   // 'Low', 'Medium', 'High'
+  assignedTo  Int?     // User ID
+  dueDate     DateTime?
+  completedAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  deletedAt   DateTime?
+
+  facility    Facility @relation(fields: [facilityId], references: [id])
+  assignee    User?    @relation(fields: [assignedTo], references: [id])
+
+  @@map("maintenance_tasks")
 }
 
 model File {
