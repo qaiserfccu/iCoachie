@@ -122,7 +122,7 @@ router.get('/maintenance', requireAuth, requireScope('EQUIPMENT'), async (req: R
  *     summary: Get procurement requests
  *     tags: [Equipment]
  */
-router.get('/procurement', requireAuth, requirePermission('equipment.procurement.view'), async (req: Request, res: Response) => {
+router.get('/procurement', requireAuth, requireScope('EQUIPMENT'), async (req: Request, res: Response) => {
   try {
     // TODO: Implement procurement request system
     const mockProcurement = [

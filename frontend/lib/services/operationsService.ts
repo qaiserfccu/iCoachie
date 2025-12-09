@@ -703,6 +703,12 @@ export function getOperationsStatusColor(status: string): string {
 // EXPORTS
 // ============================================================================
 
+// Old service implementations kept for backward compatibility
+// Note: Standalone versions with same names exist in separate files:
+// - @/lib/services/bookingsCoordinatorService (new, for coordinator dashboard)
+// - @/lib/services/frontDeskService (new, for front desk dashboard)
+// - @/lib/services/accountantService (new, for accountant dashboard)
+
 export const bookingsCoordinatorService = new BookingsCoordinatorService()
 export const frontDeskService = new FrontDeskService()
 export const accountantService = new AccountantService()
@@ -712,3 +718,4 @@ export default {
   frontDesk: frontDeskService,
   accountant: accountantService
 }
+

@@ -30,6 +30,7 @@ export { freelancerEarningsService } from './freelancerEarningsService'
 export { freelancerProfileService } from './freelancerProfileService'
 export { default as facilityService } from './facilityService'
 export { DASHBOARD_STATS_CONFIG } from './facilityService'
+// New specialized role services (use mock backend controllers)
 export { default as equipmentService } from './equipmentService'
 export { default as securityService } from './securityService'
 export { default as cleaningService } from './cleaningService'
@@ -40,9 +41,13 @@ export { default as accountantService } from './accountantService'
 export { default as maintenanceService } from './maintenanceService'
 export { default as groundskeeperService } from './groundskeeperService'
 export { default as bookingsCoordinatorService } from './bookingsCoordinatorService'
+// Utility function from operationsService
 export { 
   getOperationsStatusColor
 } from './operationsService'
+// Note: operationsService also exports older versions of bookingsCoordinatorService,
+// frontDeskService, and accountantService for backward compatibility.
+// Use the standalone imports above for new coordinator/front-desk/accountant dashboards.
 export { default as systemSupportService } from './systemSupportService'
 export { default as parentService } from './parentService'
 

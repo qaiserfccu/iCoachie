@@ -81,10 +81,25 @@ class EquipmentService {
     pageInfo: PageInfo;
   }> {
     const queryParams = new URLSearchParams();
-    if (params.page) queryParams.append('page', params.page.toString());
-    if (params.pageSize) queryParams.append('pageSize', params.pageSize.toString());
-    if (params.search) queryParams.append('search', params.search);
-    if (params.category) queryParams.append('category', params.category);
+    
+    // Validate and sanitize parameters
+    if (params.page !== undefined) {
+      const page = Math.max(1, Math.floor(params.page));
+      queryParams.append('page', page.toString());
+    }
+    if (params.pageSize !== undefined) {
+      const pageSize = Math.max(1, Math.min(100, Math.floor(params.pageSize)));
+      queryParams.append('pageSize', pageSize.toString());
+    }
+    if (params.search) {
+      // Basic sanitization: trim whitespace
+      const search = params.search.trim();
+      if (search) queryParams.append('search', search);
+    }
+    if (params.category) {
+      const category = params.category.trim();
+      if (category) queryParams.append('category', category);
+    }
 
     return apiClient.get(`${this.BASE_PATH}/inventory?${queryParams.toString()}`);
   }
