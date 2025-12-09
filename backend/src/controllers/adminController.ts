@@ -2091,13 +2091,16 @@ router.post('/users/:id/activate', requireAuth, requireRole(ADMIN_ROLES), async 
  */
 router.post('/clubs', requireAuth, requireRole(ADMIN_ROLES), async (req: AuthRequest, res: Response) => {
   try {
-    const { name, location, description } = req.body;
+    const { name, location, description, subdomain, primaryColor, secondaryColor } = req.body;
 
     const club = await prisma.club.create({
       data: {
         name,
         location,
         description,
+        subdomain,
+        primaryColor,
+        secondaryColor,
         adminId: req.user!.id
       }
     });
@@ -2147,14 +2150,17 @@ router.post('/clubs', requireAuth, requireRole(ADMIN_ROLES), async (req: AuthReq
 router.put('/clubs/:id', requireAuth, requireRole(ADMIN_ROLES), async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const { name, location, description } = req.body;
+    const { name, location, description, subdomain, primaryColor, secondaryColor } = req.body;
 
     const club = await prisma.club.update({
       where: { id: parseInt(id) },
       data: {
         name,
         location,
-        description
+        description,
+        subdomain,
+        primaryColor,
+        secondaryColor
       }
     });
 
