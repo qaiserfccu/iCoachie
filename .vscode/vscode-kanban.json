@@ -381,56 +381,7 @@
       "type": "task"
     }
   ],
-  "in-progress": [
-    {
-      "assignedTo": {
-        "name": "Copilot Agent"
-      },
-      "category": "integration",
-      "creation_time": "2025-12-03T00:00:00.000Z",
-      "description": {
-        "content": "# 16.B.7 Freelancer Sidebar Backend Integration\n\n## Overview\nComplete full backend integration for all Freelancer sidebar menus defined in freelancer-sidebar.tsx, replacing all mock services with backend API calls or creating backend mock methods where APIs don't exist yet.\n\n## Reference Screenshot\n[Freelancer Sidebar Screenshot](https://example.com/freelancer-sidebar.png)\n\n## Freelancer Sidebar Menus to Integrate\n- Dashboard: /freelancer\n- Bookings: /freelancer/bookings (All Bookings, Pending, Calendar)\n- Clients: /freelancer/clients (All Clients, Reviews)\n- Availability: /freelancer/availability\n- Earnings: /freelancer/earnings (Overview, Transactions, Payouts)\n- Reviews: /freelancer/reviews\n- Analytics: /freelancer/analytics\n- Messages: /freelancer/messages\n- Notifications: /freelancer/notifications\n- My Profile: /freelancer/profile\n- Settings: /freelancer/settings\n- Help: /freelancer/help",
-        "mime": "text/markdown"
-      },
-      "details": {
-        "content": "# 16.B.7 Freelancer Sidebar Backend Integration - Implementation Details\n\n## Current Status\nFreelancer sidebar integration is partially complete. Card 16-2 exists for admin panel integration but focuses on backend API creation. This new card (16.B.7) focuses on full frontend-backend integration including real-time features.\n\n## Implementation Strategy\n\n### Phase 1: Backend API Assessment\n1. Review existing endpoints in `docs/backend/global-endpoint-matrix.md`\n2. Map freelancer sidebar routes to backend APIs\n3. Identify gaps where APIs don't exist\n4. Create mock methods for missing APIs with TODO comments\n\n### Phase 2: Frontend Service Updates\n1. Remove all imports from `frontend/lib/services/mockDataService.ts`\n2. Update `frontend/lib/api.ts` and freelancer service files\n3. Add proper TypeScript interfaces for all freelancer data\n4. Implement error handling and loading states\n\n### Phase 3: Real-time Integration\n1. Connect freelancer routes to socket events (`freelancer-booking-updated`, `freelancer-client-updated`, etc.)\n2. Implement live notifications and message popups\n3. Add real-time dashboard updates\n\n### Phase 4: Testing & Validation\n1. E2e test suite for all freelancer routes\n2. API integration tests with seeded data\n3. Performance testing for data-heavy routes\n4. RBAC validation for all freelancer endpoints\n\n## Dependencies\n- Card 16-2 (Admin Panel Backend APIs)\n- `docs/backend/global-endpoint-matrix.md`\n- `frontend/components/freelancer/freelancer-sidebar.tsx`\n- Backend controllers for all freelancer domains\n- Socket service for real-time updates\n\n## Files to Modify\n- `frontend/lib/services/freelancerService.ts` (extend)\n- `frontend/lib/services/mockDataService.ts` (remove imports)\n- `frontend/app/freelancer/*` routes (update to use real APIs)\n- Backend controllers (create mock methods where needed)\n- `backend/src/services/socketService.ts` (add freelancer events)\n\n## Risk Mitigation\n- Create backend mock methods for missing APIs to avoid blocking frontend\n- Add TODO comments indicating temporary mocks\n- Implement proper error boundaries for API failures\n- Ensure backward compatibility during transition",
-        "mime": "text/markdown"
-      },
-      "id": "16.B.7",
-      "prio": 10,
-      "references": [
-        "16-2",
-        "docs/backend/global-endpoint-matrix.md",
-        "frontend/components/freelancer/freelancer-sidebar.tsx"
-      ],
-      "title": "16.B.7 Freelancer sidebar backend integration",
-      "type": "task"
-    },
-    {
-      "assignedTo": {
-        "name": "Copilot Agent"
-      },
-      "category": "integration",
-      "creation_time": "2025-12-03T00:00:00.000Z",
-      "description": {
-        "content": "# 16.B.8 Parent Sidebar Backend Integration\n\n## Overview\nComplete full backend integration for all Parent sidebar menus defined in parent-sidebar.tsx, replacing all mock services with backend API calls or creating backend mock methods where APIs don't exist yet.\n\n## Reference Screenshot\n[Parent Sidebar Screenshot](https://example.com/parent-sidebar.png)\n\n## Parent Sidebar Menus to Integrate\n- Dashboard: /parent\n- My Kids: /parent/kids (All Kids, Add Child)\n- Bookings: /parent/bookings (All Bookings, Book Session, Calendar)\n- Progress: /parent/progress (Overview, Evaluations, Reports)\n- Payments: /parent/payments (History, Subscriptions, Invoices)\n- Achievements: /parent/achievements\n- Messages: /parent/messages\n- Notifications: /parent/notifications\n- My Account: /parent/account\n- Settings: /parent/settings\n- Help: /parent/help",
-        "mime": "text/markdown"
-      },
-      "details": {
-        "content": "# 16.B.8 Parent Sidebar Backend Integration - Implementation Details\n\n## Current Status\nParent sidebar integration is partially complete. Card 16-2 exists for admin panel integration but focuses on backend API creation. This new card (16.B.8) focuses on full frontend-backend integration including real-time features.\n\n## Implementation Strategy\n\n### Phase 1: Backend API Assessment\n1. Review existing endpoints in `docs/backend/global-endpoint-matrix.md`\n2. Map parent sidebar routes to backend APIs\n3. Identify gaps where APIs don't exist\n4. Create mock methods for missing APIs with TODO comments\n\n### Phase 2: Frontend Service Updates\n1. Remove all imports from `frontend/lib/services/mockDataService.ts`\n2. Update `frontend/lib/api.ts` and parent service files\n3. Add proper TypeScript interfaces for all parent data\n4. Implement error handling and loading states\n\n### Phase 3: Real-time Integration\n1. Connect parent routes to socket events (`parent-kid-updated`, `parent-booking-updated`, etc.)\n2. Implement live notifications and message popups\n3. Add real-time dashboard updates\n\n### Phase 4: Testing & Validation\n1. E2e test suite for all parent routes\n2. API integration tests with seeded data\n3. Performance testing for data-heavy routes\n4. RBAC validation for all parent endpoints\n\n## Dependencies\n- Card 16-2 (Admin Panel Backend APIs)\n- `docs/backend/global-endpoint-matrix.md`\n- `frontend/components/parent/parent-sidebar.tsx`\n- Backend controllers for all parent domains\n- Socket service for real-time updates\n\n## Files to Modify\n- `frontend/lib/services/parentService.ts` (extend)\n- `frontend/lib/services/mockDataService.ts` (remove imports)\n- `frontend/app/parent/*` routes (update to use real APIs)\n- Backend controllers (create mock methods where needed)\n- `backend/src/services/socketService.ts` (add parent events)\n\n## Risk Mitigation\n- Create backend mock methods for missing APIs to avoid blocking frontend\n- Add TODO comments indicating temporary mocks\n- Implement proper error boundaries for API failures\n- Ensure backward compatibility during transition",
-        "mime": "text/markdown"
-      },
-      "id": "16.B.8",
-      "prio": 10,
-      "references": [
-        "16-2",
-        "docs/backend/global-endpoint-matrix.md",
-        "frontend/components/parent/parent-sidebar.tsx"
-      ],
-      "title": "16.B.8 Parent sidebar backend integration",
-      "type": "task"
-    }
-  ],
+  "in-progress": [],
   "testing": [],
   "done": [
     {
@@ -858,6 +809,30 @@
       "assignedTo": {
         "name": "Copilot Agent"
       },
+      "category": "integration",
+      "creation_time": "2025-12-03T00:00:00.000Z",
+      "description": {
+        "content": "# 16.B.7 Freelancer Sidebar Backend Integration\n\n## Overview\nComplete full backend integration for all Freelancer sidebar menus defined in freelancer-sidebar.tsx, replacing all mock services with backend API calls or creating backend mock methods where APIs don't exist yet.\n\n## Reference Screenshot\n[Freelancer Sidebar Screenshot](https://example.com/freelancer-sidebar.png)\n\n## Freelancer Sidebar Menus to Integrate\n- Dashboard: /freelancer\n- Bookings: /freelancer/bookings (All Bookings, Pending, Calendar)\n- Clients: /freelancer/clients (All Clients, Reviews)\n- Availability: /freelancer/availability\n- Earnings: /freelancer/earnings (Overview, Transactions, Payouts)\n- Reviews: /freelancer/reviews\n- Analytics: /freelancer/analytics\n- Messages: /freelancer/messages\n- Notifications: /freelancer/notifications\n- My Profile: /freelancer/profile\n- Settings: /freelancer/settings\n- Help: /freelancer/help",
+        "mime": "text/markdown"
+      },
+      "details": {
+        "content": "# 16.B.7 Freelancer Sidebar Backend Integration - Implementation Details\n\n## Current Status\nFreelancer sidebar integration is partially complete. Card 16-2 exists for admin panel integration but focuses on backend API creation. This new card (16.B.7) focuses on full frontend-backend integration including real-time features.\n\n## Implementation Strategy\n\n### Phase 1: Backend API Assessment\n1. Review existing endpoints in `docs/backend/global-endpoint-matrix.md`\n2. Map freelancer sidebar routes to backend APIs\n3. Identify gaps where APIs don't exist\n4. Create mock methods for missing APIs with TODO comments\n\n### Phase 2: Frontend Service Updates\n1. Remove all imports from `frontend/lib/services/mockDataService.ts`\n2. Update `frontend/lib/api.ts` and freelancer service files\n3. Add proper TypeScript interfaces for all freelancer data\n4. Implement error handling and loading states\n\n### Phase 3: Real-time Integration\n1. Connect freelancer routes to socket events (`freelancer-booking-updated`, `freelancer-client-updated`, etc.)\n2. Implement live notifications and message popups\n3. Add real-time dashboard updates\n\n### Phase 4: Testing & Validation\n1. E2e test suite for all freelancer routes\n2. API integration tests with seeded data\n3. Performance testing for data-heavy routes\n4. RBAC validation for all freelancer endpoints\n\n## Dependencies\n- Card 16-2 (Admin Panel Backend APIs)\n- `docs/backend/global-endpoint-matrix.md`\n- `frontend/components/freelancer/freelancer-sidebar.tsx`\n- Backend controllers for all freelancer domains\n- Socket service for real-time updates\n\n## Files to Modify\n- `frontend/lib/services/freelancerService.ts` (extend)\n- `frontend/lib/services/mockDataService.ts` (remove imports)\n- `frontend/app/freelancer/*` routes (update to use real APIs)\n- Backend controllers (create mock methods where needed)\n- `backend/src/services/socketService.ts` (add freelancer events)\n\n## Risk Mitigation\n- Create backend mock methods for missing APIs to avoid blocking frontend\n- Add TODO comments indicating temporary mocks\n- Implement proper error boundaries for API failures\n- Ensure backward compatibility during transition",
+        "mime": "text/markdown"
+      },
+      "id": "16.B.7",
+      "prio": 10,
+      "references": [
+        "16-2",
+        "docs/backend/global-endpoint-matrix.md",
+        "frontend/components/freelancer/freelancer-sidebar.tsx"
+      ],
+      "title": "16.B.7 Freelancer sidebar backend integration",
+      "type": "task"
+    },
+    {
+      "assignedTo": {
+        "name": "Copilot Agent"
+      },
       "category": "planning",
       "creation_time": "2025-12-02T00:00:00.000Z",
       "description": {
@@ -1202,6 +1177,30 @@
         "24"
       ],
       "title": "11 - Global backend endpoint verification"
+    },
+    {
+      "assignedTo": {
+        "name": "Copilot Agent"
+      },
+      "category": "integration",
+      "creation_time": "2025-12-03T00:00:00.000Z",
+      "description": {
+        "content": "# 16.B.8 Parent Sidebar Backend Integration\n\n## Overview\nComplete full backend integration for all Parent sidebar menus defined in parent-sidebar.tsx, replacing all mock services with backend API calls or creating backend mock methods where APIs don't exist yet.\n\n## Reference Screenshot\n[Parent Sidebar Screenshot](https://example.com/parent-sidebar.png)\n\n## Parent Sidebar Menus to Integrate\n- Dashboard: /parent\n- My Kids: /parent/kids (All Kids, Add Child)\n- Bookings: /parent/bookings (All Bookings, Book Session, Calendar)\n- Progress: /parent/progress (Overview, Evaluations, Reports)\n- Payments: /parent/payments (History, Subscriptions, Invoices)\n- Achievements: /parent/achievements\n- Messages: /parent/messages\n- Notifications: /parent/notifications\n- My Account: /parent/account\n- Settings: /parent/settings\n- Help: /parent/help",
+        "mime": "text/markdown"
+      },
+      "details": {
+        "content": "# 16.B.8 Parent Sidebar Backend Integration - Implementation Details\n\n## Current Status\nParent sidebar integration is partially complete. Card 16-2 exists for admin panel integration but focuses on backend API creation. This new card (16.B.8) focuses on full frontend-backend integration including real-time features.\n\n## Implementation Strategy\n\n### Phase 1: Backend API Assessment\n1. Review existing endpoints in `docs/backend/global-endpoint-matrix.md`\n2. Map parent sidebar routes to backend APIs\n3. Identify gaps where APIs don't exist\n4. Create mock methods for missing APIs with TODO comments\n\n### Phase 2: Frontend Service Updates\n1. Remove all imports from `frontend/lib/services/mockDataService.ts`\n2. Update `frontend/lib/api.ts` and parent service files\n3. Add proper TypeScript interfaces for all parent data\n4. Implement error handling and loading states\n\n### Phase 3: Real-time Integration\n1. Connect parent routes to socket events (`parent-kid-updated`, `parent-booking-updated`, etc.)\n2. Implement live notifications and message popups\n3. Add real-time dashboard updates\n\n### Phase 4: Testing & Validation\n1. E2e test suite for all parent routes\n2. API integration tests with seeded data\n3. Performance testing for data-heavy routes\n4. RBAC validation for all parent endpoints\n\n## Dependencies\n- Card 16-2 (Admin Panel Backend APIs)\n- `docs/backend/global-endpoint-matrix.md`\n- `frontend/components/parent/parent-sidebar.tsx`\n- Backend controllers for all parent domains\n- Socket service for real-time updates\n\n## Files to Modify\n- `frontend/lib/services/parentService.ts` (extend)\n- `frontend/lib/services/mockDataService.ts` (remove imports)\n- `frontend/app/parent/*` routes (update to use real APIs)\n- Backend controllers (create mock methods where needed)\n- `backend/src/services/socketService.ts` (add parent events)\n\n## Risk Mitigation\n- Create backend mock methods for missing APIs to avoid blocking frontend\n- Add TODO comments indicating temporary mocks\n- Implement proper error boundaries for API failures\n- Ensure backward compatibility during transition",
+        "mime": "text/markdown"
+      },
+      "id": "16.B.8",
+      "prio": 10,
+      "references": [
+        "16-2",
+        "docs/backend/global-endpoint-matrix.md",
+        "frontend/components/parent/parent-sidebar.tsx"
+      ],
+      "title": "16.B.8 Parent sidebar backend integration",
+      "type": "task"
     }
   ]
 }
