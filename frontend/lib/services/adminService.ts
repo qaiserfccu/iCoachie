@@ -101,6 +101,9 @@ export interface AdminClub {
   status: string
   revenue: string
   plan: string
+  subdomain?: string
+  primaryColor?: string
+  secondaryColor?: string
 }
 
 export interface ClubStats {
