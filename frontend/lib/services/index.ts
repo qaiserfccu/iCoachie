@@ -30,10 +30,17 @@ export { freelancerEarningsService } from './freelancerEarningsService'
 export { freelancerProfileService } from './freelancerProfileService'
 export { default as facilityService } from './facilityService'
 export { DASHBOARD_STATS_CONFIG } from './facilityService'
+export { default as equipmentService } from './equipmentService'
+export { default as securityService } from './securityService'
+export { default as cleaningService } from './cleaningService'
+export { default as medicalService } from './medicalService'
+export { default as contentManagerService } from './contentManagerService'
+export { default as frontDeskService } from './frontDeskService'
+export { default as accountantService } from './accountantService'
+export { default as maintenanceService } from './maintenanceService'
+export { default as groundskeeperService } from './groundskeeperService'
+export { default as bookingsCoordinatorService } from './bookingsCoordinatorService'
 export { 
-  bookingsCoordinatorService, 
-  frontDeskService, 
-  accountantService,
   getOperationsStatusColor
 } from './operationsService'
 export { default as systemSupportService } from './systemSupportService'
@@ -115,3 +122,86 @@ export type {
   ParentProfile,
   ParentDashboardStats
 } from './parentService'
+
+// Equipment Manager types
+export type {
+  EquipmentStats,
+  EquipmentInventoryItem,
+  EquipmentCheckout,
+  EquipmentMaintenance,
+  ProcurementRequest
+} from './equipmentService'
+
+// Security Staff types
+export type {
+  SecurityStats,
+  SecurityIncident,
+  AccessControlLog,
+  PatrolLog
+} from './securityService'
+
+// Cleaning Staff types
+export type {
+  CleaningStats,
+  CleaningSchedule,
+  CleaningSupply,
+  QualityInspection
+} from './cleaningService'
+
+// Medical Staff types
+export type {
+  MedicalStats,
+  HealthRecord,
+  InjuryReport,
+  FirstAidIncident
+} from './medicalService'
+
+// Content Manager types
+export type {
+  ContentManagerStats,
+  Announcement,
+  MediaItem,
+  ContentItem
+} from './contentManagerService'
+
+// Front Desk types (from new service)
+export type {
+  FrontDeskStats as FrontDeskServiceStats,
+  CheckIn,
+  Inquiry,
+  FrontDeskSchedule
+} from './frontDeskService'
+
+// Accountant types (from new service)
+export type {
+  AccountantStats as AccountantServiceStats,
+  Invoice,
+  PaymentTransaction as AccountantPaymentTransaction,
+  FinancialReport
+} from './accountantService'
+
+// Maintenance Tech types
+export type {
+  MaintenanceStats as MaintenanceServiceStats,
+  WorkOrder,
+  PreventiveMaintenance,
+  MaintenanceInventory
+} from './maintenanceService'
+
+// Groundskeeper types (from new service)
+export type {
+  GroundskeeperStats as GroundskeeperServiceStats,
+  DailyTask,
+  TurfManagement,
+  IrrigationSystem,
+  PestControl
+} from './groundskeeperService'
+
+// Bookings Coordinator types (from new service)
+export type {
+  BookingsCoordinatorStats as BookingsCoordinatorServiceStats,
+  BookingCalendarEvent,
+  Reservation,
+  VenueAvailability,
+  VenuePricing
+} from './bookingsCoordinatorService'
