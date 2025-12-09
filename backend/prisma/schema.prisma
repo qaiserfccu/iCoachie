@@ -85,16 +85,30 @@ model Club {
   students    Student[]
   coaches     Coach[]
   sessions    Session[]
-  facilities  Facility[]
+  facilities  ClubFacility[]
 
   @@map("clubs")
+}
+
+model ClubFacility {
+  id          Int      @id @default(autoincrement())
+  clubId      Int
+  facilityId  Int
+  createdAt   DateTime @default(now())
+  
+  club        Club     @relation(fields: [clubId], references: [id])
+  facility    Facility @relation(fields: [facilityId], references: [id])
+
+  @@unique([clubId, facilityId])
+  @@map("club_facilities")
 }
 
 model Student {
   id        Int      @id @default(autoincrement())
   userId    Int      @unique
   parentId  Int?
-  clubId    Int
+  clubId    Int?     // Optional: Student might be direct to facility or freelancer
+  facilityId Int?    // Optional: Student might belong to a facility directly
   coachId   Int?
   name      String
   age       Int?
@@ -107,7 +121,8 @@ model Student {
   // Relations
   user      User     @relation("StudentUser", fields: [userId], references: [id])
   parent    User?    @relation("ParentUser", fields: [parentId], references: [id])
-  club      Club     @relation(fields: [clubId], references: [id])
+  club      Club?    @relation(fields: [clubId], references: [id])
+  facility  Facility? @relation(fields: [facilityId], references: [id])
   coach     User?    @relation("CoachUser", fields: [coachId], references: [id])
   enrollments SessionEnrollment[]
   attendances Attendance[]
@@ -120,6 +135,7 @@ model Coach {
   id                Int      @id @default(autoincrement())
   userId            Int      @unique
   clubId            Int?
+  facilityId        Int?     // Optional: Coach might work for a facility
   specializations    String[]
   experienceYears   Int?
   certification     String?
@@ -131,6 +147,7 @@ model Coach {
   // Relations
   user              User     @relation(fields: [userId], references: [id])
   club              Club?    @relation(fields: [clubId], references: [id])
+  facility          Facility? @relation(fields: [facilityId], references: [id])
 
   @@map("coaches")
 }
@@ -444,7 +461,7 @@ model MembershipType {
 // Facility management models
 model Facility {
   id          Int      @id @default(autoincrement())
-  clubId      Int
+  // clubId removed - use ClubFacility for many-to-many
   name        String
   managerId   Int?     @unique
   location    String?
@@ -455,13 +472,15 @@ model Facility {
   updatedAt   DateTime @updatedAt
   deletedAt   DateTime?
   
-  club        Club     @relation(fields: [clubId], references: [id])
+  clubs       ClubFacility[]
   manager     User?    @relation("FacilityManager", fields: [managerId], references: [id])
   staff       User[]   @relation("FacilityStaff")
   venues      Venue[]
   grounds     Ground[]
   equipment   Equipment[]
   maintenanceTasks MaintenanceTask[]
+  students    Student[]
+  coaches     Coach[]
   
   @@map("facilities")
 }
