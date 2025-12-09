@@ -1,7 +1,7 @@
 import express, { Request, Response } from 'express';
 import bcrypt from 'bcrypt';
 import prisma from '../db';
-import { requireAuth } from '../middleware/jwtAuth';
+import { requireAuth, AuthRequest } from '../middleware/jwtAuth';
 import { requireRole } from '../middleware';
 
 const router = express.Router();
@@ -1862,7 +1862,7 @@ router.post('/users', requireAuth, requireRole(ADMIN_ROLES), async (req: Request
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Get active status
-    const activeStatus = await prisma.status.findFirst({
+    const activeStatus = await prisma.userStatus.findFirst({
       where: { code: 'ACTIVE' }
     });
 
@@ -1870,7 +1870,7 @@ router.post('/users', requireAuth, requireRole(ADMIN_ROLES), async (req: Request
       data: {
         name,
         email,
-        password: hashedPassword,
+        passwordHash: hashedPassword,
         primaryRoleId: roleId,
         clubId: clubId || null,
         statusId: activeStatus?.id
@@ -1995,7 +1995,7 @@ router.post('/users/:id/suspend', requireAuth, requireRole(ADMIN_ROLES), async (
   try {
     const { id } = req.params;
 
-    const suspendedStatus = await prisma.status.findFirst({
+    const suspendedStatus = await prisma.userStatus.findFirst({
       where: { code: 'SUSPENDED' }
     });
 
@@ -2037,7 +2037,7 @@ router.post('/users/:id/activate', requireAuth, requireRole(ADMIN_ROLES), async 
   try {
     const { id } = req.params;
 
-    const activeStatus = await prisma.status.findFirst({
+    const activeStatus = await prisma.userStatus.findFirst({
       where: { code: 'ACTIVE' }
     });
 
@@ -2089,17 +2089,16 @@ router.post('/users/:id/activate', requireAuth, requireRole(ADMIN_ROLES), async 
  *       201:
  *         description: Club created successfully
  */
-router.post('/clubs', requireAuth, requireRole(ADMIN_ROLES), async (req: Request, res: Response) => {
+router.post('/clubs', requireAuth, requireRole(ADMIN_ROLES), async (req: AuthRequest, res: Response) => {
   try {
-    const { name, location, description, website, phone } = req.body;
+    const { name, location, description } = req.body;
 
     const club = await prisma.club.create({
       data: {
         name,
         location,
         description,
-        website,
-        phone
+        adminId: req.user!.id
       }
     });
 
@@ -2148,16 +2147,14 @@ router.post('/clubs', requireAuth, requireRole(ADMIN_ROLES), async (req: Request
 router.put('/clubs/:id', requireAuth, requireRole(ADMIN_ROLES), async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const { name, location, description, website, phone } = req.body;
+    const { name, location, description } = req.body;
 
     const club = await prisma.club.update({
       where: { id: parseInt(id) },
       data: {
         name,
         location,
-        description,
-        website,
-        phone
+        description
       }
     });
 

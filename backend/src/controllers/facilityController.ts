@@ -2,8 +2,28 @@ import express from 'express';
 import prisma from '../db';
 import { requireAuth, AuthRequest } from '../middleware/jwtAuth';
 import { requireRole, requireScope, requirePermission } from '../middleware';
+import { IsolationContext, getIsolationContext } from '../types/isolation';
 
 const router = express.Router();
+
+// Helper function to check if user has access to a facility based on isolation
+async function checkFacilityAccess(facilityId: number, isolation: IsolationContext): Promise<boolean> {
+  switch (isolation.level) {
+    case 'GLOBAL':
+      return true; // Global users can access all facilities
+    case 'CLUB':
+      if (!isolation.clubId) return false;
+      // Check if facility is associated with user's club
+      const clubFacility = await prisma.clubFacility.findFirst({
+        where: { facilityId, clubId: isolation.clubId }
+      });
+      return !!clubFacility;
+    case 'FACILITY':
+      return isolation.facilityId === facilityId;
+    default:
+      return false;
+  }
+}
 
 // =============================================================================
 // Card 19 - Complete DTO Shapes for Facility/Venue/Ground
@@ -17,7 +37,6 @@ const facilitySelect = {
   address: true,
   description: true,
   amenities: true,
-  clubId: true,
   managerId: true,
   createdAt: true,
   updatedAt: true,
@@ -118,7 +137,6 @@ const mapFacilityResponse = (facility: any) => ({
   address: facility.address,
   description: facility.description,
   amenities: facility.amenities || [],
-  clubId: facility.clubId,
   managerId: facility.managerId,
   manager: facility.manager || null,
   venueCount: facility._count?.venues,
@@ -173,9 +191,7 @@ const mapGroundResponse = (ground: any) => ({
 router.post('/', requireAuth, requireRole(['SUPER_ADMIN', 'SYSTEM_SUPPORT']), async (req: AuthRequest, res) => {
   try {
     const { name, address, location, description, amenities, managerId } = req.body;
-    const clubId = req.user!.clubId;
     if (!name) return res.status(400).json({ message: 'Name is required' });
-    if (!clubId) return res.status(400).json({ message: 'Club context required' });
     
     const facility = await prisma.facility.create({
       data: { 
@@ -184,8 +200,7 @@ router.post('/', requireAuth, requireRole(['SUPER_ADMIN', 'SYSTEM_SUPPORT']), as
         location: location || null,
         description: description || null,
         amenities: amenities || [],
-        managerId: managerId || null,
-        clubId 
+        managerId: managerId || null
       },
       select: facilitySelect
     });
@@ -199,14 +214,13 @@ router.post('/', requireAuth, requireRole(['SUPER_ADMIN', 'SYSTEM_SUPPORT']), as
 // List facilities - Card 22: Filter deleted by default, Card 23: Pagination
 router.get('/', requireAuth, async (req: AuthRequest, res) => {
   try {
-    const clubId = req.user!.clubId;
-    if (!clubId) return res.status(400).json({ message: 'Club context required' });
+    const isolation = req.isolation;
+    if (!isolation) return res.status(400).json({ message: 'Isolation context required' });
     
     const { page, pageSize, search } = parsePaginationParams(req.query);
     const includeDeleted = req.query.includeDeleted === 'true';
     
-    const where: any = { 
-      clubId,
+    let where: any = { 
       ...(includeDeleted ? {} : { deletedAt: null }),
       ...(search ? { 
         OR: [
@@ -216,6 +230,20 @@ router.get('/', requireAuth, async (req: AuthRequest, res) => {
         ]
       } : {})
     };
+    
+    // Apply isolation-based filtering
+    if (isolation.level === 'CLUB' && isolation.clubId) {
+      // For club users, only show facilities associated with their club
+      where.clubs = { some: { clubId: isolation.clubId } };
+    } else if (isolation.level === 'FACILITY' && isolation.facilityId) {
+      // For facility users, only show their facility
+      where.id = isolation.facilityId;
+    } else if (isolation.level === 'GLOBAL') {
+      // Global users can see all facilities
+    } else {
+      // For other levels, they might not have access or need different logic
+      return res.status(403).json({ message: 'Access denied' });
+    }
     
     const [facilities, total] = await Promise.all([
       prisma.facility.findMany({
@@ -244,7 +272,13 @@ router.get('/', requireAuth, async (req: AuthRequest, res) => {
 router.get('/:id', requireAuth, async (req: AuthRequest, res) => {
   try {
     const id = parseInt(req.params.id);
-    const clubId = req.user!.clubId;
+    const isolation = req.isolation;
+    if (!isolation) return res.status(400).json({ message: 'Isolation context required' });
+    
+    // Check if user has access to this facility
+    const hasAccess = await checkFacilityAccess(id, isolation);
+    if (!hasAccess) return res.status(404).json({ message: 'Not found' });
+    
     const facility = await prisma.facility.findUnique({
       where: { id },
       select: {
@@ -252,7 +286,7 @@ router.get('/:id', requireAuth, async (req: AuthRequest, res) => {
         _count: { select: { venues: true, grounds: true } }
       }
     });
-    if (!facility || facility.clubId !== clubId) return res.status(404).json({ message: 'Not found' });
+    if (!facility) return res.status(404).json({ message: 'Not found' });
     res.json(mapFacilityResponse(facility));
   } catch (err) {
     console.error(err);
@@ -264,15 +298,21 @@ router.get('/:id', requireAuth, async (req: AuthRequest, res) => {
 router.put('/:id', requireAuth, requireScope('FACILITY'), async (req: AuthRequest, res) => {
   try {
     const id = parseInt(req.params.id);
-    const clubId = req.user!.clubId;
+    const isolation = req.isolation;
     const { name, address, location, description, amenities } = req.body;
     
     if (!name && !address && !location && !description && !amenities) {
       return res.status(400).json({ message: 'At least one field required' });
     }
     
-    const existing = await prisma.facility.findUnique({ where: { id }, select: { clubId: true, deletedAt: true } });
-    if (!existing || existing.clubId !== clubId) return res.status(404).json({ message: 'Not found' });
+    if (!isolation) return res.status(400).json({ message: 'Isolation context required' });
+    
+    // Check if user has access to this facility
+    const hasAccess = await checkFacilityAccess(id, isolation);
+    if (!hasAccess) return res.status(404).json({ message: 'Not found' });
+    
+    const existing = await prisma.facility.findUnique({ where: { id }, select: { deletedAt: true } });
+    if (!existing) return res.status(404).json({ message: 'Not found' });
     if (existing.deletedAt) return res.status(400).json({ message: 'Cannot update deleted facility' });
     
     const data: any = {};
@@ -298,9 +338,15 @@ router.put('/:id', requireAuth, requireScope('FACILITY'), async (req: AuthReques
 router.delete('/:id', requireAuth, requireRole(['SUPER_ADMIN']), async (req: AuthRequest, res) => {
   try {
     const id = parseInt(req.params.id);
-    const clubId = req.user!.clubId;
-    const existing = await prisma.facility.findUnique({ where: { id }, select: { clubId: true, deletedAt: true } });
-    if (!existing || existing.clubId !== clubId) return res.status(404).json({ message: 'Not found' });
+    const isolation = req.isolation;
+    if (!isolation) return res.status(400).json({ message: 'Isolation context required' });
+    
+    // Check if user has access to this facility
+    const hasAccess = await checkFacilityAccess(id, isolation);
+    if (!hasAccess) return res.status(404).json({ message: 'Not found' });
+    
+    const existing = await prisma.facility.findUnique({ where: { id }, select: { deletedAt: true } });
+    if (!existing) return res.status(404).json({ message: 'Not found' });
     if (existing.deletedAt) return res.status(400).json({ message: 'Already deleted' });
     
     await prisma.facility.update({ 
@@ -318,9 +364,15 @@ router.delete('/:id', requireAuth, requireRole(['SUPER_ADMIN']), async (req: Aut
 router.post('/:id/restore', requireAuth, requireRole(['SUPER_ADMIN']), async (req: AuthRequest, res) => {
   try {
     const id = parseInt(req.params.id);
-    const clubId = req.user!.clubId;
-    const existing = await prisma.facility.findUnique({ where: { id }, select: { clubId: true, deletedAt: true } });
-    if (!existing || existing.clubId !== clubId) return res.status(404).json({ message: 'Not found' });
+    const isolation = req.isolation;
+    if (!isolation) return res.status(400).json({ message: 'Isolation context required' });
+    
+    // Check if user has access to this facility
+    const hasAccess = await checkFacilityAccess(id, isolation);
+    if (!hasAccess) return res.status(404).json({ message: 'Not found' });
+    
+    const existing = await prisma.facility.findUnique({ where: { id }, select: { deletedAt: true } });
+    if (!existing) return res.status(404).json({ message: 'Not found' });
     if (!existing.deletedAt) return res.status(400).json({ message: 'Facility is not deleted' });
     
     const restored = await prisma.facility.update({ 
@@ -343,19 +395,25 @@ router.post('/:id/restore', requireAuth, requireRole(['SUPER_ADMIN']), async (re
 router.put('/:id/manager', requireAuth, requirePermission('facility.staff.manage'), async (req: AuthRequest, res) => {
   try {
     const id = parseInt(req.params.id);
-    const clubId = req.user!.clubId;
+    const isolation = req.isolation;
+    if (!isolation) return res.status(400).json({ message: 'Isolation context required' });
+    
     const { managerId } = req.body;
     
     if (managerId === undefined) return res.status(400).json({ message: 'managerId required' });
     
-    const existing = await prisma.facility.findUnique({ where: { id }, select: { clubId: true, deletedAt: true } });
-    if (!existing || existing.clubId !== clubId) return res.status(404).json({ message: 'Not found' });
+    // Check if user has access to this facility
+    const hasAccess = await checkFacilityAccess(id, isolation);
+    if (!hasAccess) return res.status(404).json({ message: 'Not found' });
+    
+    const existing = await prisma.facility.findUnique({ where: { id }, select: { deletedAt: true } });
+    if (!existing) return res.status(404).json({ message: 'Not found' });
     if (existing.deletedAt) return res.status(400).json({ message: 'Cannot update deleted facility' });
     
-    // Verify manager exists and belongs to club if provided
+    // Verify manager exists if provided
     if (managerId) {
-      const manager = await prisma.user.findUnique({ where: { id: managerId }, select: { clubId: true } });
-      if (!manager || manager.clubId !== clubId) {
+      const manager = await prisma.user.findUnique({ where: { id: managerId }, select: { id: true } });
+      if (!manager) {
         return res.status(400).json({ message: 'Invalid manager ID' });
       }
     }
@@ -376,12 +434,16 @@ router.put('/:id/manager', requireAuth, requirePermission('facility.staff.manage
 router.get('/:id/staff', requireAuth, async (req: AuthRequest, res) => {
   try {
     const id = parseInt(req.params.id);
-    const clubId = req.user!.clubId;
+    const isolation = req.isolation;
+    if (!isolation) return res.status(400).json({ message: 'Isolation context required' });
+    
+    // Check if user has access to this facility
+    const hasAccess = await checkFacilityAccess(id, isolation);
+    if (!hasAccess) return res.status(404).json({ message: 'Not found' });
     
     const facility = await prisma.facility.findUnique({ 
       where: { id }, 
       select: { 
-        clubId: true,
         staff: {
           select: {
             id: true,
@@ -392,7 +454,7 @@ router.get('/:id/staff', requireAuth, async (req: AuthRequest, res) => {
         }
       } 
     });
-    if (!facility || facility.clubId !== clubId) return res.status(404).json({ message: 'Not found' });
+    if (!facility) return res.status(404).json({ message: 'Not found' });
     
     res.json({ data: facility.staff });
   } catch (err) {
@@ -405,17 +467,30 @@ router.get('/:id/staff', requireAuth, async (req: AuthRequest, res) => {
 router.post('/:id/staff', requireAuth, requirePermission('facility.staff.manage'), async (req: AuthRequest, res) => {
   try {
     const id = parseInt(req.params.id);
-    const clubId = req.user!.clubId;
+    const isolation = req.isolation;
+    if (!isolation) return res.status(400).json({ message: 'Isolation context required' });
+    
     const { userId } = req.body;
     
     if (!userId) return res.status(400).json({ message: 'userId required' });
     
-    const facility = await prisma.facility.findUnique({ where: { id }, select: { clubId: true, deletedAt: true } });
-    if (!facility || facility.clubId !== clubId) return res.status(404).json({ message: 'Facility not found' });
+    // Check if user has access to this facility
+    const hasAccess = await checkFacilityAccess(id, isolation);
+    if (!hasAccess) return res.status(404).json({ message: 'Facility not found' });
+    
+    const facility = await prisma.facility.findUnique({ where: { id }, select: { deletedAt: true } });
+    if (!facility) return res.status(404).json({ message: 'Facility not found' });
     if (facility.deletedAt) return res.status(400).json({ message: 'Cannot update deleted facility' });
     
-    const user = await prisma.user.findUnique({ where: { id: userId }, select: { clubId: true } });
-    if (!user || user.clubId !== clubId) return res.status(400).json({ message: 'Invalid user ID' });
+    // Check if the user can be assigned based on isolation level
+    if (isolation.level === 'CLUB') {
+      const user = await prisma.user.findUnique({ where: { id: userId }, select: { clubId: true } });
+      if (!user || user.clubId !== isolation.clubId) return res.status(400).json({ message: 'Invalid user ID' });
+    } else {
+      // For GLOBAL/FACILITY users, just check user exists
+      const user = await prisma.user.findUnique({ where: { id: userId }, select: { id: true } });
+      if (!user) return res.status(400).json({ message: 'Invalid user ID' });
+    }
     
     await prisma.user.update({
       where: { id: userId },
@@ -434,10 +509,15 @@ router.delete('/:id/staff/:userId', requireAuth, requirePermission('facility.sta
   try {
     const id = parseInt(req.params.id);
     const userId = parseInt(req.params.userId);
-    const clubId = req.user!.clubId;
+    const isolation = req.isolation;
+    if (!isolation) return res.status(400).json({ message: 'Isolation context required' });
     
-    const facility = await prisma.facility.findUnique({ where: { id }, select: { clubId: true } });
-    if (!facility || facility.clubId !== clubId) return res.status(404).json({ message: 'Facility not found' });
+    // Check if user has access to this facility
+    const hasAccess = await checkFacilityAccess(id, isolation);
+    if (!hasAccess) return res.status(404).json({ message: 'Facility not found' });
+    
+    const facility = await prisma.facility.findUnique({ where: { id }, select: { id: true } });
+    if (!facility) return res.status(404).json({ message: 'Facility not found' });
     
     const user = await prisma.user.findUnique({ where: { id: userId }, select: { facilityId: true } });
     if (!user || user.facilityId !== id) return res.status(400).json({ message: 'User not assigned to this facility' });
@@ -462,14 +542,19 @@ router.delete('/:id/staff/:userId', requireAuth, requirePermission('facility.sta
 router.post('/:facilityId/venues', requireAuth, requireScope('VENUE'), async (req: AuthRequest, res) => {
   try {
     const facilityId = parseInt(req.params.facilityId);
-    const clubId = req.user!.clubId;
+    const isolation = req.isolation;
     const { name, capacity, hourlyRate, isAvailable, amenities, managerId } = req.body;
     const venueType = req.body.venueType ?? req.body.type;
     
     if (!name || !venueType) return res.status(400).json({ message: 'Venue name and type required' });
+    if (!isolation) return res.status(400).json({ message: 'Isolation context required' });
     
-    const facility = await prisma.facility.findUnique({ where: { id: facilityId }, select: { clubId: true, deletedAt: true } });
-    if (!facility || facility.clubId !== clubId) return res.status(404).json({ message: 'Facility not found' });
+    // Check if user has access to this facility
+    const hasFacilityAccess = await checkFacilityAccess(facilityId, isolation);
+    if (!hasFacilityAccess) return res.status(403).json({ message: 'Access denied to facility' });
+    
+    const facility = await prisma.facility.findUnique({ where: { id: facilityId }, select: { deletedAt: true } });
+    if (!facility) return res.status(404).json({ message: 'Facility not found' });
     if (facility.deletedAt) return res.status(400).json({ message: 'Cannot add venue to deleted facility' });
     
     const venue = await prisma.venue.create({
@@ -496,10 +581,12 @@ router.post('/:facilityId/venues', requireAuth, requireScope('VENUE'), async (re
 router.get('/:facilityId/venues', requireAuth, async (req: AuthRequest, res) => {
   try {
     const facilityId = parseInt(req.params.facilityId);
-    const clubId = req.user!.clubId;
+    const isolation = req.isolation;
+    if (!isolation) return res.status(400).json({ message: 'Isolation context required' });
     
-    const facility = await prisma.facility.findUnique({ where: { id: facilityId }, select: { clubId: true } });
-    if (!facility || facility.clubId !== clubId) return res.status(404).json({ message: 'Facility not found' });
+    // Check if user has access to this facility
+    const hasAccess = await checkFacilityAccess(facilityId, isolation);
+    if (!hasAccess) return res.status(404).json({ message: 'Facility not found' });
     
     const { page, pageSize, search } = parsePaginationParams(req.query);
     const includeDeleted = req.query.includeDeleted === 'true';
@@ -543,15 +630,20 @@ router.get('/:facilityId/venues', requireAuth, async (req: AuthRequest, res) => 
 router.post('/:facilityId/grounds', requireAuth, requireScope('GROUND'), async (req: AuthRequest, res) => {
   try {
     const facilityId = parseInt(req.params.facilityId);
-    const clubId = req.user!.clubId;
+    const isolation = req.isolation;
     const { name, dimensions, capacity, isAvailable, managerId } = req.body;
     const surfaceType = req.body.surfaceType ?? req.body.surface;
     const groundType = req.body.groundType ?? req.body.type;
     
     if (!name || !groundType) return res.status(400).json({ message: 'Ground name and type required' });
+    if (!isolation) return res.status(400).json({ message: 'Isolation context required' });
     
-    const facility = await prisma.facility.findUnique({ where: { id: facilityId }, select: { clubId: true, deletedAt: true } });
-    if (!facility || facility.clubId !== clubId) return res.status(404).json({ message: 'Facility not found' });
+    // Check if user has access to this facility
+    const hasFacilityAccess = await checkFacilityAccess(facilityId, isolation);
+    if (!hasFacilityAccess) return res.status(403).json({ message: 'Access denied to facility' });
+    
+    const facility = await prisma.facility.findUnique({ where: { id: facilityId }, select: { deletedAt: true } });
+    if (!facility) return res.status(404).json({ message: 'Facility not found' });
     if (facility.deletedAt) return res.status(400).json({ message: 'Cannot add ground to deleted facility' });
     
     const ground = await prisma.ground.create({
@@ -578,10 +670,12 @@ router.post('/:facilityId/grounds', requireAuth, requireScope('GROUND'), async (
 router.get('/:facilityId/grounds', requireAuth, async (req: AuthRequest, res) => {
   try {
     const facilityId = parseInt(req.params.facilityId);
-    const clubId = req.user!.clubId;
+    const isolation = req.isolation;
+    if (!isolation) return res.status(400).json({ message: 'Isolation context required' });
     
-    const facility = await prisma.facility.findUnique({ where: { id: facilityId }, select: { clubId: true } });
-    if (!facility || facility.clubId !== clubId) return res.status(404).json({ message: 'Facility not found' });
+    // Check if user has access to this facility
+    const hasAccess = await checkFacilityAccess(facilityId, isolation);
+    if (!hasAccess) return res.status(404).json({ message: 'Facility not found' });
     
     const { page, pageSize, search } = parsePaginationParams(req.query);
     const includeDeleted = req.query.includeDeleted === 'true';
@@ -624,17 +718,25 @@ router.get('/:facilityId/grounds', requireAuth, async (req: AuthRequest, res) =>
 router.get('/venues/:id', requireAuth, async (req: AuthRequest, res) => {
   try {
     const id = parseInt(req.params.id);
-    const clubId = req.user!.clubId;
+    const isolation = req.isolation;
+    if (!isolation) return res.status(400).json({ message: 'Isolation context required' });
+    
     const venue = await prisma.venue.findUnique({
       where: { id },
       select: {
         ...venueSelect,
         facility: {
-          select: { id: true, name: true, clubId: true }
+          select: { id: true, name: true }
         }
       }
     });
-    if (!venue || venue.facility.clubId !== clubId) return res.status(404).json({ message: 'Not found' });
+    
+    if (!venue) return res.status(404).json({ message: 'Not found' });
+    
+    // Check if user has access to this venue's facility
+    const hasAccess = await checkFacilityAccess(venue.facilityId, isolation);
+    if (!hasAccess) return res.status(404).json({ message: 'Not found' });
+    
     res.json(mapVenueResponse(venue));
   } catch (err) {
     console.error(err);
@@ -646,7 +748,9 @@ router.get('/venues/:id', requireAuth, async (req: AuthRequest, res) => {
 router.put('/venues/:id', requireAuth, requireScope('VENUE'), async (req: AuthRequest, res) => {
   try {
     const id = parseInt(req.params.id);
-    const clubId = req.user!.clubId;
+    const isolation = req.isolation;
+    if (!isolation) return res.status(400).json({ message: 'Isolation context required' });
+    
     const { name, capacity, hourlyRate, isAvailable, amenities } = req.body;
     const venueType = req.body.venueType ?? req.body.type;
     
@@ -657,10 +761,15 @@ router.put('/venues/:id', requireAuth, requireScope('VENUE'), async (req: AuthRe
     
     const existing = await prisma.venue.findUnique({
       where: { id },
-      select: { facility: { select: { clubId: true } }, deletedAt: true }
+      select: { facilityId: true, deletedAt: true }
     });
-    if (!existing || existing.facility.clubId !== clubId) return res.status(404).json({ message: 'Not found' });
+    
+    if (!existing) return res.status(404).json({ message: 'Not found' });
     if (existing.deletedAt) return res.status(400).json({ message: 'Cannot update deleted venue' });
+    
+    // Check if user has access to this venue's facility
+    const hasAccess = await checkFacilityAccess(existing.facilityId, isolation);
+    if (!hasAccess) return res.status(404).json({ message: 'Not found' });
     
     const data: any = {};
     if (name !== undefined) data.name = name;
@@ -686,14 +795,20 @@ router.put('/venues/:id', requireAuth, requireScope('VENUE'), async (req: AuthRe
 router.delete('/venues/:id', requireAuth, requireRole(['SUPER_ADMIN', 'FACILITY_MANAGER']), async (req: AuthRequest, res) => {
   try {
     const id = parseInt(req.params.id);
-    const clubId = req.user!.clubId;
+    const isolation = req.isolation;
+    if (!isolation) return res.status(400).json({ message: 'Isolation context required' });
     
     const existing = await prisma.venue.findUnique({
       where: { id },
-      select: { facility: { select: { clubId: true } }, deletedAt: true }
+      select: { facilityId: true, deletedAt: true }
     });
-    if (!existing || existing.facility.clubId !== clubId) return res.status(404).json({ message: 'Not found' });
+    
+    if (!existing) return res.status(404).json({ message: 'Not found' });
     if (existing.deletedAt) return res.status(400).json({ message: 'Already deleted' });
+    
+    // Check if user has access to this venue's facility
+    const hasAccess = await checkFacilityAccess(existing.facilityId, isolation);
+    if (!hasAccess) return res.status(404).json({ message: 'Not found' });
     
     await prisma.venue.update({ 
       where: { id }, 
@@ -710,14 +825,20 @@ router.delete('/venues/:id', requireAuth, requireRole(['SUPER_ADMIN', 'FACILITY_
 router.post('/venues/:id/restore', requireAuth, requireRole(['SUPER_ADMIN', 'FACILITY_MANAGER']), async (req: AuthRequest, res) => {
   try {
     const id = parseInt(req.params.id);
-    const clubId = req.user!.clubId;
+    const isolation = req.isolation;
+    if (!isolation) return res.status(400).json({ message: 'Isolation context required' });
     
     const existing = await prisma.venue.findUnique({
       where: { id },
-      select: { facility: { select: { clubId: true } }, deletedAt: true }
+      select: { facilityId: true, deletedAt: true }
     });
-    if (!existing || existing.facility.clubId !== clubId) return res.status(404).json({ message: 'Not found' });
+    
+    if (!existing) return res.status(404).json({ message: 'Not found' });
     if (!existing.deletedAt) return res.status(400).json({ message: 'Venue is not deleted' });
+    
+    // Check if user has access to this venue's facility
+    const hasAccess = await checkFacilityAccess(existing.facilityId, isolation);
+    if (!hasAccess) return res.status(404).json({ message: 'Not found' });
     
     const restored = await prisma.venue.update({ 
       where: { id }, 
@@ -735,21 +856,30 @@ router.post('/venues/:id/restore', requireAuth, requireRole(['SUPER_ADMIN', 'FAC
 router.put('/venues/:id/manager', requireAuth, requirePermission('venue.manage'), async (req: AuthRequest, res) => {
   try {
     const id = parseInt(req.params.id);
-    const clubId = req.user!.clubId;
+    const isolation = req.isolation;
+    if (!isolation) return res.status(400).json({ message: 'Isolation context required' });
+    
     const { managerId } = req.body;
     
     if (managerId === undefined) return res.status(400).json({ message: 'managerId required' });
     
     const existing = await prisma.venue.findUnique({
       where: { id },
-      select: { facility: { select: { clubId: true } }, deletedAt: true }
+      select: { facilityId: true, deletedAt: true }
     });
-    if (!existing || existing.facility.clubId !== clubId) return res.status(404).json({ message: 'Not found' });
+    
+    if (!existing) return res.status(404).json({ message: 'Not found' });
     if (existing.deletedAt) return res.status(400).json({ message: 'Cannot update deleted venue' });
     
+    // Check if user has access to this venue's facility
+    const hasAccess = await checkFacilityAccess(existing.facilityId, isolation);
+    if (!hasAccess) return res.status(404).json({ message: 'Not found' });
+    
     if (managerId) {
-      const manager = await prisma.user.findUnique({ where: { id: managerId }, select: { clubId: true } });
-      if (!manager || manager.clubId !== clubId) {
+      // Validate manager has access to the facility (isolation-based)
+      const managerIsolation = getIsolationContext({ id: managerId, primaryRole: null });
+      const managerHasAccess = await checkFacilityAccess(existing.facilityId, managerIsolation);
+      if (!managerHasAccess) {
         return res.status(400).json({ message: 'Invalid manager ID' });
       }
     }
@@ -773,17 +903,25 @@ router.put('/venues/:id/manager', requireAuth, requirePermission('venue.manage')
 router.get('/grounds/:id', requireAuth, async (req: AuthRequest, res) => {
   try {
     const id = parseInt(req.params.id);
-    const clubId = req.user!.clubId;
+    const isolation = req.isolation;
+    if (!isolation) return res.status(400).json({ message: 'Isolation context required' });
+    
     const ground = await prisma.ground.findUnique({
       where: { id },
       select: {
         ...groundSelect,
         facility: {
-          select: { id: true, name: true, clubId: true }
+          select: { id: true, name: true }
         }
       }
     });
-    if (!ground || ground.facility.clubId !== clubId) return res.status(404).json({ message: 'Not found' });
+    
+    if (!ground) return res.status(404).json({ message: 'Not found' });
+    
+    // Check if user has access to this ground's facility
+    const hasAccess = await checkFacilityAccess(ground.facilityId, isolation);
+    if (!hasAccess) return res.status(404).json({ message: 'Not found' });
+    
     res.json(mapGroundResponse(ground));
   } catch (err) {
     console.error(err);
@@ -795,7 +933,9 @@ router.get('/grounds/:id', requireAuth, async (req: AuthRequest, res) => {
 router.put('/grounds/:id', requireAuth, requireScope('GROUND'), async (req: AuthRequest, res) => {
   try {
     const id = parseInt(req.params.id);
-    const clubId = req.user!.clubId;
+    const isolation = req.isolation;
+    if (!isolation) return res.status(400).json({ message: 'Isolation context required' });
+    
     const { name, dimensions, capacity, isAvailable } = req.body;
     const surfaceType = req.body.surfaceType ?? req.body.surface;
     const groundType = req.body.groundType ?? req.body.type;
@@ -807,10 +947,15 @@ router.put('/grounds/:id', requireAuth, requireScope('GROUND'), async (req: Auth
     
     const existing = await prisma.ground.findUnique({
       where: { id },
-      select: { facility: { select: { clubId: true } }, deletedAt: true }
+      select: { facilityId: true, deletedAt: true }
     });
-    if (!existing || existing.facility.clubId !== clubId) return res.status(404).json({ message: 'Not found' });
+    
+    if (!existing) return res.status(404).json({ message: 'Not found' });
     if (existing.deletedAt) return res.status(400).json({ message: 'Cannot update deleted ground' });
+    
+    // Check if user has access to this ground's facility
+    const hasAccess = await checkFacilityAccess(existing.facilityId, isolation);
+    if (!hasAccess) return res.status(404).json({ message: 'Not found' });
     
     const data: any = {};
     if (name !== undefined) data.name = name;
@@ -836,14 +981,20 @@ router.put('/grounds/:id', requireAuth, requireScope('GROUND'), async (req: Auth
 router.delete('/grounds/:id', requireAuth, requireRole(['SUPER_ADMIN', 'FACILITY_MANAGER']), async (req: AuthRequest, res) => {
   try {
     const id = parseInt(req.params.id);
-    const clubId = req.user!.clubId;
+    const isolation = req.isolation;
+    if (!isolation) return res.status(400).json({ message: 'Isolation context required' });
     
     const existing = await prisma.ground.findUnique({
       where: { id },
-      select: { facility: { select: { clubId: true } }, deletedAt: true }
+      select: { facilityId: true, deletedAt: true }
     });
-    if (!existing || existing.facility.clubId !== clubId) return res.status(404).json({ message: 'Not found' });
+    
+    if (!existing) return res.status(404).json({ message: 'Not found' });
     if (existing.deletedAt) return res.status(400).json({ message: 'Already deleted' });
+    
+    // Check if user has access to this ground's facility
+    const hasAccess = await checkFacilityAccess(existing.facilityId, isolation);
+    if (!hasAccess) return res.status(404).json({ message: 'Not found' });
     
     await prisma.ground.update({ 
       where: { id }, 
@@ -860,14 +1011,20 @@ router.delete('/grounds/:id', requireAuth, requireRole(['SUPER_ADMIN', 'FACILITY
 router.post('/grounds/:id/restore', requireAuth, requireRole(['SUPER_ADMIN', 'FACILITY_MANAGER']), async (req: AuthRequest, res) => {
   try {
     const id = parseInt(req.params.id);
-    const clubId = req.user!.clubId;
+    const isolation = req.isolation;
+    if (!isolation) return res.status(400).json({ message: 'Isolation context required' });
     
     const existing = await prisma.ground.findUnique({
       where: { id },
-      select: { facility: { select: { clubId: true } }, deletedAt: true }
+      select: { facilityId: true, deletedAt: true }
     });
-    if (!existing || existing.facility.clubId !== clubId) return res.status(404).json({ message: 'Not found' });
+    
+    if (!existing) return res.status(404).json({ message: 'Not found' });
     if (!existing.deletedAt) return res.status(400).json({ message: 'Ground is not deleted' });
+    
+    // Check if user has access to this ground's facility
+    const hasAccess = await checkFacilityAccess(existing.facilityId, isolation);
+    if (!hasAccess) return res.status(404).json({ message: 'Not found' });
     
     const restored = await prisma.ground.update({ 
       where: { id }, 
@@ -885,23 +1042,28 @@ router.post('/grounds/:id/restore', requireAuth, requireRole(['SUPER_ADMIN', 'FA
 router.put('/grounds/:id/manager', requireAuth, requirePermission('ground.manage'), async (req: AuthRequest, res) => {
   try {
     const id = parseInt(req.params.id);
-    const clubId = req.user!.clubId;
     const { managerId } = req.body;
+    const isolation = req.isolation;
+    if (!isolation) return res.status(400).json({ message: 'Isolation context required' });
     
     if (managerId === undefined) return res.status(400).json({ message: 'managerId required' });
     
     const existing = await prisma.ground.findUnique({
       where: { id },
-      select: { facility: { select: { clubId: true } }, deletedAt: true }
+      select: { facilityId: true, deletedAt: true }
     });
-    if (!existing || existing.facility.clubId !== clubId) return res.status(404).json({ message: 'Not found' });
+    if (!existing) return res.status(404).json({ message: 'Not found' });
     if (existing.deletedAt) return res.status(400).json({ message: 'Cannot update deleted ground' });
     
+    // Check if user has access to this ground's facility
+    const hasAccess = await checkFacilityAccess(existing.facilityId, isolation);
+    if (!hasAccess) return res.status(404).json({ message: 'Not found' });
+    
     if (managerId) {
-      const manager = await prisma.user.findUnique({ where: { id: managerId }, select: { clubId: true } });
-      if (!manager || manager.clubId !== clubId) {
-        return res.status(400).json({ message: 'Invalid manager ID' });
-      }
+      // Validate manager has access to this facility
+      const managerIsolation = await getIsolationContext(managerId);
+      const managerHasAccess = await checkFacilityAccess(existing.facilityId, managerIsolation);
+      if (!managerHasAccess) return res.status(400).json({ message: 'Invalid manager ID' });
     }
     
     const updated = await prisma.ground.update({
@@ -998,16 +1160,23 @@ async function checkVenueScheduleConflict(
 router.post('/venues/:id/schedule', requireAuth, requirePermission('venue.schedule.manage'), async (req: AuthRequest, res) => {
   try {
     const venueId = parseInt(req.params.id);
-    const clubId = req.user!.clubId;
+    const isolation = req.isolation;
+    if (!isolation) return res.status(400).json({ message: 'Isolation context required' });
+    
     const { dayOfWeek, specificDate, startTime, endTime, isRecurring, isBlackout, notes } = req.body;
     
-    // Validate venue exists and belongs to user's club
+    // Validate venue exists and user has access
     const venue = await prisma.venue.findUnique({
       where: { id: venueId },
-      select: { facility: { select: { clubId: true } }, deletedAt: true }
+      select: { facilityId: true, deletedAt: true }
     });
-    if (!venue || venue.facility.clubId !== clubId) return res.status(404).json({ message: 'Venue not found' });
+    
+    if (!venue) return res.status(404).json({ message: 'Venue not found' });
     if (venue.deletedAt) return res.status(400).json({ message: 'Cannot add schedule to deleted venue' });
+    
+    // Check if user has access to this venue's facility
+    const hasAccess = await checkFacilityAccess(venue.facilityId, isolation);
+    if (!hasAccess) return res.status(404).json({ message: 'Venue not found' });
     
     // Validate required fields
     if (!startTime || !endTime) return res.status(400).json({ message: 'startTime and endTime required' });
@@ -1068,13 +1237,19 @@ router.post('/venues/:id/schedule', requireAuth, requirePermission('venue.schedu
 router.get('/venues/:id/schedule', requireAuth, async (req: AuthRequest, res) => {
   try {
     const venueId = parseInt(req.params.id);
-    const clubId = req.user!.clubId;
+    const isolation = req.isolation;
+    if (!isolation) return res.status(400).json({ message: 'Isolation context required' });
     
     const venue = await prisma.venue.findUnique({
       where: { id: venueId },
-      select: { facility: { select: { clubId: true } } }
+      select: { facilityId: true }
     });
-    if (!venue || venue.facility.clubId !== clubId) return res.status(404).json({ message: 'Venue not found' });
+    
+    if (!venue) return res.status(404).json({ message: 'Venue not found' });
+    
+    // Check if user has access to this venue's facility
+    const hasAccess = await checkFacilityAccess(venue.facilityId, isolation);
+    if (!hasAccess) return res.status(404).json({ message: 'Venue not found' });
     
     const includeDeleted = req.query.includeDeleted === 'true';
     const blackoutsOnly = req.query.blackouts === 'true';
@@ -1103,14 +1278,21 @@ router.put('/venues/:venueId/schedule/:scheduleId', requireAuth, requirePermissi
   try {
     const venueId = parseInt(req.params.venueId);
     const scheduleId = parseInt(req.params.scheduleId);
-    const clubId = req.user!.clubId;
+    const isolation = req.isolation;
+    if (!isolation) return res.status(400).json({ message: 'Isolation context required' });
+    
     const { dayOfWeek, specificDate, startTime, endTime, isRecurring, isBlackout, notes } = req.body;
     
     const venue = await prisma.venue.findUnique({
       where: { id: venueId },
-      select: { facility: { select: { clubId: true } } }
+      select: { facilityId: true }
     });
-    if (!venue || venue.facility.clubId !== clubId) return res.status(404).json({ message: 'Venue not found' });
+    
+    if (!venue) return res.status(404).json({ message: 'Venue not found' });
+    
+    // Check if user has access to this venue's facility
+    const hasAccess = await checkFacilityAccess(venue.facilityId, isolation);
+    if (!hasAccess) return res.status(404).json({ message: 'Venue not found' });
     
     const existing = await prisma.venueSchedule.findUnique({
       where: { id: scheduleId },
@@ -1149,13 +1331,19 @@ router.delete('/venues/:venueId/schedule/:scheduleId', requireAuth, requirePermi
   try {
     const venueId = parseInt(req.params.venueId);
     const scheduleId = parseInt(req.params.scheduleId);
-    const clubId = req.user!.clubId;
+    const isolation = req.isolation;
+    if (!isolation) return res.status(400).json({ message: 'Isolation context required' });
     
     const venue = await prisma.venue.findUnique({
       where: { id: venueId },
-      select: { facility: { select: { clubId: true } } }
+      select: { facilityId: true }
     });
-    if (!venue || venue.facility.clubId !== clubId) return res.status(404).json({ message: 'Venue not found' });
+    
+    if (!venue) return res.status(404).json({ message: 'Venue not found' });
+    
+    // Check if user has access to this venue's facility
+    const hasAccess = await checkFacilityAccess(venue.facilityId, isolation);
+    if (!hasAccess) return res.status(404).json({ message: 'Venue not found' });
     
     const existing = await prisma.venueSchedule.findUnique({
       where: { id: scheduleId },
@@ -1217,15 +1405,21 @@ async function checkGroundScheduleConflict(
 router.post('/grounds/:id/schedule', requireAuth, requirePermission('ground.schedule.manage'), async (req: AuthRequest, res) => {
   try {
     const groundId = parseInt(req.params.id);
-    const clubId = req.user!.clubId;
+    const isolation = req.isolation;
+    if (!isolation) return res.status(400).json({ message: 'Isolation context required' });
+    
     const { dayOfWeek, specificDate, startTime, endTime, isRecurring, isBlackout, notes } = req.body;
     
     const ground = await prisma.ground.findUnique({
       where: { id: groundId },
-      select: { facility: { select: { clubId: true } }, deletedAt: true }
+      select: { facilityId: true, deletedAt: true }
     });
-    if (!ground || ground.facility.clubId !== clubId) return res.status(404).json({ message: 'Ground not found' });
+    if (!ground) return res.status(404).json({ message: 'Ground not found' });
     if (ground.deletedAt) return res.status(400).json({ message: 'Cannot add schedule to deleted ground' });
+    
+    // Check if user has access to this ground's facility
+    const hasAccess = await checkFacilityAccess(ground.facilityId, isolation);
+    if (!hasAccess) return res.status(404).json({ message: 'Ground not found' });
     
     if (!startTime || !endTime) return res.status(400).json({ message: 'startTime and endTime required' });
     if (!isValidTimeFormat(startTime) || !isValidTimeFormat(endTime)) {
@@ -1284,13 +1478,18 @@ router.post('/grounds/:id/schedule', requireAuth, requirePermission('ground.sche
 router.get('/grounds/:id/schedule', requireAuth, async (req: AuthRequest, res) => {
   try {
     const groundId = parseInt(req.params.id);
-    const clubId = req.user!.clubId;
+    const isolation = req.isolation;
+    if (!isolation) return res.status(400).json({ message: 'Isolation context required' });
     
     const ground = await prisma.ground.findUnique({
       where: { id: groundId },
-      select: { facility: { select: { clubId: true } } }
+      select: { facilityId: true }
     });
-    if (!ground || ground.facility.clubId !== clubId) return res.status(404).json({ message: 'Ground not found' });
+    if (!ground) return res.status(404).json({ message: 'Ground not found' });
+    
+    // Check if user has access to this ground's facility
+    const hasAccess = await checkFacilityAccess(ground.facilityId, isolation);
+    if (!hasAccess) return res.status(404).json({ message: 'Ground not found' });
     
     const includeDeleted = req.query.includeDeleted === 'true';
     const blackoutsOnly = req.query.blackouts === 'true';
@@ -1319,14 +1518,20 @@ router.put('/grounds/:groundId/schedule/:scheduleId', requireAuth, requirePermis
   try {
     const groundId = parseInt(req.params.groundId);
     const scheduleId = parseInt(req.params.scheduleId);
-    const clubId = req.user!.clubId;
+    const isolation = req.isolation;
+    if (!isolation) return res.status(400).json({ message: 'Isolation context required' });
+    
     const { dayOfWeek, specificDate, startTime, endTime, isRecurring, isBlackout, notes } = req.body;
     
     const ground = await prisma.ground.findUnique({
       where: { id: groundId },
-      select: { facility: { select: { clubId: true } } }
+      select: { facilityId: true }
     });
-    if (!ground || ground.facility.clubId !== clubId) return res.status(404).json({ message: 'Ground not found' });
+    if (!ground) return res.status(404).json({ message: 'Ground not found' });
+    
+    // Check if user has access to this ground's facility
+    const hasAccess = await checkFacilityAccess(ground.facilityId, isolation);
+    if (!hasAccess) return res.status(404).json({ message: 'Ground not found' });
     
     const existing = await prisma.groundSchedule.findUnique({
       where: { id: scheduleId },
@@ -1364,13 +1569,18 @@ router.delete('/grounds/:groundId/schedule/:scheduleId', requireAuth, requirePer
   try {
     const groundId = parseInt(req.params.groundId);
     const scheduleId = parseInt(req.params.scheduleId);
-    const clubId = req.user!.clubId;
+    const isolation = req.isolation;
+    if (!isolation) return res.status(400).json({ message: 'Isolation context required' });
     
     const ground = await prisma.ground.findUnique({
       where: { id: groundId },
-      select: { facility: { select: { clubId: true } } }
+      select: { facilityId: true }
     });
-    if (!ground || ground.facility.clubId !== clubId) return res.status(404).json({ message: 'Ground not found' });
+    if (!ground) return res.status(404).json({ message: 'Ground not found' });
+    
+    // Check if user has access to this ground's facility
+    const hasAccess = await checkFacilityAccess(ground.facilityId, isolation);
+    if (!hasAccess) return res.status(404).json({ message: 'Ground not found' });
     
     const existing = await prisma.groundSchedule.findUnique({
       where: { id: scheduleId },
