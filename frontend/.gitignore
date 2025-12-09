@@ -137,3 +137,4 @@ evaluation_mysql_dump.sql
 /playwright-report
 /test-results
 
+node_modules
