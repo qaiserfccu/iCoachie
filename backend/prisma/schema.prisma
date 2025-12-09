@@ -69,15 +69,18 @@ model User {
 }
 
 model Club {
-  id          Int      @id @default(autoincrement())
-  name        String
-  adminId     Int      @unique
-  location    String?
-  description String?
-  logoUrl     String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  deletedAt   DateTime? // Soft delete
+  id             Int      @id @default(autoincrement())
+  name           String
+  adminId        Int      @unique
+  location       String?
+  description    String?
+  logoUrl        String?
+  subdomain      String?  @unique // Unique subdomain for club
+  primaryColor   String?  // Primary theme color (hex)
+  secondaryColor String?  // Secondary theme color (hex)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  deletedAt      DateTime? // Soft delete
 
   // Relations
   admin       User     @relation("ClubManager", fields: [adminId], references: [id])
