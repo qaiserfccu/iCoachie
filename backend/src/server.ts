@@ -26,6 +26,16 @@ import adminRoutes from './controllers/adminController';
 import settingsRoutes from './controllers/settingsController';
 import emailTemplateRoutes from './controllers/emailTemplateController';
 import systemSupportRoutes from './controllers/systemSupportController';
+import equipmentRoutes from './controllers/equipmentController';
+import securityRoutes from './controllers/securityController';
+import cleaningRoutes from './controllers/cleaningController';
+import medicalRoutes from './controllers/medicalController';
+import contentManagerRoutes from './controllers/contentManagerController';
+import frontDeskRoutes from './controllers/frontDeskController';
+import accountantRoutes from './controllers/accountantController';
+import maintenanceRoutes from './controllers/maintenanceController';
+import groundskeeperRoutes from './controllers/groundskeeperController';
+import bookingsCoordinatorRoutes from './controllers/bookingsCoordinatorController';
 import fileRoutes from './routes/fileRoutes';
 
 dotenv.config();
@@ -103,6 +113,16 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/admin/settings', settingsRoutes);
 app.use('/api/admin/email-templates', emailTemplateRoutes);
 app.use('/api/system-support', systemSupportRoutes);
+app.use('/api/equipment', equipmentRoutes);
+app.use('/api/security', securityRoutes);
+app.use('/api/cleaning', cleaningRoutes);
+app.use('/api/medical', medicalRoutes);
+app.use('/api/content-manager', contentManagerRoutes);
+app.use('/api/front-desk', frontDeskRoutes);
+app.use('/api/accountant', accountantRoutes);
+app.use('/api/maintenance', maintenanceRoutes);
+app.use('/api/groundskeeper', groundskeeperRoutes);
+app.use('/api/bookings-coordinator', bookingsCoordinatorRoutes);
 app.use('/api/files', fileRoutes);
 
 app.get('/api/health', (req, res) => {
